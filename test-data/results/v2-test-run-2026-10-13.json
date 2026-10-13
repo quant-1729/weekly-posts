@@ -1,0 +1,253 @@
+{
+  "_about": "V-23 test run record, 2026-10-13. Full vitest suite run twice (JSON reporter), counts grouped by PRD Req from the tests/ folder names. Live AI checks are run by the orchestrator and are not part of this file.",
+  "date": "2026-10-13",
+  "commands": [
+    {
+      "command": "npm run typecheck",
+      "result": "pass (exit 0)"
+    },
+    {
+      "command": "npm run lint",
+      "result": "pass (exit 0, no findings)"
+    },
+    {
+      "command": "npx vitest run (run 1 of 2)",
+      "result": "1 failed / 2459 passed of 2460 tests; 105 files; 2 files failed"
+    },
+    {
+      "command": "npx vitest run (run 2 of 2)",
+      "result": "2 failed / 2458 passed of 2460 tests; 105 files; 2 files failed"
+    },
+    {
+      "command": "npx vitest run <file> (each failing file, alone)",
+      "result": "all 3 pass alone (mock-steps 2/2, weekly-build 20/20, render-v2 241/241); weekly-build also passed 5 more solo reruns"
+    },
+    {
+      "command": "npm run build",
+      "result": "pass (exit 0)"
+    }
+  ],
+  "totals": {
+    "test_files": 105,
+    "tests": 2460,
+    "run1_passed": 2459,
+    "run1_failed": 1,
+    "run2_passed": 2458,
+    "run2_failed": 2
+  },
+  "groups": [
+    {
+      "requirement": "Req 1",
+      "test_files": 5,
+      "tests": 120,
+      "run1_pass": 120,
+      "run1_fail": 0,
+      "run2_pass": 120,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 2/6",
+      "test_files": 1,
+      "tests": 35,
+      "run1_pass": 35,
+      "run1_fail": 0,
+      "run2_pass": 35,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 3/6",
+      "test_files": 5,
+      "tests": 235,
+      "run1_pass": 235,
+      "run1_fail": 0,
+      "run2_pass": 235,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 4",
+      "test_files": 2,
+      "tests": 38,
+      "run1_pass": 38,
+      "run1_fail": 0,
+      "run2_pass": 38,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 5",
+      "test_files": 8,
+      "tests": 96,
+      "run1_pass": 96,
+      "run1_fail": 0,
+      "run2_pass": 96,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 7/8",
+      "test_files": 11,
+      "tests": 183,
+      "run1_pass": 183,
+      "run1_fail": 0,
+      "run2_pass": 183,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 9/10",
+      "test_files": 2,
+      "tests": 372,
+      "run1_pass": 372,
+      "run1_fail": 0,
+      "run2_pass": 371,
+      "run2_fail": 1
+    },
+    {
+      "requirement": "Req 11-13",
+      "test_files": 9,
+      "tests": 259,
+      "run1_pass": 259,
+      "run1_fail": 0,
+      "run2_pass": 259,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 14/24",
+      "test_files": 7,
+      "tests": 105,
+      "run1_pass": 105,
+      "run1_fail": 0,
+      "run2_pass": 104,
+      "run2_fail": 1
+    },
+    {
+      "requirement": "Req 14-16",
+      "test_files": 4,
+      "tests": 83,
+      "run1_pass": 83,
+      "run1_fail": 0,
+      "run2_pass": 83,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 17/18/25",
+      "test_files": 3,
+      "tests": 65,
+      "run1_pass": 65,
+      "run1_fail": 0,
+      "run2_pass": 65,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 19",
+      "test_files": 3,
+      "tests": 67,
+      "run1_pass": 67,
+      "run1_fail": 0,
+      "run2_pass": 67,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 20/21",
+      "test_files": 3,
+      "tests": 32,
+      "run1_pass": 32,
+      "run1_fail": 0,
+      "run2_pass": 32,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 22",
+      "test_files": 5,
+      "tests": 67,
+      "run1_pass": 67,
+      "run1_fail": 0,
+      "run2_pass": 67,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 23",
+      "test_files": 5,
+      "tests": 59,
+      "run1_pass": 59,
+      "run1_fail": 0,
+      "run2_pass": 59,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Req 26",
+      "test_files": 1,
+      "tests": 25,
+      "run1_pass": 25,
+      "run1_fail": 0,
+      "run2_pass": 25,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Mascot extra",
+      "test_files": 9,
+      "tests": 295,
+      "run1_pass": 295,
+      "run1_fail": 0,
+      "run2_pass": 295,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "RLS (all)",
+      "test_files": 3,
+      "tests": 42,
+      "run1_pass": 41,
+      "run1_fail": 1,
+      "run2_pass": 42,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "v1/shared",
+      "test_files": 16,
+      "tests": 229,
+      "run1_pass": 229,
+      "run1_fail": 0,
+      "run2_pass": 229,
+      "run2_fail": 0
+    },
+    {
+      "requirement": "Other (tests/env, tests/audio, tests/storage)",
+      "test_files": 3,
+      "tests": 53,
+      "run1_pass": 53,
+      "run1_fail": 0,
+      "run2_pass": 53,
+      "run2_fail": 0
+    }
+  ],
+  "flaky_tests": [
+    {
+      "file": "tests/db/mock-steps.test.ts",
+      "test": "mock-only steps > add auth.users.email to a database that applied the older stub, once, without losing data",
+      "failed_in": "run 1 (30 s timeout, took 31.6 s)",
+      "passes_alone": true,
+      "known": "H-4",
+      "cause": "load-dependent timeout under full suite; PGlite migration on temp dir"
+    },
+    {
+      "file": "tests/render/render-v2.test.ts",
+      "test": "renderPostFormats (v2 API) > renders all three formats for one post in under 1.5 s after warm-up",
+      "failed_in": "run 2 (timings 1628, 1505, 1245 ms vs 1500 limit)",
+      "passes_alone": true,
+      "known": "H-4",
+      "cause": "timing assertion under full-suite CPU load"
+    },
+    {
+      "file": "tests/email/weekly-build.test.ts",
+      "test": "AC 14: email HTML follows the Gmail and Outlook safe rules > normal, short, late, no-image and no-check-in emails all lint clean",
+      "failed_in": "run 2 (lint hit: unsafe CSS d(rem|vw|vh)\b)",
+      "passes_alone": "yes, 6 of 6 solo runs",
+      "known": "not in H-4 (new)",
+      "cause": "tests/email/lint.ts line 21 applies a case-insensitive CSS-unit regex to the whole HTML, including signed link hrefs whose JWT jti (randomUUID) and HMAC signature are random; a random match gives an intermittent false positive. Not confirmed by capturing the matched text."
+    }
+  ],
+  "real_failures": [],
+  "notes": [
+    "No test failed in both runs and none fails alone, so there are no confirmed non-flaky failures.",
+    "The 3 flaky tests are all in the full-suite load pattern; 2 are already listed as H-4 in docs/8-build-plan-v2.md.",
+    "Test stderr shows [env] AUTH_SECRET is blank warnings (dev fallback secret). Warnings only, not failures.",
+    "Live AI checks are run by the orchestrator; latest results are in docs/8-build-plan-v2.md."
+  ]
+}

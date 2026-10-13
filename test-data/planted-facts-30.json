@@ -1,0 +1,739 @@
+[
+  {
+    "id": "pf-01",
+    "brand_id": "brand-sweets",
+    "language": "hi",
+    "owner_input": "आज सुबह ताज़ा जलेबी बनी है।",
+    "output": {
+      "caption": "आज सुबह ताज़ा जलेबी बनी है, 220 रुपये किलो। मिठाई लेने ज़रूर आइए।",
+      "cta": "आज ही दुकान पर आइए।",
+      "image_text": {
+        "headline": "ताज़ा जलेबी, आज सुबह से",
+        "subline": "श्री राम स्वीट्स, इंदौर"
+      }
+    },
+    "planted": [
+      {
+        "text": "220 रुपये किलो",
+        "kind": "price",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Changed price: brand memory has jalebi at 240 per kg, output says 220. Owner input has no price. Must be flagged."
+  },
+  {
+    "id": "pf-02",
+    "brand_id": "brand-sweets",
+    "language": "hi",
+    "owner_input": "जलेबी आज ताज़ी बनी है, गिफ्ट बॉक्स भी बन सकते हैं।",
+    "output": {
+      "caption": "आज की ताज़ी जलेबी, दो सौ बीस रुपये किलो।",
+      "cta": "दुकान पर आकर चखिए।",
+      "image_text": {
+        "headline": "आज की ताज़ी जलेबी",
+        "subline": "श्री राम स्वीट्स, इंदौर"
+      }
+    },
+    "planted": [
+      {
+        "text": "दो सौ बीस रुपये किलो",
+        "kind": "price",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Price written in words (दो सौ बीस = 220), changed from brand memory 240. Must be flagged even though no digits appear."
+  },
+  {
+    "id": "pf-03",
+    "brand_id": "brand-sweets",
+    "language": "hi",
+    "owner_input": "बेसन लड्डू त्योहार के लिए बन रहे हैं।",
+    "output": {
+      "caption": "त्योहार के मौसम में ताज़े बेसन लड्डू, 350 रुपये किलो।",
+      "cta": "अभी फ़ोन करें या दुकान पर आइए।",
+      "image_text": {
+        "headline": "त्योहार की मिठाई",
+        "subline": "श्री राम स्वीट्स, इंदौर"
+      }
+    },
+    "planted": [
+      {
+        "text": "350 रुपये किलो",
+        "kind": "price",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Brand memory says besan laddu price is on request in festival season. Output invents 350 per kg."
+  },
+  {
+    "id": "pf-04",
+    "brand_id": "brand-sweets",
+    "language": "hi",
+    "owner_input": "सभी मिठाइयाँ आज ताज़ी हैं। 2 किलो से ऊपर लेने पर छूट मिलती है।",
+    "output": {
+      "caption": "2 kg से ऊपर के ऑर्डर पर 5 प्रतिशत छूट। आज सब मिठाई पर 20% छूट!",
+      "cta": "आज ही ऑर्डर करें।",
+      "image_text": {
+        "headline": "मिठाई पर छूट",
+        "subline": "श्री राम स्वीट्स, इंदौर"
+      }
+    },
+    "planted": [
+      {
+        "text": "20% छूट",
+        "kind": "discount",
+        "where": "caption"
+      }
+    ],
+    "allowed": [
+      "2 kg से ऊपर के ऑर्डर पर 5 प्रतिशत छूट"
+    ],
+    "regulated": false,
+    "notes": "Mixed case. Standing 5 percent off above 2 kg is in brand memory and must not be flagged. The extra 20% off is made up and must be flagged."
+  },
+  {
+    "id": "pf-05",
+    "brand_id": "brand-sweets",
+    "language": "hi",
+    "owner_input": "गिफ्ट बॉक्स के ऑर्डर ले रहे हैं।",
+    "output": {
+      "caption": "दिवाली के लिए गिफ्ट बॉक्स बनवाएँ।",
+      "cta": "अभी ऑर्डर दें।",
+      "image_text": {
+        "headline": "दिवाली गिफ्ट बॉक्स",
+        "subline": "ऑर्डर 15 नवंबर तक, श्री राम स्वीट्स"
+      }
+    },
+    "planted": [
+      {
+        "text": "15 नवंबर तक",
+        "kind": "date",
+        "where": "subline"
+      }
+    ],
+    "allowed": [
+      "गिफ्ट बॉक्स बनवाएँ"
+    ],
+    "regulated": false,
+    "notes": "Mixed case. Gift boxes made on order (memory) must pass. The 15 November deadline is made up and sits in the subline."
+  },
+  {
+    "id": "pf-06",
+    "brand_id": "brand-kirana",
+    "language": "hi",
+    "owner_input": "सरसों तेल का नया स्टॉक आया है।",
+    "output": {
+      "caption": "नया सरसों तेल आया है, 100% pure और ताज़ा।",
+      "cta": "दुकान पर आइए, अलीगंज मार्केट।",
+      "image_text": {
+        "headline": "सरसों तेल, नया स्टॉक",
+        "subline": "गुप्ता जनरल स्टोर, लखनऊ"
+      }
+    },
+    "planted": [
+      {
+        "text": "100% pure",
+        "kind": "claim",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Non-regulated claim '100% pure' on mustard oil. Brand memory has mustard oil at 165 per litre and says nothing about purity."
+  },
+  {
+    "id": "pf-07",
+    "brand_id": "brand-saree",
+    "language": "hi",
+    "owner_input": "नई बनारसी सिल्क साड़ी आई है।",
+    "output": {
+      "caption": "बनारसी सिल्क साड़ी, 4500 रुपये से।",
+      "cta": "दुकान पर आइए, रिंग रोड टेक्सटाइल मार्केट।",
+      "image_text": {
+        "headline": "बनारसी सिल्क",
+        "subline": "Rang Boutique, Surat"
+      }
+    },
+    "planted": [
+      {
+        "text": "4500 रुपये से",
+        "kind": "price",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Saree brand has no prices in memory (rates on call), so the price is invented. Must be flagged."
+  },
+  {
+    "id": "pf-08",
+    "brand_id": "brand-restaurant",
+    "language": "hi",
+    "owner_input": "आज राजस्थानी थाली पर गरम बाटी मिलेगी।",
+    "output": {
+      "caption": "राजस्थानी थाली और गरम बाटी, आज रात 9 बजे तक खुले हैं।",
+      "cta": "आइए, ज़रूर चखिए।",
+      "image_text": {
+        "headline": "स्वाद दरबार की थाली",
+        "subline": "सी-स्कीम, जयपुर"
+      }
+    },
+    "planted": [
+      {
+        "text": "रात 9 बजे तक",
+        "kind": "time",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Closing time 9 PM is made up; brand memory says 11 PM. Must be flagged. Thali and bati come from the input."
+  },
+  {
+    "id": "pf-09",
+    "brand_id": "brand-coaching",
+    "language": "hi",
+    "owner_input": "कक्षा 10 गणित का बैच शुरू हो रहा है, वीकेंड बैच भी है।",
+    "output": {
+      "caption": "कक्षा 10 गणित का बैच, वीकेंड बैच भी उपलब्ध। हमारे top rankers के साथ पढ़ाई करें।",
+      "cta": "अधिक जानकारी के लिए संपर्क करें।",
+      "image_text": {
+        "headline": "कक्षा 10 गणित",
+        "subline": "उज्ज्वल अकादमी, पटना"
+      }
+    },
+    "planted": [
+      {
+        "text": "top rankers",
+        "kind": "claim",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": true,
+    "notes": "Regulated (education). 'Top rankers' is a result claim not in memory; must be flagged with the education-claim warning. Batch and weekend batch are supported and not flagged."
+  },
+  {
+    "id": "pf-10",
+    "brand_id": "brand-sweets",
+    "language": "hi",
+    "owner_input": "आज सुबह ताज़ा जलेबी बनी है, 240 रुपये किलो।",
+    "output": {
+      "caption": "आज सुबह ताज़ा जलेबी बनी है, 240 रुपये किलो।",
+      "cta": "आज ही दुकान पर आइए।",
+      "image_text": {
+        "headline": "ताज़ी जलेबी",
+        "subline": "श्री राम स्वीट्स, इंदौर"
+      }
+    },
+    "planted": [],
+    "allowed": [
+      "ताज़ा जलेबी बनी है",
+      "240 रुपये किलो"
+    ],
+    "regulated": false,
+    "notes": "Zero planted facts. The 240 price is in the owner's input and brand memory, so it must not be flagged. False-positive check."
+  },
+  {
+    "id": "pf-11",
+    "brand_id": "brand-sweets",
+    "language": "hinglish",
+    "owner_input": "Aaj subah ki jalebi fresh hai, aaiye chakhne.",
+    "output": {
+      "caption": "Best in Indore mithai, fresh every morning. Aaiye, chakhiye!",
+      "cta": "Shop pe aayein aur swaad lijiye.",
+      "image_text": {
+        "headline": "Indore ki mithai",
+        "subline": "Sarafa Road, Indore"
+      }
+    },
+    "planted": [
+      {
+        "text": "Best in Indore",
+        "kind": "claim",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Non-regulated claim 'Best in Indore' with no basis in memory. Must be flagged. Fresh every morning (jalebi note) is supported and not flagged."
+  },
+  {
+    "id": "pf-12",
+    "brand_id": "brand-kirana",
+    "language": "hinglish",
+    "owner_input": "Naya atta stock aaya hai, chakki wala.",
+    "output": {
+      "caption": "Chakki ground atta, aaj sirf 399 rupaye mein!",
+      "cta": "Shop no. 6, Aliganj Market par aaiye.",
+      "image_text": {
+        "headline": "Naya atta stock",
+        "subline": "Gupta General Store, Lucknow"
+      }
+    },
+    "planted": [
+      {
+        "text": "sirf 399 rupaye mein",
+        "kind": "price",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Changed price: brand memory has the 10 kg atta bag at 420, output says 399. Must be flagged. Chakki ground and the shop address are supported and not flagged."
+  },
+  {
+    "id": "pf-13",
+    "brand_id": "brand-kirana",
+    "language": "hinglish",
+    "owner_input": "Mustard oil ka naya stock aaya hai.",
+    "output": {
+      "caption": "Mustard oil ka naya stock aaya hai. Shop par aaiye.",
+      "cta": "Shop no. 6, Aliganj Market par aaiye.",
+      "image_text": {
+        "headline": "Buy 1 get 1 free on mustard oil",
+        "subline": "Gupta General Store, Lucknow"
+      }
+    },
+    "planted": [
+      {
+        "text": "Buy 1 get 1 free",
+        "kind": "offer",
+        "where": "headline"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "The 'buy 1 get 1 free' offer is not in the input or memory and must be flagged. Mustard oil stock comes from the input."
+  },
+  {
+    "id": "pf-14",
+    "brand_id": "brand-kirana",
+    "language": "hinglish",
+    "owner_input": "Aliganj mein 3 km ke andar home delivery hoti hai.",
+    "output": {
+      "caption": "Aliganj mein 3 km ke andar home delivery. Free delivery, ghar baithe mangwayein!",
+      "cta": "WhatsApp par order karein.",
+      "image_text": {
+        "headline": "Ghar baithe grocery",
+        "subline": "Gupta General Store, Lucknow"
+      }
+    },
+    "planted": [
+      {
+        "text": "Free delivery",
+        "kind": "offer",
+        "where": "caption"
+      }
+    ],
+    "allowed": [
+      "3 km ke andar home delivery"
+    ],
+    "regulated": false,
+    "notes": "Mixed case. Home delivery within 3 km is in input and memory and must pass. 'Free delivery' is made up: memory says delivery only on orders above Rs 300, so it is not free for every order."
+  },
+  {
+    "id": "pf-15",
+    "brand_id": "brand-kirana",
+    "language": "hinglish",
+    "owner_input": "Dussehra ke liye stock bhar rahe hain.",
+    "output": {
+      "caption": "Dussehra ke liye stock bhar lijiye, 25 October tak.",
+      "cta": "Shop no. 6, Aliganj Market par aaiye.",
+      "image_text": {
+        "headline": "Dussehra stock",
+        "subline": "Gupta General Store, Lucknow"
+      }
+    },
+    "planted": [
+      {
+        "text": "25 October tak",
+        "kind": "date",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Made-up deadline '25 October tak'. The Dussehra mention comes from the input; memory has no date for it."
+  },
+  {
+    "id": "pf-16",
+    "brand_id": "brand-salon",
+    "language": "hinglish",
+    "owner_input": "Bridal makeup ke liye trial bhi hota hai.",
+    "output": {
+      "caption": "Bridal makeup ke liye trial, Rajouri Garden mein.",
+      "cta": "WhatsApp par booking karein, +919000000077.",
+      "image_text": {
+        "headline": "Bridal makeup, Rajouri Garden",
+        "subline": "Glow Unisex Salon, Delhi"
+      }
+    },
+    "planted": [
+      {
+        "text": "+919000000077",
+        "kind": "phone",
+        "where": "cta"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Phone +919000000077 is not in brand memory (the salon's WhatsApp is +919000000003). Must be flagged. Bridal trial is in memory and not flagged."
+  },
+  {
+    "id": "pf-17",
+    "brand_id": "brand-coaching",
+    "language": "hinglish",
+    "owner_input": "Sibling wale students ke liye fee discount hai, aur naya batch 1 tareekh se hai.",
+    "output": {
+      "caption": "Sibling ke liye 10 percent fee discount hai. Flat 500 rupees off on admission, Boring Road par!",
+      "cta": "Free demo ke liye WhatsApp karein.",
+      "image_text": {
+        "headline": "Naya batch, Patna",
+        "subline": "Boring Road, Patna"
+      }
+    },
+    "planted": [
+      {
+        "text": "Flat 500 rupees off",
+        "kind": "discount",
+        "where": "caption"
+      }
+    ],
+    "allowed": [
+      "10 percent fee discount",
+      "Free demo ke liye"
+    ],
+    "regulated": true,
+    "notes": "Regulated (education). Mixed case. Sibling 10 percent fee discount and free demo are in memory and must pass. 'Flat 500 rupees off' is made up and must be flagged."
+  },
+  {
+    "id": "pf-18",
+    "brand_id": "brand-coaching",
+    "language": "hinglish",
+    "owner_input": "Naya NEET biology crash course 45 din ka hai.",
+    "output": {
+      "caption": "NEET biology crash course. Guaranteed results ke liye join karein.",
+      "cta": "Demo ke liye WhatsApp karein.",
+      "image_text": {
+        "headline": "NEET biology crash course",
+        "subline": "Mithila Plaza, Boring Road, Patna"
+      }
+    },
+    "planted": [
+      {
+        "text": "Guaranteed results",
+        "kind": "claim",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": true,
+    "notes": "Regulated (education). 'Guaranteed results' is a result guarantee not in memory; must be flagged with the education-claim warning. Course name is in input and memory."
+  },
+  {
+    "id": "pf-19",
+    "brand_id": "brand-coaching",
+    "language": "hinglish",
+    "owner_input": "Spoken English ka evening batch chal raha hai.",
+    "output": {
+      "caption": "Spoken English ka evening batch. Subah 6 baje se bhi classes shuru.",
+      "cta": "Admission ke liye WhatsApp karein.",
+      "image_text": {
+        "headline": "Spoken English batch",
+        "subline": "Kankarbagh aur Patliputra ke students ke liye"
+      }
+    },
+    "planted": [
+      {
+        "text": "Subah 6 baje se",
+        "kind": "time",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": true,
+    "notes": "Regulated (education). Morning start at 6 AM is made up; memory has 7 to 9 AM and 5 to 8 PM. Must be flagged. Evening batch is supported and not flagged."
+  },
+  {
+    "id": "pf-20",
+    "brand_id": "brand-dental",
+    "language": "hinglish",
+    "owner_input": "Gum problem ke liye scaling and polishing karte hain.",
+    "output": {
+      "caption": "Gum problem ka complete cure, scaling and polishing se. Doctor se consultation zaroor lein.",
+      "cta": "Kothrud, Pune mein appointment lein.",
+      "image_text": {
+        "headline": "Gum care, Kothrud",
+        "subline": "Smile Point Dental Clinic, Pune"
+      }
+    },
+    "planted": [
+      {
+        "text": "complete cure",
+        "kind": "claim",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": true,
+    "notes": "Regulated (health). 'Complete cure' is a cure claim not in memory; must be flagged with the health-claim warning. Scaling and polishing is in memory and not flagged."
+  },
+  {
+    "id": "pf-21",
+    "brand_id": "brand-salon",
+    "language": "en",
+    "owner_input": "Men's haircut, book on WhatsApp or walk in.",
+    "output": {
+      "caption": "Men's haircut at Rs 199, fresh look in Rajouri Garden.",
+      "cta": "Appointments preferred on WhatsApp.",
+      "image_text": {
+        "headline": "Fresh look, Rajouri Garden",
+        "subline": "Glow Unisex Salon, Delhi"
+      }
+    },
+    "planted": [
+      {
+        "text": "Rs 199",
+        "kind": "price",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Changed price: brand memory has men's haircut at 250, output says Rs 199. Must be flagged."
+  },
+  {
+    "id": "pf-22",
+    "brand_id": "brand-salon",
+    "language": "en",
+    "owner_input": "Facial slots are open, come and glow.",
+    "output": {
+      "caption": "Facial slots are open at Glow Unisex Salon, Rajouri Garden. Come and glow with us.",
+      "cta": "Appointments preferred on WhatsApp.",
+      "image_text": {
+        "headline": "Facial offer only till Sunday",
+        "subline": "Glow Unisex Salon, Delhi"
+      }
+    },
+    "planted": [
+      {
+        "text": "only till Sunday",
+        "kind": "date",
+        "where": "headline"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Made-up deadline 'only till Sunday' is in neither input nor memory; must be flagged. Facial slots come from the input."
+  },
+  {
+    "id": "pf-23",
+    "brand_id": "brand-mobile",
+    "language": "en",
+    "owner_input": "Battery replacement is quick, 90 day warranty.",
+    "output": {
+      "caption": "Battery replacement at Rs 750, quick and honest.",
+      "cta": "Pickup and drop in Lajpat Nagar.",
+      "image_text": {
+        "headline": "Battery replacement",
+        "subline": "FixIt Mobile Care, open till 10 PM"
+      }
+    },
+    "planted": [
+      {
+        "text": "Rs 750",
+        "kind": "price",
+        "where": "caption"
+      },
+      {
+        "text": "till 10 PM",
+        "kind": "time",
+        "where": "subline"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Double planted case. Battery price Rs 750 is changed (memory says 900) and closing at 10 PM is made up (memory says 8 PM). Both must be flagged. Pickup and drop are supported and not flagged."
+  },
+  {
+    "id": "pf-24",
+    "brand_id": "brand-mobile",
+    "language": "en",
+    "owner_input": "Screen replacement for Android, starting price 1200.",
+    "output": {
+      "caption": "Screen replacement for Android, quick and honest repairs.",
+      "cta": "Call +919000000061 for a quote.",
+      "image_text": {
+        "headline": "Cracked screen? We can fix it",
+        "subline": "FixIt Mobile Care, Lajpat Nagar"
+      }
+    },
+    "planted": [
+      {
+        "text": "+919000000061",
+        "kind": "phone",
+        "where": "cta"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Phone +919000000061 is not in brand memory (FixIt's number is +919000000008). Must be flagged. Android screen repair is in input and memory."
+  },
+  {
+    "id": "pf-25",
+    "brand_id": "brand-gym",
+    "language": "en",
+    "owner_input": "New members can book a free trial visit on WhatsApp.",
+    "output": {
+      "caption": "Monthly membership just Rs 1200. Book on WhatsApp.",
+      "cta": "Come this Sunday, WhatsApp now.",
+      "image_text": {
+        "headline": "IronHouse Fitness, Lucknow",
+        "subline": "Vibhuti Khand Market"
+      }
+    },
+    "planted": [
+      {
+        "text": "Rs 1200",
+        "kind": "price",
+        "where": "caption"
+      },
+      {
+        "text": "this Sunday",
+        "kind": "date",
+        "where": "cta"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Double planted case. Monthly membership is 1500 in memory, so Rs 1200 is a changed price; 'this Sunday' is a made-up day. Both must be flagged."
+  },
+  {
+    "id": "pf-26",
+    "brand_id": "brand-restaurant",
+    "language": "en",
+    "owner_input": "Fresh thali and kulhad lassi are ready.",
+    "output": {
+      "caption": "No. 1 thali place in Jaipur, with kulhad lassi ready to serve.",
+      "cta": "Visit us at Ashok Marg, C-Scheme, Jaipur.",
+      "image_text": {
+        "headline": "10% off on all thalis",
+        "subline": "Families and office crowd welcome"
+      }
+    },
+    "planted": [
+      {
+        "text": "No. 1",
+        "kind": "claim",
+        "where": "caption"
+      },
+      {
+        "text": "10% off",
+        "kind": "discount",
+        "where": "headline"
+      }
+    ],
+    "allowed": [],
+    "regulated": false,
+    "notes": "Double planted case. 'No. 1' is an unsupported superlative and '10% off on all thalis' is a made-up discount. Both must be flagged. Kulhad lassi and the address are in memory and not flagged."
+  },
+  {
+    "id": "pf-27",
+    "brand_id": "brand-dental",
+    "language": "en",
+    "owner_input": "Root canal patients often ask about pain, so we explain each step.",
+    "output": {
+      "caption": "Root canal treatment, explained step by step by Dr. Neha Joshi, BDS. Painless treatment with us.",
+      "cta": "Visit us in Kothrud, Pune.",
+      "image_text": {
+        "headline": "Root canal explained",
+        "subline": "Smile Point Dental Clinic, Kothrud"
+      }
+    },
+    "planted": [
+      {
+        "text": "Painless treatment",
+        "kind": "claim",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": true,
+    "notes": "Regulated (health). 'Painless treatment' is an outcome claim not in memory; must be flagged with the health-claim warning. Root canal treatment and the lead dentist are in memory."
+  },
+  {
+    "id": "pf-28",
+    "brand_id": "brand-ca",
+    "language": "en",
+    "owner_input": "Tax planning consultation is available, fees on request.",
+    "output": {
+      "caption": "Tax planning consultation, fees on request. Assured returns on every plan.",
+      "cta": "Visit our office in Shivajinagar, Pune.",
+      "image_text": {
+        "headline": "Plain-language tax help, Pune",
+        "subline": "Sai Chambers, Shivajinagar, Pune"
+      }
+    },
+    "planted": [
+      {
+        "text": "Assured returns",
+        "kind": "claim",
+        "where": "caption"
+      }
+    ],
+    "allowed": [],
+    "regulated": true,
+    "notes": "Regulated (finance). 'Assured returns' is an outcome claim the brand must not make and is not in memory; must be flagged with the finance-claim warning. Consultation and fees on request are in memory and not flagged."
+  },
+  {
+    "id": "pf-29",
+    "brand_id": "brand-gym",
+    "language": "en",
+    "owner_input": "Chest day. Who is coming with me today?",
+    "output": {
+      "caption": "Chest day at IronHouse. Who is coming with me today?",
+      "cta": "Open 5:30 AM to 11 PM, all days.",
+      "image_text": {
+        "headline": "Chest day, Vibhuti Khand",
+        "subline": "IronHouse Fitness, Lucknow"
+      }
+    },
+    "planted": [],
+    "allowed": [
+      "Chest day",
+      "Who is coming with me today?",
+      "Open 5:30 AM to 11 PM, all days."
+    ],
+    "regulated": false,
+    "notes": "Zero planted facts. Opening hours and location are in memory and the input has no facts; none may be flagged. False-positive check."
+  },
+  {
+    "id": "pf-30",
+    "brand_id": "brand-ca",
+    "language": "en",
+    "owner_input": "Office is open Monday to Saturday, ten to six. We file income tax returns and GST returns.",
+    "output": {
+      "caption": "Income tax return filing and GST returns, explained in plain language.",
+      "cta": "Office Mon-Sat 10 AM to 6 PM, Shivajinagar.",
+      "image_text": {
+        "headline": "Tax help in plain language",
+        "subline": "Sai Chambers, Shivajinagar, Pune"
+      }
+    },
+    "planted": [],
+    "allowed": [
+      "Income tax return filing",
+      "GST returns",
+      "Office Mon-Sat 10 AM to 6 PM"
+    ],
+    "regulated": true,
+    "notes": "Zero planted facts. Regulated (finance), but every fact is in memory or the input and there is no refund, saving or outcome claim. False-positive check for the regulated path."
+  }
+]

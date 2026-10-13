@@ -1,0 +1,290 @@
+{
+  "model": "gemini-3.8-flash",
+  "usd": 0.011641499999999999,
+  "results": [
+    {
+      "id": "in-01",
+      "brand": "brand-sweets",
+      "language": "hi",
+      "regulated": false,
+      "ms": 11090,
+      "statusOk": true,
+      "issues": [
+        {
+          "channel": "status",
+          "field": "cta",
+          "code": "wrong_script",
+          "detail": "only 58% Devanagari"
+        },
+        {
+          "channel": "gbp",
+          "field": "cta",
+          "code": "wrong_script",
+          "detail": "only 58% Devanagari"
+        }
+      ],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Morning fresh jalebi and Diwali kaju katli gift boxes announcement",
+        "outputs": {
+          "ig_feed": {
+            "caption": "सुबह की शुरुआत गरमा-गरम और ताज़ा जलेबी के साथ!\nश्री राम स्वीट्स पर आज सुबह की जलेबी तैयार है ₹240 प्रति किलो में।\nदिवाली के लिए काजू कतली के डिब्बे भी तैयार करवाए जा सकते हैं। 🪔",
+            "cta": "ऑर्डर के लिए WhatsApp करें",
+            "hashtags": [
+              "#ShreeRamSweets",
+              "#IndoreSweets",
+              "#IndoreFood",
+              "#SarafaIndore",
+              "#Jalebi",
+              "#KajuKatli",
+              "#DiwaliSweets",
+              "#मिठाई"
+            ],
+            "image_text": {
+              "headline": "ताज़ा जलेबी ₹240/kg",
+              "subline": "दिवाली काजू कतली गिफ्ट बॉक्स भी उपलब्ध",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "आज सुबह की ताज़ा जलेबी ₹240 प्रति किलो और दिवाली के लिए काजू कतली के डिब्बे तैयार हैं। 🪔",
+            "cta": "WhatsApp पर मैसेज करें",
+            "hashtags": [],
+            "image_text": {
+              "headline": "ताज़ा जलेबी तैयार है",
+              "subline": "₹240 प्रति किलो",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "आज सुबह श्री राम स्वीट्स पर ताज़ा और कुरकुरी जलेबी बनी है।\nभाव है ₹240 प्रति किलो।\nसाथ ही दिवाली की तैयारी के लिए काजू कतली के डिब्बे भी बनवा सकते हैं।\nहमारी दुकान 14 Sarafa Road, Indore पर रोज़ सुबह 8 AM से रात 10 PM तक खुली रहती है। 🪔",
+            "cta": "ऑर्डर के लिए WhatsApp करें",
+            "hashtags": [
+              "#IndoreSweets",
+              "#DiwaliIndore"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "श्री राम स्वीट्स, 14 Sarafa Road, Indore पर आज सुबह की ताज़ा जलेबी ₹240 प्रति किलो में उपलब्ध है। आने वाले दिवाली के त्योहार के लिए काजू कतली के डिब्बे भी बनवा सकते हैं। दुकान रोज़ 8 AM से 10 PM खुली रहती है। ऑर्डर और जानकारी के लिए संपर्क करें।",
+            "cta": "WhatsApp पर मैसेज करें",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "दो सौ चालीस रुपये किलो",
+            "kind": "price",
+            "source": "input"
+          },
+          {
+            "text": "दिवाली",
+            "kind": "claim",
+            "source": "input"
+          },
+          {
+            "text": "काजू कतली",
+            "kind": "claim",
+            "source": "input"
+          },
+          {
+            "text": "14 Sarafa Road, Indore",
+            "kind": "claim",
+            "source": "brand_memory"
+          },
+          {
+            "text": "8 AM to 10 PM",
+            "kind": "time",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "in-11",
+      "brand": "brand-kirana",
+      "language": "hinglish",
+      "regulated": false,
+      "ms": 16732,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Atta 10 kg bag price update and Sunday store timings reminder",
+        "outputs": {
+          "ig_feed": {
+            "caption": "Ghar ki rasoi ke liye taaza chakki ground atta available hai. 🌾\nAtta 10 kg bag sirf ₹420 mein le jaayein.\nSunday ko hamari shop 2 PM tak khuli rahegi.",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [
+              "#GuptaGeneralStore",
+              "#LucknowKirana",
+              "#AliganjLucknow",
+              "#ChakkiAtta",
+              "#LucknowGroceries"
+            ],
+            "image_text": {
+              "headline": "Chakki Atta 10 kg Bag",
+              "subline": "₹420 | Sunday open till 2 PM",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "Atta 10 kg bag sirf ₹420 mein! Sunday ko shop 2 PM tak khuli hai 🌾",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [],
+            "image_text": {
+              "headline": "Atta 10 kg at ₹420",
+              "subline": "Sunday shop open till 2 PM",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "Namaste Aliganj aur Indira Nagar parivaar! 🌾\nRasoi ke liye fresh chakki ground atta ka 10 kg bag ₹420 mein mil raha hai.\nSunday ko hamari dukan dopahar 2 PM tak khuli hai.\nShop no. 6, Aliganj Market aaiye ya ghar baithe mangwaiye.",
+            "cta": "Ghar baithe mangwane ke liye WhatsApp karein",
+            "hashtags": [
+              "#LucknowKirana",
+              "#Aliganj"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "Gupta General Store Aliganj par chakki ground atta 10 kg bag ₹420 mein uplabdh hai. Sunday ke din dukan dopahar 2 PM tak khuli rehti hai. Hamara pata hai Shop no. 6, Aliganj Market, Lucknow. Rs 300 se upar ke order par 3 km ke andar home delivery uplabdh hai.",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "Atta (10 kg bag) — ₹420",
+            "kind": "price",
+            "source": "input"
+          },
+          {
+            "text": "Sunday ko 2 baje tak shop khuli hai",
+            "kind": "time",
+            "source": "input"
+          },
+          {
+            "text": "Shop no. 6, Aliganj Market, Lucknow",
+            "kind": "claim",
+            "source": "brand_memory"
+          },
+          {
+            "text": "Home delivery within 3 km on orders above Rs 300",
+            "kind": "offer",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "in-17",
+      "brand": "brand-gym",
+      "language": "en",
+      "regulated": false,
+      "ms": 9625,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Morning batch for ladies starting at 5:30 AM with monthly membership at ₹1500 and free trial booking.",
+        "outputs": {
+          "ig_feed": {
+            "caption": "Start your mornings strong! 💪\nNew morning batch for ladies starts at 5:30 AM.\nFull gym access at ₹1500 per month.\nBook your free trial visit with us today. 🔥",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [
+              "#IronHouseFitness",
+              "#LucknowGym",
+              "#VibhutiKhand",
+              "#GomtiNagar",
+              "#LucknowFitness",
+              "#LadiesBatch"
+            ],
+            "image_text": {
+              "headline": "Ladies Morning Batch",
+              "subline": "Starts 5:30 AM | ₹1500 per month",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "Ladies morning batch starts at 5:30 AM! ₹1500 per month. 💪",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [],
+            "image_text": {
+              "headline": "Ladies Morning Batch",
+              "subline": "Starts 5:30 AM | Free Trial",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "Good news for our female fitness enthusiasts in Vibhuti Khand and Gomti Nagar! 🌅\nWe now have a dedicated morning batch for ladies starting at 5:30 AM.\nEnjoy full gym access with our monthly membership at ₹1500 per month.\nNew members can also book a free trial visit before joining. 💪",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [
+              "#IronHouseFitness",
+              "#LucknowGym",
+              "#LadiesFitness"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "IronHouse Fitness introduces a morning batch for ladies starting at 5:30 AM. Monthly membership is available at ₹1500 per month with full gym access. Located at First floor, Vibhuti Khand Market, Lucknow. New members can reach out to book a free trial visit.",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "5:30",
+            "kind": "time",
+            "source": "input"
+          },
+          {
+            "text": "1500",
+            "kind": "price",
+            "source": "input"
+          },
+          {
+            "text": "Free trial visit for new members when booked on WhatsApp.",
+            "kind": "offer",
+            "source": "brand_memory"
+          },
+          {
+            "text": "First floor, Vibhuti Khand Market, Lucknow.",
+            "kind": "claim",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    }
+  ]
+}

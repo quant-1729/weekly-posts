@@ -1,0 +1,127 @@
+{
+  "_comment": "Curated commercial and cultural days small businesses post about. Dates are computed in code from the rules (src/lib/occasions/rules.ts). Rule types: fixed {month, day}; nth-weekday {month, weekday 0=Sun..6=Sat, n (1-4, or -1 for last)}; easter {offsetDays} (days from Easter Sunday); after-nth-weekday {month, weekday, n, offsetDays} (days after the nth weekday of the month). countries is a list of ISO 3166-1 alpha-2 codes or \"*\"; the first rule that matches the country wins. aliases are other names the holiday dataset uses for the same day, so duplicates merge. excludeCategories drops the day for businesses in those groups (health, finance).",
+  "observances": [
+    {
+      "slug": "valentines-day",
+      "name": "Valentine's Day",
+      "aliases": [],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [{ "countries": "*", "rule": { "type": "fixed", "month": 2, "day": 14 } }]
+    },
+    {
+      "slug": "mothers-day",
+      "name": "Mother's Day",
+      "aliases": ["Mothering Sunday"],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [
+        { "countries": ["GB", "IE"], "rule": { "type": "easter", "offsetDays": -21 } },
+        { "countries": ["AE"], "rule": { "type": "fixed", "month": 3, "day": 21 } },
+        { "countries": ["US", "CA", "AU", "IN", "SG", "ZA", "NZ"], "rule": { "type": "nth-weekday", "month": 5, "weekday": 0, "n": 2 } }
+      ]
+    },
+    {
+      "slug": "fathers-day",
+      "name": "Father's Day",
+      "aliases": [],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [
+        { "countries": ["AU", "NZ"], "rule": { "type": "nth-weekday", "month": 9, "weekday": 0, "n": 1 } },
+        { "countries": ["US", "CA", "GB", "IE", "IN", "SG", "ZA", "AE"], "rule": { "type": "nth-weekday", "month": 6, "weekday": 0, "n": 3 } }
+      ]
+    },
+    {
+      "slug": "halloween",
+      "name": "Halloween",
+      "aliases": [],
+      "sensitive": false,
+      "excludeCategories": ["health", "finance"],
+      "rules": [{ "countries": ["US", "CA", "GB", "AU", "IE"], "rule": { "type": "fixed", "month": 10, "day": 31 } }]
+    },
+    {
+      "slug": "black-friday",
+      "name": "Black Friday",
+      "aliases": ["Day after Thanksgiving Day", "Day after Thanksgiving"],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [{ "countries": "*", "rule": { "type": "after-nth-weekday", "month": 11, "weekday": 4, "n": 4, "offsetDays": 1 } }]
+    },
+    {
+      "slug": "small-business-saturday",
+      "name": "Small Business Saturday",
+      "aliases": [],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [
+        { "countries": ["US"], "rule": { "type": "after-nth-weekday", "month": 11, "weekday": 4, "n": 4, "offsetDays": 2 } },
+        { "countries": ["GB"], "rule": { "type": "nth-weekday", "month": 12, "weekday": 6, "n": 1 } }
+      ]
+    },
+    {
+      "slug": "cyber-monday",
+      "name": "Cyber Monday",
+      "aliases": [],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [{ "countries": "*", "rule": { "type": "after-nth-weekday", "month": 11, "weekday": 4, "n": 4, "offsetDays": 4 } }]
+    },
+    {
+      "slug": "christmas-eve",
+      "name": "Christmas Eve",
+      "aliases": [],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [{ "countries": "*", "rule": { "type": "fixed", "month": 12, "day": 24 } }]
+    },
+    {
+      "slug": "new-years-eve",
+      "name": "New Year's Eve",
+      "aliases": [],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [{ "countries": "*", "rule": { "type": "fixed", "month": 12, "day": 31 } }]
+    },
+    {
+      "slug": "international-womens-day",
+      "name": "International Women's Day",
+      "aliases": ["Women's Day"],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [{ "countries": "*", "rule": { "type": "fixed", "month": 3, "day": 8 } }]
+    },
+    {
+      "slug": "earth-day",
+      "name": "Earth Day",
+      "aliases": [],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [{ "countries": "*", "rule": { "type": "fixed", "month": 4, "day": 22 } }]
+    },
+    {
+      "slug": "world-environment-day",
+      "name": "World Environment Day",
+      "aliases": [],
+      "sensitive": false,
+      "excludeCategories": [],
+      "rules": [{ "countries": "*", "rule": { "type": "fixed", "month": 6, "day": 5 } }]
+    },
+    {
+      "slug": "remembrance-sunday",
+      "name": "Remembrance Sunday",
+      "aliases": [],
+      "sensitive": true,
+      "excludeCategories": [],
+      "rules": [{ "countries": ["GB"], "rule": { "type": "nth-weekday", "month": 11, "weekday": 0, "n": 2 } }]
+    },
+    {
+      "slug": "remembrance-day",
+      "name": "Remembrance Day",
+      "aliases": [],
+      "sensitive": true,
+      "excludeCategories": [],
+      "rules": [{ "countries": ["CA", "AU"], "rule": { "type": "fixed", "month": 11, "day": 11 } }]
+    }
+  ]
+}

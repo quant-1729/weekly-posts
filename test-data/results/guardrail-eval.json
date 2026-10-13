@@ -1,0 +1,505 @@
+{
+  "planted": 30,
+  "caught": 30,
+  "falsePositives": 0,
+  "usd": 0.03741200000000001,
+  "rows": [
+    {
+      "id": "pf-01",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "220",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "220 रुपये किलो",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-02",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "दो सौ बीस रुपये किलो",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-03",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "350",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "350 रुपये किलो",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-04",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "आज सब मिठाई पर 20% छूट!",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-05",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "image_text.subline",
+          "text": "15",
+          "layer": "code"
+        },
+        {
+          "field": "image_text.subline",
+          "text": "15 नवंबर तक",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-06",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "100",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "100%",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "100% pure",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-07",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "4500",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "4500 रुपये",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-08",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "9",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "रात 9 बजे तक",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-09",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "top ranker",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "top rankers",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-10",
+      "missed": [],
+      "falsePos": [],
+      "flags": []
+    },
+    {
+      "id": "pf-11",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "best in",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "Best in Indore",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-12",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "399",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "399 rupaye",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-13",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "image_text.headline",
+          "text": "1",
+          "layer": "code"
+        },
+        {
+          "field": "image_text.headline",
+          "text": "1",
+          "layer": "code"
+        },
+        {
+          "field": "image_text.headline",
+          "text": "Buy 1 get 1 free",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-14",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "free delivery",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "Free delivery",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-15",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "25",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "25 October tak",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-16",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "cta",
+          "text": "+919000000077",
+          "layer": "code"
+        },
+        {
+          "field": "cta",
+          "text": "919000000077",
+          "layer": "code"
+        },
+        {
+          "field": "cta",
+          "text": "+919000000077",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-17",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "500",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "Flat 500 rupees off",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-18",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "guarantee",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "Guaranteed results",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-19",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "6",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "Subah 6 baje se bhi classes shuru",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-20",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "complete cure",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-21",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "199",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "Rs 199",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-22",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "image_text.headline",
+          "text": "only till Sunday",
+          "layer": "ai"
+        },
+        {
+          "field": "image_text.headline",
+          "text": "Facial offer",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-23",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "750",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "Rs 750",
+          "layer": "ai"
+        },
+        {
+          "field": "image_text.subline",
+          "text": "open till 10 PM",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-24",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "cta",
+          "text": "+919000000061",
+          "layer": "code"
+        },
+        {
+          "field": "cta",
+          "text": "919000000061",
+          "layer": "code"
+        },
+        {
+          "field": "cta",
+          "text": "+919000000061",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-25",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "1200",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "Rs 1200",
+          "layer": "ai"
+        },
+        {
+          "field": "cta",
+          "text": "this Sunday",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-26",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "1",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "no. 1",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "No. 1",
+          "layer": "ai"
+        },
+        {
+          "field": "image_text.headline",
+          "text": "10% off",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-27",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "Painless treatment",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-28",
+      "missed": [],
+      "falsePos": [],
+      "flags": [
+        {
+          "field": "caption",
+          "text": "assured",
+          "layer": "code"
+        },
+        {
+          "field": "caption",
+          "text": "Assured returns on every plan",
+          "layer": "ai"
+        }
+      ]
+    },
+    {
+      "id": "pf-29",
+      "missed": [],
+      "falsePos": [],
+      "flags": []
+    },
+    {
+      "id": "pf-30",
+      "missed": [],
+      "falsePos": [],
+      "flags": []
+    }
+  ]
+}

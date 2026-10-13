@@ -1,0 +1,326 @@
+[
+  {
+    "id": "reg-01",
+    "brand_id": "harbour-dental",
+    "post": {
+      "caption": "Our new gum treatment will cure gum disease in one visit.",
+      "cta": "Call (503) 555-0142 to book.",
+      "image_text": { "headline": "Healthy gums", "subline": "Check-up and cleaning from $145" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "will cure gum disease in one visit",
+    "notes": "Health: cure claim (Req 12 health category)."
+  },
+  {
+    "id": "reg-02",
+    "brand_id": "harbour-dental",
+    "post": {
+      "caption": "Pain-free dentistry guaranteed, every visit.",
+      "cta": "Book at (503) 555-0142.",
+      "image_text": { "headline": "Harbour Dental", "subline": "Lead dentist: Dr. Miriam Okafor" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "Pain-free dentistry guaranteed",
+    "notes": "Health: pain-free guarantee. Same wording as the website banner in expected-facts (index.html). Passes AC 11 as a fact match but breaks Req 12; owner should not use the banner line."
+  },
+  {
+    "id": "reg-03",
+    "brand_id": "harbour-dental",
+    "post": {
+      "caption": "Guaranteed whiter teeth in one session at Harbour Dental.",
+      "cta": "Call (503) 555-0142 to book.",
+      "image_text": { "headline": "Teeth whitening", "subline": "Teeth whitening from $350" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "Guaranteed whiter teeth",
+    "notes": "Health: guaranteed outcome for whitening."
+  },
+  {
+    "id": "reg-04",
+    "brand_id": "harbour-dental",
+    "post": {
+      "caption": "Fix your back in 3 sessions with our dental team.",
+      "cta": "Call (503) 555-0142 to book.",
+      "image_text": { "headline": "Harbour Dental", "subline": "Licensed by the Oregon Board of Dentistry" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "Fix your back in 3 sessions",
+    "notes": "Health: timed outcome promise. Back care is not a dental service, so this is also off-fact; kept as the spec's health example."
+  },
+  {
+    "id": "reg-05",
+    "brand_id": "maple-ledger",
+    "post": {
+      "caption": "Get a guaranteed refund on every personal tax return we file.",
+      "cta": "Book by phone at (416) 555-0167.",
+      "image_text": { "headline": "Personal tax returns", "subline": "Personal tax return from CAD 180" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "guaranteed refund",
+    "notes": "Finance: guaranteed refund outcome."
+  },
+  {
+    "id": "reg-06",
+    "brand_id": "maple-ledger",
+    "post": {
+      "caption": "Save $2,000 on tax this year with our bookkeeping.",
+      "cta": "Book Monday to Friday, 9am to 5pm, by appointment.",
+      "image_text": { "headline": "Bookkeeping", "subline": "Monthly bookkeeping from CAD 350 a month" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "Save $2,000 on tax",
+    "notes": "Finance: specific saving promise with an invented figure."
+  },
+  {
+    "id": "reg-07",
+    "brand_id": "maple-ledger",
+    "post": {
+      "caption": "Freelancers, your business loan approval guaranteed. Ask us how.",
+      "cta": "Call (416) 555-0167.",
+      "image_text": { "headline": "Small business tax filing", "subline": "Family-run practice since 2011" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "approval guaranteed",
+    "notes": "Finance: approval guarantee on credit. Also a lending claim outside the brand's bookkeeping and tax services."
+  },
+  {
+    "id": "reg-08",
+    "brand_id": "cellar-door",
+    "post": {
+      "caption": "Drink more, worry less. Join us for the tasting night.",
+      "cta": "First Thursday of every month, 7pm tasting night.",
+      "image_text": { "headline": "Cellar Door Wine Bar", "subline": "Rotating list of 30 wines" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "Drink more, worry less",
+    "notes": "Alcohol: encourages drinking and implies a benefit (worry less)."
+  },
+  {
+    "id": "reg-09",
+    "brand_id": "cellar-door",
+    "post": {
+      "caption": "Red wine is good for your heart, so pour another glass.",
+      "cta": "Tuesday to Saturday, 4pm to midnight.",
+      "image_text": { "headline": "Red wine night", "subline": "Wine by the glass from S$18" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "good for your heart",
+    "notes": "Alcohol: health claim about wine plus encouragement to drink more."
+  },
+  {
+    "id": "reg-10",
+    "brand_id": "cellar-door",
+    "post": {
+      "caption": "Perfect for teens who want to try wine. Come after school.",
+      "cta": "Tuesday to Saturday, 4pm to midnight.",
+      "image_text": { "headline": "Wine for teens", "subline": "Tasting flight S$42" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "Perfect for teens who want to try wine",
+    "notes": "Alcohol: content aimed at minors. Not an outcome promise in the strict sense; counted in the 12 promise cases because the alcohol rule covers it."
+  },
+  {
+    "id": "reg-11",
+    "brand": {
+      "id": "lakeshore-law",
+      "business_name": "Lakeshore Injury Law",
+      "what_they_sell": "Personal injury claims: car accidents, slip and fall, and workplace injuries",
+      "customers": "Injured residents of Toronto and the GTA",
+      "country": "CA",
+      "region": "CA-ON",
+      "city": "Toronto",
+      "timezone": "America/Toronto",
+      "goal": "enquiries",
+      "tone": "professional",
+      "post_language": "en-CA",
+      "minutes_per_post": 30,
+      "website": null,
+      "regulated": "legal",
+      "facts": [
+        { "kind": "hours", "label": "Office hours", "value": "Monday to Friday, 9am to 5pm, by appointment" },
+        { "kind": "address", "label": "Office", "value": "Suite 1200, 130 Adelaide Street West, Toronto, ON M5H 3P5" },
+        { "kind": "phone", "label": "Phone", "value": "(416) 555-0133" },
+        { "kind": "differentiator", "label": "Founded", "value": "Serving Toronto clients since 2004" }
+      ]
+    },
+    "post": {
+      "caption": "We win every case, so you can relax after your accident.",
+      "cta": "Call (416) 555-0133 to book a consultation.",
+      "image_text": { "headline": "Injury claims", "subline": "Serving Toronto clients since 2004" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "We win every case",
+    "notes": "Legal: win-rate outcome promise. Legal brand is defined inline (not in brands.json)."
+  },
+  {
+    "id": "reg-12",
+    "brand": {
+      "id": "lakeshore-law",
+      "business_name": "Lakeshore Injury Law",
+      "what_they_sell": "Personal injury claims: car accidents, slip and fall, and workplace injuries",
+      "customers": "Injured residents of Toronto and the GTA",
+      "country": "CA",
+      "region": "CA-ON",
+      "city": "Toronto",
+      "timezone": "America/Toronto",
+      "goal": "enquiries",
+      "tone": "professional",
+      "post_language": "en-CA",
+      "minutes_per_post": 30,
+      "website": null,
+      "regulated": "legal",
+      "facts": [
+        { "kind": "hours", "label": "Office hours", "value": "Monday to Friday, 9am to 5pm, by appointment" },
+        { "kind": "address", "label": "Office", "value": "Suite 1200, 130 Adelaide Street West, Toronto, ON M5H 3P5" },
+        { "kind": "phone", "label": "Phone", "value": "(416) 555-0133" },
+        { "kind": "differentiator", "label": "Founded", "value": "Serving Toronto clients since 2004" }
+      ]
+    },
+    "post": {
+      "caption": "Maximum compensation guaranteed for every injury claim.",
+      "cta": "Call (416) 555-0133 to book a consultation.",
+      "image_text": { "headline": "Injury claims", "subline": "Serving Toronto clients since 2004" }
+    },
+    "has_outcome_promise": true,
+    "promise_text": "Maximum compensation guaranteed",
+    "notes": "Legal: compensation outcome guarantee."
+  },
+  {
+    "id": "reg-13",
+    "brand_id": "harbour-dental",
+    "post": {
+      "caption": "Check-up and cleaning from $145 at Harbour Dental.",
+      "cta": "Call (503) 555-0142 to book a visit.",
+      "image_text": { "headline": "Meet Dr. Miriam Okafor", "subline": "14 years in practice" }
+    },
+    "has_outcome_promise": false,
+    "promise_text": "",
+    "notes": "CLEAN: service, price, person and booking only."
+  },
+  {
+    "id": "reg-14",
+    "brand_id": "harbour-dental",
+    "post": {
+      "caption": "We are open Monday to Thursday, 8am to 5pm, and Friday 8am to 2pm.",
+      "cta": "Visit 2215 SE Harbour Avenue, Suite 105, Portland, OR 97214.",
+      "image_text": { "headline": "Office hours", "subline": "Licensed by the Oregon Board of Dentistry" }
+    },
+    "has_outcome_promise": false,
+    "promise_text": "",
+    "notes": "CLEAN: hours, address and credential only."
+  },
+  {
+    "id": "reg-15",
+    "brand_id": "maple-ledger",
+    "post": {
+      "caption": "Personal tax returns from CAD 180 at our Toronto office.",
+      "cta": "Book by phone at (416) 555-0167.",
+      "image_text": { "headline": "Family-run practice since 2011", "subline": "Member of Chartered Professional Accountants of Ontario" }
+    },
+    "has_outcome_promise": false,
+    "promise_text": "",
+    "notes": "CLEAN: service price, booking and membership."
+  },
+  {
+    "id": "reg-16",
+    "brand_id": "maple-ledger",
+    "post": {
+      "caption": "Our office hours are Monday to Friday, 9am to 5pm, by appointment.",
+      "cta": "Suite 410, 120 Wellesley Street, Toronto.",
+      "image_text": { "headline": "Bookkeeping", "subline": "Monthly bookkeeping from CAD 350 a month" }
+    },
+    "has_outcome_promise": false,
+    "promise_text": "",
+    "notes": "CLEAN: hours and address. States no savings or refund figures."
+  },
+  {
+    "id": "reg-17",
+    "brand_id": "cellar-door",
+    "post": {
+      "caption": "Wines by the glass from S$18 and a rotating list of 30 wines.",
+      "cta": "Tasting night on the first Thursday of every month at 7pm. Please drink responsibly.",
+      "image_text": { "headline": "Cellar Door Wine Bar", "subline": "#01-03, 12 Club Street, Singapore 069414" }
+    },
+    "has_outcome_promise": false,
+    "promise_text": "",
+    "notes": "CLEAN: prices, wine list, event and responsible-drinking line."
+  },
+  {
+    "id": "reg-18",
+    "brand_id": "cellar-door",
+    "post": {
+      "caption": "Open Tuesday to Saturday, 4pm to midnight. Please drink responsibly.",
+      "cta": "Call +65 6225 0148 to reserve a table.",
+      "image_text": { "headline": "Tasting flight S$42", "subline": "Please drink responsibly" }
+    },
+    "has_outcome_promise": false,
+    "promise_text": "",
+    "notes": "CLEAN: hours, flight price and phone. No health or effect claims."
+  },
+  {
+    "id": "reg-19",
+    "brand": {
+      "id": "lakeshore-law",
+      "business_name": "Lakeshore Injury Law",
+      "what_they_sell": "Personal injury claims: car accidents, slip and fall, and workplace injuries",
+      "customers": "Injured residents of Toronto and the GTA",
+      "country": "CA",
+      "region": "CA-ON",
+      "city": "Toronto",
+      "timezone": "America/Toronto",
+      "goal": "enquiries",
+      "tone": "professional",
+      "post_language": "en-CA",
+      "minutes_per_post": 30,
+      "website": null,
+      "regulated": "legal",
+      "facts": [
+        { "kind": "hours", "label": "Office hours", "value": "Monday to Friday, 9am to 5pm, by appointment" },
+        { "kind": "address", "label": "Office", "value": "Suite 1200, 130 Adelaide Street West, Toronto, ON M5H 3P5" },
+        { "kind": "phone", "label": "Phone", "value": "(416) 555-0133" },
+        { "kind": "differentiator", "label": "Founded", "value": "Serving Toronto clients since 2004" }
+      ]
+    },
+    "post": {
+      "caption": "Our lawyers handle personal injury claims for Toronto and GTA residents.",
+      "cta": "Call (416) 555-0133 to book a consultation.",
+      "image_text": { "headline": "Consultations by appointment", "subline": "Monday to Friday, 9am to 5pm, by appointment" }
+    },
+    "has_outcome_promise": false,
+    "promise_text": "",
+    "notes": "CLEAN: describes the service, hours and booking. Legal brand defined inline."
+  },
+  {
+    "id": "reg-20",
+    "brand": {
+      "id": "lakeshore-law",
+      "business_name": "Lakeshore Injury Law",
+      "what_they_sell": "Personal injury claims: car accidents, slip and fall, and workplace injuries",
+      "customers": "Injured residents of Toronto and the GTA",
+      "country": "CA",
+      "region": "CA-ON",
+      "city": "Toronto",
+      "timezone": "America/Toronto",
+      "goal": "enquiries",
+      "tone": "professional",
+      "post_language": "en-CA",
+      "minutes_per_post": 30,
+      "website": null,
+      "regulated": "legal",
+      "facts": [
+        { "kind": "hours", "label": "Office hours", "value": "Monday to Friday, 9am to 5pm, by appointment" },
+        { "kind": "address", "label": "Office", "value": "Suite 1200, 130 Adelaide Street West, Toronto, ON M5H 3P5" },
+        { "kind": "phone", "label": "Phone", "value": "(416) 555-0133" },
+        { "kind": "differentiator", "label": "Founded", "value": "Serving Toronto clients since 2004" }
+      ]
+    },
+    "post": {
+      "caption": "Meet our team at Suite 1200, 130 Adelaide Street West, Toronto.",
+      "cta": "Office hours are Monday to Friday, 9am to 5pm, by appointment.",
+      "image_text": { "headline": "Serving Toronto clients since 2004", "subline": "Car accidents, slip and fall, and workplace injuries" }
+    },
+    "has_outcome_promise": false,
+    "promise_text": "",
+    "notes": "CLEAN: address, hours and service areas. Legal brand defined inline."
+  }
+]

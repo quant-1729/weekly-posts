@@ -1,0 +1,202 @@
+[
+  {
+    "id": "rep-01",
+    "brand_id": "corner-bakery",
+    "history": [ { "week_start": "2026-10-12", "caption": "Every loaf starts with our sourdough, which is shaped by hand and baked on site every morning." } ],
+    "candidate": "Come and taste the sourdough that is shaped by hand and baked on site every morning.",
+    "week_start": "2026-10-19",
+    "repeats": true,
+    "repeated_phrase": "is shaped by hand and baked on site",
+    "notes": "REPEAT (exact wording), 1 week back. Phrase is 8 words."
+  },
+  {
+    "id": "rep-02",
+    "brand_id": "harbour-dental",
+    "history": [ { "week_start": "2026-09-28", "caption": "Our hygienists take the time to explain every step of your check-up." } ],
+    "candidate": "At every visit, our hygienists take the time to explain every step of your check-up.",
+    "week_start": "2026-10-19",
+    "repeats": true,
+    "repeated_phrase": "hygienists take the time to explain every step",
+    "notes": "REPEAT (exact wording), 3 weeks back (inside the 4-week window). Phrase is 8 words."
+  },
+  {
+    "id": "rep-03",
+    "brand_id": "yasmine-flowers",
+    "history": [ { "week_start": "2026-10-12", "caption": "Fresh bouquets, gift boxes and event flowers for every occasion." } ],
+    "candidate": "fresh bouquets gift boxes and event flowers are ready for your next celebration.",
+    "week_start": "2026-10-19",
+    "repeats": true,
+    "repeated_phrase": "fresh bouquets gift boxes and event flowers",
+    "notes": "REPEAT differing only in case and punctuation (no commas, lower case). Phrase is 7 words. Must still match after normalisation."
+  },
+  {
+    "id": "rep-04",
+    "brand_id": "spoke-and-sprocket",
+    "history": [ { "week_start": "2026-10-05", "caption": "Bike servicing, puncture repairs and wheel building, all in one workshop." } ],
+    "candidate": "Bike servicing puncture repairs and wheel building all in one workshop, book today!",
+    "week_start": "2026-10-19",
+    "repeats": true,
+    "repeated_phrase": "Bike servicing puncture repairs and wheel building",
+    "notes": "REPEAT differing only in punctuation (commas removed). Phrase is 7 words."
+  },
+  {
+    "id": "rep-05",
+    "brand_id": "mogra-salon",
+    "history": [ { "week_start": "2026-10-12", "caption": "हमारे हेयर स्टाइलिस्ट हर ग्राहक की पसंद को ध्यान से सुनते हैं और फिर काम शुरू करते हैं।" } ],
+    "candidate": "इस हफ्ते भी हर ग्राहक की पसंद को ध्यान से सुनते हैं, आइए मिलें।",
+    "week_start": "2026-10-19",
+    "repeats": true,
+    "repeated_phrase": "हर ग्राहक की पसंद को ध्यान से सुनते हैं",
+    "notes": "REPEAT in Hindi (Devanagari). Phrase is 9 words. Word split must keep vowel signs and virama (ी, ं, ो, ै, े, ्) inside words, or matching breaks."
+  },
+  {
+    "id": "rep-06",
+    "brand_id": "blue-wave-yoga",
+    "history": [ { "week_start": "2026-10-05", "caption": "Our classes are capped at twelve people so every student gets personal attention." } ],
+    "candidate": "Join a small group, because classes are capped at twelve people, so book your first drop-in today.",
+    "week_start": "2026-10-19",
+    "repeats": true,
+    "repeated_phrase": "classes are capped at twelve people",
+    "notes": "REPEAT at exactly the 6-word threshold. Tests the boundary (6 counts as repeat)."
+  },
+  {
+    "id": "rep-07",
+    "brand_id": "cellar-door",
+    "history": [ { "week_start": "2026-10-05", "caption": "Our rotating wine list is changed by our team every single week." } ],
+    "candidate": "Come taste: the wine list is changed by our team every single week, so return often.",
+    "week_start": "2026-10-19",
+    "repeats": true,
+    "repeated_phrase": "changed by our team every single week",
+    "notes": "REPEAT (exact wording), 2 weeks back. Phrase is 7 words; not a brand fact."
+  },
+  {
+    "id": "rep-08",
+    "brand_id": "maple-ledger",
+    "history": [ { "week_start": "2026-09-28", "caption": "Our bookkeeping team reviews every receipt before the month closes." } ],
+    "candidate": "Start the year right, because our team reviews every receipt before the month closes.",
+    "week_start": "2026-10-19",
+    "repeats": true,
+    "repeated_phrase": "team reviews every receipt before the month closes",
+    "notes": "REPEAT, 3 weeks back (inside window). Phrase is 8 words; not a brand fact."
+  },
+  {
+    "id": "allowed-01",
+    "brand_id": "maple-ledger",
+    "history": [ { "week_start": "2026-10-12", "caption": "Visit us at Suite 410, 120 Wellesley Street, Toronto, ON M4Y 1J4 this week." } ],
+    "candidate": "Our office is at Suite 410, 120 Wellesley Street, Toronto, ON M4Y 1J4. Book by appointment.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "Suite 410, 120 Wellesley Street, Toronto, ON M4Y 1J4",
+    "notes": "Fact text is exempt: the office address from brand memory repeats within the window and is allowed. Phrase is 9 words."
+  },
+  {
+    "id": "allowed-02",
+    "brand_id": "corner-bakery",
+    "history": [ { "week_start": "2026-10-05", "caption": "Find us at 27 Lansdowne Parade, London SE5 8QJ, next to the bus stop." } ],
+    "candidate": "Come see us at 27 Lansdowne Parade, London SE5 8QJ, with fresh bread in hand.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "27 Lansdowne Parade, London SE5 8QJ",
+    "notes": "Fact text is exempt: shop address from brand memory. Phrase is 6 words, at the threshold but exempt."
+  },
+  {
+    "id": "allowed-03",
+    "brand_id": "harbour-dental",
+    "history": [ { "week_start": "2026-09-21", "caption": "Dr. Miriam Okafor has 14 years in practice and is licensed by the Oregon Board of Dentistry." } ],
+    "candidate": "Our team is proudly licensed by the Oregon Board of Dentistry.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "licensed by the Oregon Board of Dentistry",
+    "notes": "Fact text is exempt: credential from brand memory (licensing claim). Phrase is 7 words; history is 4 weeks back."
+  },
+  {
+    "id": "allowed-04",
+    "brand_id": "blue-wave-yoga",
+    "history": [ { "week_start": "2026-10-12", "caption": "Shop 3, 88 Crown Street, Surry Hills NSW 2010 is our studio, so come say hello." } ],
+    "candidate": "New to yoga? Find us at Shop 3, 88 Crown Street, Surry Hills NSW 2010 and say hello.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "Shop 3, 88 Crown Street, Surry Hills NSW 2010",
+    "notes": "Fact text is exempt: studio address from brand memory. Phrase is 9 words."
+  },
+  {
+    "id": "old-01",
+    "brand_id": "spoke-and-sprocket",
+    "history": [ { "week_start": "2026-09-07", "caption": "Every bike gets a full check of brakes, gears and tyres before it leaves our workshop." } ],
+    "candidate": "Every bike gets a full check of brakes, gears and tyres, so ride with confidence.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "Every bike gets a full check of brakes, gears and tyres",
+    "notes": "OLD: repeat is 6 weeks back (outside the 4-week window), so allowed. Phrase is 11 words."
+  },
+  {
+    "id": "old-02",
+    "brand_id": "cellar-door",
+    "history": [ { "week_start": "2026-09-14", "caption": "Join us for our monthly tasting night on the first Thursday of the month." } ],
+    "candidate": "Our monthly tasting night is back on the first Thursday of the month, so book a seat.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "on the first Thursday of the month",
+    "notes": "OLD: repeat is 5 weeks back (outside the window), so allowed. Phrase is 7 words."
+  },
+  {
+    "id": "old-03",
+    "brand_id": "mogra-salon",
+    "history": [ { "week_start": "2026-09-07", "caption": "हमारे फेशियल से त्वचा को नई चमक मिलती है, इसलिए हर महीने एक बार ज़रूर आएं।" } ],
+    "candidate": "इस हफ्ते एक सत्र बुक करें, क्योंकि हमारे फेशियल से त्वचा को नई चमक मिलती है।",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "हमारे फेशियल से त्वचा को नई चमक मिलती है",
+    "notes": "OLD, in Hindi: repeat is 6 weeks back, so allowed. Phrase is 9 words."
+  },
+  {
+    "id": "old-04",
+    "brand_id": "yasmine-flowers",
+    "history": [ { "week_start": "2026-09-14", "caption": "Every bouquet is hand-tied by our florists the morning it is ordered." } ],
+    "candidate": "Ordered today? Every bouquet is hand-tied by our florists the morning it is ordered, so pick up early.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "bouquet is hand-tied by our florists the morning it is ordered",
+    "notes": "OLD: repeat is 5 weeks back (outside the window), so allowed. Phrase is 11 words."
+  },
+  {
+    "id": "near-01",
+    "brand_id": "corner-bakery",
+    "history": [ { "week_start": "2026-10-12", "caption": "Fresh croissants come out of the oven at seven every morning." } ],
+    "candidate": "Fresh cinnamon buns come out of the oven warm, ready for you.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "",
+    "notes": "NEAR MISS: only 5 shared words in a row ('come out of the oven'). Clean."
+  },
+  {
+    "id": "near-02",
+    "brand_id": "harbour-dental",
+    "history": [ { "week_start": "2026-10-05", "caption": "Our team will answer every question you have today." } ],
+    "candidate": "Our team will answer every one of your concerns with care.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "",
+    "notes": "NEAR MISS: only 5 shared words in a row ('our team will answer every'). Clean."
+  },
+  {
+    "id": "near-03",
+    "brand_id": "maple-ledger",
+    "history": [ { "week_start": "2026-09-28", "caption": "Our bookkeeping team reviews every receipt and invoice each month." } ],
+    "candidate": "Each quarter our bookkeeping team reviews every client's numbers before filing.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "",
+    "notes": "NEAR MISS: only 5 shared words in a row ('our bookkeeping team reviews every'). Clean."
+  },
+  {
+    "id": "near-04",
+    "brand_id": "blue-wave-yoga",
+    "history": [ { "week_start": "2026-10-12", "caption": "Our instructors help first-time yogis find their balance." } ],
+    "candidate": "Our instructors help first-time yogis build strength and calm.",
+    "week_start": "2026-10-19",
+    "repeats": false,
+    "repeated_phrase": "",
+    "notes": "NEAR MISS: only 5 shared words in a row ('our instructors help first-time yogis'). Clean."
+  }
+]

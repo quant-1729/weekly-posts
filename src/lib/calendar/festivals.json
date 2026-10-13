@@ -1,0 +1,1699 @@
+[
+  {
+    "key": "sharad-navratri-2026",
+    "name_en": "Navratri (ongoing)",
+    "name_hi": "नवरात्रि",
+    "date": "2026-10-13",
+    "end_date": "2026-10-19",
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 0,
+    "good_for": [
+      "electronics",
+      "clothing",
+      "sweets",
+      "gifts",
+      "mobile",
+      "decor"
+    ],
+    "post_angle_en": "Navratri wishes, garba and festive offers in the last days",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com; started 2026-10-11, entry starts at the window"
+  },
+  {
+    "key": "dussehra-2026",
+    "name_en": "Dussehra (Vijayadashami)",
+    "name_hi": "दशहरा",
+    "date": "2026-10-20",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "electronics",
+      "clothing",
+      "sweets",
+      "gifts",
+      "mobile",
+      "decor"
+    ],
+    "post_angle_en": "Victory of good over evil; festive shopping and sweets offers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "karwa-chauth-2026",
+    "name_en": "Karwa Chauth",
+    "name_hi": "करवा चौथ",
+    "date": "2026-10-29",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Uttar Pradesh",
+      "Delhi",
+      "Haryana",
+      "Punjab",
+      "Rajasthan",
+      "Madhya Pradesh",
+      "Bihar"
+    ],
+    "religion": "hindu",
+    "lead_days": 10,
+    "good_for": [
+      "jewellery",
+      "salon",
+      "boutique",
+      "clothing",
+      "gifts",
+      "sweets"
+    ],
+    "post_angle_en": "Gifts, mehendi and festive looks for the fast; jewellery and beauty offers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "dhanteras-2026",
+    "name_en": "Dhanteras",
+    "name_hi": "धनतेरस",
+    "date": "2026-11-06",
+    "end_date": null,
+    "type": "shopping",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 10,
+    "good_for": [
+      "jewellery",
+      "electronics",
+      "decor",
+      "sweets",
+      "gifts"
+    ],
+    "post_angle_en": "Buying gold, silver, utensils and appliances; auspicious-buying reminder",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "diwali-2026",
+    "name_en": "Diwali",
+    "name_hi": "दीवाली",
+    "date": "2026-11-08",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 14,
+    "good_for": [
+      "sweets",
+      "gifts",
+      "clothing",
+      "decor",
+      "electronics",
+      "salon",
+      "restaurant",
+      "jewellery"
+    ],
+    "post_angle_en": "Greetings plus festive orders and gift boxes",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "govardhan-puja-2026",
+    "name_en": "Govardhan Puja",
+    "name_hi": "गोवर्धन पूजा",
+    "date": "2026-11-10",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Uttar Pradesh",
+      "Rajasthan",
+      "Madhya Pradesh",
+      "Haryana",
+      "Delhi"
+    ],
+    "religion": "hindu",
+    "lead_days": 2,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "restaurant",
+      "decor"
+    ],
+    "post_angle_en": "Annakut-style food and thali specials",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "gujarati-new-year-2026",
+    "name_en": "Gujarati New Year (Bestu Varas)",
+    "name_hi": "गुजराती नववर्ष",
+    "date": "2026-11-10",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Gujarat"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "sweets",
+      "gifts",
+      "clothing",
+      "jewellery",
+      "restaurant"
+    ],
+    "post_angle_en": "New-year greetings; sweet boxes and new-year wear",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "bhai-dooj-2026",
+    "name_en": "Bhai Dooj (Bhaubeej)",
+    "name_hi": "भाई दूज",
+    "date": "2026-11-11",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 5,
+    "good_for": [
+      "sweets",
+      "gifts",
+      "restaurant",
+      "salon",
+      "clothing"
+    ],
+    "post_angle_en": "Gifts for brothers and sisters; sweets and gift hampers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "chhath-puja-2026",
+    "name_en": "Chhath Puja",
+    "name_hi": "छठ पूजा",
+    "date": "2026-11-13",
+    "end_date": "2026-11-16",
+    "type": "festival",
+    "regions": [
+      "Bihar",
+      "Jharkhand",
+      "Uttar Pradesh"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "clothing",
+      "gifts"
+    ],
+    "post_angle_en": "Thekua, prasad and gift packs; respectful, simple tone",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "childrens-day-2026",
+    "name_en": "Children's Day",
+    "name_hi": "बाल दिवस",
+    "date": "2026-11-14",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 10,
+    "good_for": [
+      "gifts",
+      "coaching",
+      "restaurant",
+      "clothing",
+      "electronics"
+    ],
+    "post_angle_en": "Kids' offers, class or activity sign-ups, school wear and toys",
+    "confidence": "high",
+    "source_note": "Fixed date: 14 November (India)"
+  },
+  {
+    "key": "winter-season-2026",
+    "name_en": "Winter season",
+    "name_hi": "सर्दी का मौसम",
+    "date": "2026-11-15",
+    "end_date": "2027-01-31",
+    "type": "season",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 7,
+    "good_for": [
+      "clothing",
+      "boutique",
+      "restaurant",
+      "clinic",
+      "salon"
+    ],
+    "post_angle_en": "Woollens, warm food and winter skin and hair care; seasonal offers",
+    "confidence": "medium",
+    "source_note": "Approximate seasonal window, not a fixed date; AI-drafted"
+  },
+  {
+    "key": "wedding-season-2026",
+    "name_en": "Wedding season (after Dev Uthani Ekadashi)",
+    "name_hi": "शादी का मौसम",
+    "date": "2026-11-21",
+    "end_date": "2026-12-15",
+    "type": "season",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 14,
+    "good_for": [
+      "jewellery",
+      "boutique",
+      "clothing",
+      "decor",
+      "salon",
+      "restaurant",
+      "gifts",
+      "sweets"
+    ],
+    "post_angle_en": "Wedding-season bookings, bridal and decor packages",
+    "confidence": "medium",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com; approximate"
+  },
+  {
+    "key": "guru-nanak-jayanti-2026",
+    "name_en": "Guru Nanak Jayanti (Gurpurab)",
+    "name_hi": "गुरु नानक जयंती",
+    "date": "2026-11-24",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Punjab",
+      "Haryana",
+      "Delhi"
+    ],
+    "religion": "sikh",
+    "lead_days": 5,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "restaurant",
+      "gifts"
+    ],
+    "post_angle_en": "Langar-style meals, sweets and respectful greetings",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "christmas-2026",
+    "name_en": "Christmas",
+    "name_hi": "क्रिसमस",
+    "date": "2026-12-25",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "christian",
+    "lead_days": 10,
+    "good_for": [
+      "gifts",
+      "sweets",
+      "restaurant",
+      "clothing",
+      "decor",
+      "salon",
+      "electronics"
+    ],
+    "post_angle_en": "Christmas gifts, cake and party orders, year-end offers",
+    "confidence": "high",
+    "source_note": "Fixed date"
+  },
+  {
+    "key": "new-year-2027",
+    "name_en": "New Year",
+    "name_hi": "नया साल",
+    "date": "2027-01-01",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 5,
+    "good_for": [
+      "restaurant",
+      "gifts",
+      "gym",
+      "salon",
+      "clothing",
+      "electronics"
+    ],
+    "post_angle_en": "Fresh-start offers, New Year resolutions, party bookings",
+    "confidence": "high",
+    "source_note": "Fixed date"
+  },
+  {
+    "key": "lohri-2027",
+    "name_en": "Lohri",
+    "name_hi": "लोहड़ी",
+    "date": "2027-01-14",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Punjab",
+      "Haryana",
+      "Delhi"
+    ],
+    "religion": null,
+    "lead_days": 5,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "restaurant",
+      "gifts"
+    ],
+    "post_angle_en": "Bonfire-night greetings; sweets, rewri and gajak gift packs",
+    "confidence": "medium",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com; approximate"
+  },
+  {
+    "key": "makar-sankranti-2027",
+    "name_en": "Makar Sankranti (Uttarayan)",
+    "name_hi": "मकर संक्रांति",
+    "date": "2027-01-15",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "gifts",
+      "clothing",
+      "restaurant"
+    ],
+    "post_angle_en": "Til-gul sweets and kite-day offers; Uttarayan special in Gujarat",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "pongal-2027",
+    "name_en": "Pongal (mention only)",
+    "name_hi": "पोंगल",
+    "date": "2027-01-15",
+    "end_date": "2027-01-16",
+    "type": "festival",
+    "regions": [
+      "Tamil Nadu"
+    ],
+    "religion": null,
+    "lead_days": 5,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "restaurant",
+      "gifts"
+    ],
+    "post_angle_en": "Harvest greetings for South-Indian customers; mention only",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "wedding-season-2027-jan-mar",
+    "name_en": "Wedding season (after Kharmas)",
+    "name_hi": "शादी का मौसम",
+    "date": "2027-01-15",
+    "end_date": "2027-03-13",
+    "type": "season",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 14,
+    "good_for": [
+      "jewellery",
+      "boutique",
+      "clothing",
+      "decor",
+      "salon",
+      "restaurant",
+      "gifts",
+      "sweets"
+    ],
+    "post_angle_en": "Wedding bookings after Kharmas; book before the Holashtak pause",
+    "confidence": "medium",
+    "source_note": "Kharmas ends ~Jan 14 (solar); Holashtak starts ~Mar 14 (lunar); verify muhurat calendar; AI-drafted"
+  },
+  {
+    "key": "winter-clearance-sale-2027",
+    "name_en": "Winter-end clearance sale",
+    "name_hi": "सीज़न-end सेल",
+    "date": "2027-01-16",
+    "end_date": "2027-02-15",
+    "type": "shopping",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 5,
+    "good_for": [
+      "clothing",
+      "boutique",
+      "electronics",
+      "mobile",
+      "gifts"
+    ],
+    "post_angle_en": "Clear winter stock; end-of-season offers (only with owner-confirmed prices)",
+    "confidence": "medium",
+    "source_note": "Retail convention, no fixed date; approximate window; AI-drafted"
+  },
+  {
+    "key": "republic-day-2027",
+    "name_en": "Republic Day",
+    "name_hi": "गणतंत्र दिवस",
+    "date": "2027-01-26",
+    "end_date": null,
+    "type": "national",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 3,
+    "good_for": [
+      "all"
+    ],
+    "post_angle_en": "National pride greetings; closure or timing notice",
+    "confidence": "high",
+    "source_note": "Fixed national holiday"
+  },
+  {
+    "key": "ramadan-2027",
+    "name_en": "Ramadan begins",
+    "name_hi": "रमज़ान",
+    "date": "2027-02-09",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "muslim",
+    "lead_days": 7,
+    "good_for": [
+      "restaurant",
+      "kirana",
+      "sweets",
+      "clothing",
+      "gifts"
+    ],
+    "post_angle_en": "Iftar and sehri specials, timings and Ramadan greetings",
+    "confidence": "medium",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com; provisional, depends on moon sighting"
+  },
+  {
+    "key": "vasant-panchami-2027",
+    "name_en": "Vasant Panchami (Saraswati Puja)",
+    "name_hi": "वसंत पंचमी",
+    "date": "2027-02-11",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 5,
+    "good_for": [
+      "coaching",
+      "gifts",
+      "clothing",
+      "electronics"
+    ],
+    "post_angle_en": "Saraswati puja greetings, study-kit and new-season wear offers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "valentines-day-2027",
+    "name_en": "Valentine's Day",
+    "name_hi": "वेलेंटाइन डे",
+    "date": "2027-02-14",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 7,
+    "good_for": [
+      "gifts",
+      "restaurant",
+      "salon",
+      "jewellery",
+      "boutique",
+      "clothing"
+    ],
+    "post_angle_en": "Couple offers, gift boxes, dinner and spa packages",
+    "confidence": "high",
+    "source_note": "Fixed date"
+  },
+  {
+    "key": "board-exam-season-2027",
+    "name_en": "Board exam season",
+    "name_hi": "बोर्ड परीक्षा का समय",
+    "date": "2027-02-15",
+    "end_date": "2027-04-10",
+    "type": "season",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 14,
+    "good_for": [
+      "coaching",
+      "electronics"
+    ],
+    "post_angle_en": "Revision batches, crash courses, study-aid offers; encourage students",
+    "confidence": "medium",
+    "source_note": "Typical CBSE and state board window; actual timetables vary; AI-drafted"
+  },
+  {
+    "key": "maha-shivratri-2027",
+    "name_en": "Maha Shivratri",
+    "name_hi": "महाशिवरात्रि",
+    "date": "2027-03-06",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 3,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "restaurant"
+    ],
+    "post_angle_en": "Fasting-friendly food and thali; night-vigil greetings",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "womens-day-2027",
+    "name_en": "International Women's Day",
+    "name_hi": "महिला दिवस",
+    "date": "2027-03-08",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 5,
+    "good_for": [
+      "salon",
+      "boutique",
+      "clothing",
+      "jewellery",
+      "gifts",
+      "clinic"
+    ],
+    "post_angle_en": "Women-focused offers and gifts; respectful, non-patronising tone",
+    "confidence": "high",
+    "source_note": "Fixed date"
+  },
+  {
+    "key": "eid-ul-fitr-2027",
+    "name_en": "Eid ul-Fitr",
+    "name_hi": "ईद-उल-फ़ितर",
+    "date": "2027-03-10",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "muslim",
+    "lead_days": 14,
+    "good_for": [
+      "sweets",
+      "clothing",
+      "restaurant",
+      "kirana",
+      "gifts",
+      "salon"
+    ],
+    "post_angle_en": "Eid greetings, sweets and new-clothes offers",
+    "confidence": "medium",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com; provisional, depends on moon sighting"
+  },
+  {
+    "key": "world-oral-health-day-2027",
+    "name_en": "World Oral Health Day",
+    "name_hi": "विश्व मौखिक स्वास्थ्य दिवस",
+    "date": "2027-03-20",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 3,
+    "good_for": [
+      "dental",
+      "clinic"
+    ],
+    "post_angle_en": "Brushing and check-up reminders; check-up offers (no outcome claims)",
+    "confidence": "high",
+    "source_note": "Fixed date (FDI, 20 March)"
+  },
+  {
+    "key": "holika-dahan-2027",
+    "name_en": "Holika Dahan",
+    "name_hi": "होलिका दहन",
+    "date": "2027-03-21",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 5,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "restaurant"
+    ],
+    "post_angle_en": "Eve-of-Holi greetings; gujiya and sweets",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "holi-2027",
+    "name_en": "Holi",
+    "name_hi": "होली",
+    "date": "2027-03-22",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 10,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "restaurant",
+      "salon",
+      "clothing",
+      "gifts"
+    ],
+    "post_angle_en": "Colour-festival greetings; gujiya, sweets, skin and hair care and new-clothes offers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "easter-2027",
+    "name_en": "Easter",
+    "name_hi": "ईस्टर",
+    "date": "2027-03-28",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "christian",
+    "lead_days": 7,
+    "good_for": [
+      "restaurant",
+      "gifts",
+      "sweets",
+      "clothing"
+    ],
+    "post_angle_en": "Easter brunch, cake and gift orders",
+    "confidence": "high",
+    "source_note": "Computed from Gregorian computus (Easter Sunday 28 Mar 2027; Good Friday 26 Mar)"
+  },
+  {
+    "key": "admissions-season-2027",
+    "name_en": "Admissions season",
+    "name_hi": "दाख़िला का मौसम",
+    "date": "2027-04-01",
+    "end_date": "2027-06-30",
+    "type": "season",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 14,
+    "good_for": [
+      "coaching",
+      "clothing",
+      "electronics"
+    ],
+    "post_angle_en": "School and course admissions; open-house and enrolment offers",
+    "confidence": "medium",
+    "source_note": "Approximate Apr-Jun admissions window; AI-drafted"
+  },
+  {
+    "key": "summer-season-2027",
+    "name_en": "Summer heat season",
+    "name_hi": "गर्मी का मौसम",
+    "date": "2027-04-01",
+    "end_date": "2027-06-15",
+    "type": "season",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 7,
+    "good_for": [
+      "electronics",
+      "restaurant",
+      "salon",
+      "kirana"
+    ],
+    "post_angle_en": "Cooling products, cold drinks, summer hair and skin care",
+    "confidence": "medium",
+    "source_note": "Approximate seasonal window; AI-drafted"
+  },
+  {
+    "key": "chaitra-navratri-2027",
+    "name_en": "Chaitra Navratri",
+    "name_hi": "चैत्र नवरात्र",
+    "date": "2027-04-07",
+    "end_date": "2027-04-15",
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 5,
+    "good_for": [
+      "boutique",
+      "clothing",
+      "jewellery",
+      "restaurant",
+      "sweets"
+    ],
+    "post_angle_en": "Nine-day fasting-friendly menus and festive wear",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "gudi-padwa-2027",
+    "name_en": "Gudi Padwa",
+    "name_hi": "गुड़ी पाड़वा",
+    "date": "2027-04-07",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Maharashtra"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "jewellery",
+      "clothing",
+      "sweets",
+      "decor",
+      "gifts"
+    ],
+    "post_angle_en": "New-year greetings for Marathi customers; sweets and decor offers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "world-health-day-2027",
+    "name_en": "World Health Day",
+    "name_hi": "विश्व स्वास्थ्य दिवस",
+    "date": "2027-04-07",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 3,
+    "good_for": [
+      "clinic",
+      "gym",
+      "dental"
+    ],
+    "post_angle_en": "Health check-up and awareness posts; no cure or guarantee claims",
+    "confidence": "high",
+    "source_note": "Fixed date (WHO, 7 April)"
+  },
+  {
+    "key": "gangaur-2027",
+    "name_en": "Gangaur",
+    "name_hi": "गणगौर",
+    "date": "2027-04-09",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Rajasthan",
+      "Madhya Pradesh"
+    ],
+    "religion": "hindu",
+    "lead_days": 5,
+    "good_for": [
+      "jewellery",
+      "clothing",
+      "boutique",
+      "salon",
+      "gifts"
+    ],
+    "post_angle_en": "Gangaur fair wear, jewellery and mehendi offers",
+    "confidence": "medium",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com; approximate"
+  },
+  {
+    "key": "ambedkar-jayanti-2027",
+    "name_en": "Dr B.R. Ambedkar Jayanti",
+    "name_hi": "डॉ. बी.आर. अंबेडकर जयंती",
+    "date": "2027-04-14",
+    "end_date": null,
+    "type": "national",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 1,
+    "good_for": [
+      "all"
+    ],
+    "post_angle_en": "Public holiday; closure or timing notice",
+    "confidence": "high",
+    "source_note": "Fixed date (national holiday, 14 April)"
+  },
+  {
+    "key": "baisakhi-2027",
+    "name_en": "Baisakhi (Vaisakhi)",
+    "name_hi": "बैसाखी",
+    "date": "2027-04-14",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Punjab",
+      "Haryana",
+      "Delhi"
+    ],
+    "religion": "sikh",
+    "lead_days": 5,
+    "good_for": [
+      "sweets",
+      "restaurant",
+      "clothing",
+      "kirana",
+      "gifts"
+    ],
+    "post_angle_en": "Harvest-festival greetings; langar-style and sweets offers",
+    "confidence": "medium",
+    "source_note": "Solar (Mesha Sankranti), may be Apr 13 or 14; AI-drafted, verify"
+  },
+  {
+    "key": "ram-navami-2027",
+    "name_en": "Ram Navami",
+    "name_hi": "राम नवमी",
+    "date": "2027-04-15",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 3,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "restaurant"
+    ],
+    "post_angle_en": "Prasad and sweets; festive greetings",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "wedding-season-2027-apr-jun",
+    "name_en": "Wedding season (summer muhurat)",
+    "name_hi": "शादी का मौसम",
+    "date": "2027-04-15",
+    "end_date": "2027-06-15",
+    "type": "season",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 14,
+    "good_for": [
+      "jewellery",
+      "boutique",
+      "clothing",
+      "decor",
+      "salon",
+      "restaurant",
+      "gifts",
+      "sweets"
+    ],
+    "post_angle_en": "Summer wedding bookings; Akshaya Tritiya is a popular date",
+    "confidence": "medium",
+    "source_note": "Approximate window; verify muhurat calendar; AI-drafted"
+  },
+  {
+    "key": "mahavir-jayanti-2027",
+    "name_en": "Mahavir Jayanti",
+    "name_hi": "महावीर जयंती",
+    "date": "2027-04-18",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Gujarat",
+      "Rajasthan",
+      "Maharashtra",
+      "Madhya Pradesh"
+    ],
+    "religion": "jain",
+    "lead_days": 3,
+    "good_for": [
+      "sweets",
+      "restaurant",
+      "jewellery"
+    ],
+    "post_angle_en": "Jain greetings; pure-vegetarian menu and sweets, respectful tone",
+    "confidence": "medium",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com; approximate"
+  },
+  {
+    "key": "hanuman-jayanti-2027",
+    "name_en": "Hanuman Jayanti",
+    "name_hi": "हनुमान जयंती",
+    "date": "2027-04-20",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 2,
+    "good_for": [
+      "sweets",
+      "kirana"
+    ],
+    "post_angle_en": "Greetings; prasad and laddoo orders",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "akshaya-tritiya-2027",
+    "name_en": "Akshaya Tritiya",
+    "name_hi": "अक्षय तृतीया",
+    "date": "2027-05-09",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 10,
+    "good_for": [
+      "jewellery",
+      "gifts",
+      "electronics",
+      "clothing"
+    ],
+    "post_angle_en": "Gold and silver buying offers; auspicious-buying reminder",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "mothers-day-2027",
+    "name_en": "Mother's Day",
+    "name_hi": "मातृ दिवस",
+    "date": "2027-05-09",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 7,
+    "good_for": [
+      "gifts",
+      "restaurant",
+      "salon",
+      "jewellery",
+      "clothing",
+      "sweets"
+    ],
+    "post_angle_en": "Gift and family-dinner offers for mom; personal stories",
+    "confidence": "high",
+    "source_note": "Second Sunday of May"
+  },
+  {
+    "key": "eid-ul-adha-2027",
+    "name_en": "Eid ul-Adha (Bakrid)",
+    "name_hi": "ईद-उल-अज़हा (बकरीद)",
+    "date": "2027-05-17",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "muslim",
+    "lead_days": 5,
+    "good_for": [
+      "restaurant",
+      "kirana",
+      "clothing",
+      "gifts",
+      "sweets"
+    ],
+    "post_angle_en": "Eid greetings; festive meal and new-clothes offers",
+    "confidence": "medium",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com; provisional, depends on moon sighting"
+  },
+  {
+    "key": "buddha-purnima-2027",
+    "name_en": "Buddha Purnima",
+    "name_hi": "बुद्ध पूर्णिमा",
+    "date": "2027-05-20",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "buddhist",
+    "lead_days": 3,
+    "good_for": [
+      "gifts",
+      "restaurant",
+      "decor"
+    ],
+    "post_angle_en": "Peace and compassion greetings; simple, respectful tone",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "world-environment-day-2027",
+    "name_en": "World Environment Day",
+    "name_hi": "विश्व पर्यावरण दिवस",
+    "date": "2027-06-05",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 7,
+    "good_for": [
+      "decor",
+      "gifts",
+      "restaurant"
+    ],
+    "post_angle_en": "Plants, eco-friendly products and green-habit posts",
+    "confidence": "high",
+    "source_note": "Fixed date (UN, 5 June)"
+  },
+  {
+    "key": "monsoon-season-2027",
+    "name_en": "Monsoon season",
+    "name_hi": "मानसून का मौसम",
+    "date": "2027-06-15",
+    "end_date": "2027-09-15",
+    "type": "season",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 7,
+    "good_for": [
+      "restaurant",
+      "clothing",
+      "clinic",
+      "boutique",
+      "kirana"
+    ],
+    "post_angle_en": "Monsoon sale, rain-season comfort food and waterproof wear; no health claims",
+    "confidence": "medium",
+    "source_note": "Seasonal window; onset varies by region (west coast mid-June, North late June); AI-drafted"
+  },
+  {
+    "key": "muharram-ashura-2027",
+    "name_en": "Muharram (Ashura)",
+    "name_hi": "मुहर्रम (आशूरा)",
+    "date": "2027-06-16",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "muslim",
+    "lead_days": 2,
+    "good_for": [
+      "restaurant",
+      "kirana"
+    ],
+    "post_angle_en": "Sensitive observance: solemn, respectful posts only; no festive or sale posts on Ashura",
+    "confidence": "medium",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com; provisional, depends on moon sighting"
+  },
+  {
+    "key": "fathers-day-2027",
+    "name_en": "Father's Day",
+    "name_hi": "पितृ दिवस",
+    "date": "2027-06-20",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 7,
+    "good_for": [
+      "gifts",
+      "restaurant",
+      "clothing",
+      "electronics",
+      "gym"
+    ],
+    "post_angle_en": "Gift ideas and dinner or grooming offers for dad",
+    "confidence": "high",
+    "source_note": "Third Sunday of June"
+  },
+  {
+    "key": "yoga-day-2027",
+    "name_en": "International Yoga Day",
+    "name_hi": "योग दिवस",
+    "date": "2027-06-21",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 7,
+    "good_for": [
+      "gym",
+      "clinic",
+      "coaching",
+      "salon"
+    ],
+    "post_angle_en": "Free trial class or yoga session invite; no cure claims",
+    "confidence": "high",
+    "source_note": "Fixed date (21 June)"
+  },
+  {
+    "key": "doctors-day-2027",
+    "name_en": "Doctors' Day",
+    "name_hi": "डॉक्टर्स डे",
+    "date": "2027-07-01",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 5,
+    "good_for": [
+      "clinic",
+      "dental",
+      "gifts"
+    ],
+    "post_angle_en": "Thank-you posts for doctors; clinic awareness; no outcome claims",
+    "confidence": "high",
+    "source_note": "Fixed date (1 July, India)"
+  },
+  {
+    "key": "rath-yatra-2027",
+    "name_en": "Rath Yatra",
+    "name_hi": "रथ यात्रा",
+    "date": "2027-07-05",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Odisha",
+      "Gujarat"
+    ],
+    "religion": "hindu",
+    "lead_days": 3,
+    "good_for": [
+      "sweets",
+      "restaurant"
+    ],
+    "post_angle_en": "Greetings; festive specials",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "guru-purnima-2027",
+    "name_en": "Guru Purnima",
+    "name_hi": "गुरु पूर्णिमा",
+    "date": "2027-07-18",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 5,
+    "good_for": [
+      "coaching",
+      "gifts"
+    ],
+    "post_angle_en": "Thank-you-teacher posts; batch and course enrolment",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "itr-filing-deadline-2027",
+    "name_en": "Income-tax return filing deadline",
+    "name_hi": "आयकर रिटर्न की आख़िरी तारीख",
+    "date": "2027-07-31",
+    "end_date": null,
+    "type": "season",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 14,
+    "good_for": [
+      "tax"
+    ],
+    "post_angle_en": "Filing reminders and document checklists for salaried and business filers",
+    "confidence": "medium",
+    "source_note": "Statutory due date for non-audit individuals (31 July); CBDT can extend it; verify each year; AI-drafted"
+  },
+  {
+    "key": "friendship-day-2027",
+    "name_en": "Friendship Day",
+    "name_hi": "मित्रता दिवस",
+    "date": "2027-08-01",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 5,
+    "good_for": [
+      "gifts",
+      "restaurant",
+      "electronics",
+      "mobile"
+    ],
+    "post_angle_en": "Friends' offers, group bookings and gifts",
+    "confidence": "high",
+    "source_note": "First Sunday of August"
+  },
+  {
+    "key": "hariyali-teej-2027",
+    "name_en": "Hariyali Teej",
+    "name_hi": "हरियाली तीज",
+    "date": "2027-08-04",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Rajasthan",
+      "Madhya Pradesh",
+      "Uttar Pradesh",
+      "Gujarat",
+      "Haryana"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "salon",
+      "jewellery",
+      "boutique",
+      "clothing",
+      "sweets"
+    ],
+    "post_angle_en": "Mehendi, green-themed wear and jewellery offers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "independence-day-2027",
+    "name_en": "Independence Day",
+    "name_hi": "स्वतंत्रता दिवस",
+    "date": "2027-08-15",
+    "end_date": null,
+    "type": "national",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 3,
+    "good_for": [
+      "all"
+    ],
+    "post_angle_en": "National pride posts; closure or timing notice",
+    "confidence": "high",
+    "source_note": "Fixed national holiday"
+  },
+  {
+    "key": "raksha-bandhan-2027",
+    "name_en": "Raksha Bandhan",
+    "name_hi": "रक्षा बंधन",
+    "date": "2027-08-17",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 10,
+    "good_for": [
+      "gifts",
+      "sweets",
+      "jewellery",
+      "clothing",
+      "electronics"
+    ],
+    "post_angle_en": "Rakhi gift hampers, sweet boxes and gifts for brothers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "janmashtami-2027",
+    "name_en": "Janmashtami",
+    "name_hi": "जन्माष्टमी",
+    "date": "2027-08-25",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "sweets",
+      "clothing",
+      "decor",
+      "gifts",
+      "restaurant"
+    ],
+    "post_angle_en": "Krishna-themed greetings; sweets and decor offers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "ganesh-chaturthi-2027",
+    "name_en": "Ganesh Chaturthi",
+    "name_hi": "गणेश चतुर्थी",
+    "date": "2027-09-04",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Maharashtra",
+      "Gujarat",
+      "Madhya Pradesh"
+    ],
+    "religion": "hindu",
+    "lead_days": 10,
+    "good_for": [
+      "sweets",
+      "decor",
+      "gifts",
+      "clothing"
+    ],
+    "post_angle_en": "Ganpati-welcome greetings; modak and decor offers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "teachers-day-2027",
+    "name_en": "Teachers' Day",
+    "name_hi": "शिक्षक दिवस",
+    "date": "2027-09-05",
+    "end_date": null,
+    "type": "observance",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 5,
+    "good_for": [
+      "coaching",
+      "gifts",
+      "restaurant"
+    ],
+    "post_angle_en": "Thank-you-teacher posts; batch and course enrolment",
+    "confidence": "high",
+    "source_note": "Fixed date (5 September, India)"
+  },
+  {
+    "key": "onam-2027",
+    "name_en": "Onam (mention only)",
+    "name_hi": "ओणम",
+    "date": "2027-09-12",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Kerala"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "sweets",
+      "restaurant",
+      "clothing",
+      "gifts"
+    ],
+    "post_angle_en": "Mention only; relevant for Kerala-origin customers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "sharad-navratri-2027",
+    "name_en": "Sharad Navratri",
+    "name_hi": "शारदीय नवरात्र",
+    "date": "2027-09-30",
+    "end_date": "2027-10-08",
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "boutique",
+      "clothing",
+      "jewellery",
+      "restaurant",
+      "sweets",
+      "salon"
+    ],
+    "post_angle_en": "Nine-day festive wear and fasting menus; Garba-night offers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "gandhi-jayanti-2027",
+    "name_en": "Gandhi Jayanti",
+    "name_hi": "गांधी जयंती",
+    "date": "2027-10-02",
+    "end_date": null,
+    "type": "national",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": null,
+    "lead_days": 2,
+    "good_for": [
+      "all"
+    ],
+    "post_angle_en": "National holiday; closure or timing notice; respectful tone",
+    "confidence": "high",
+    "source_note": "Fixed national holiday (2 October)"
+  },
+  {
+    "key": "dussehra-2027",
+    "name_en": "Dussehra (Vijayadashami)",
+    "name_hi": "दशहरा",
+    "date": "2027-10-09",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "electronics",
+      "clothing",
+      "sweets",
+      "gifts",
+      "mobile"
+    ],
+    "post_angle_en": "Victory of good over evil; festive shopping and sweets",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "karwa-chauth-2027",
+    "name_en": "Karwa Chauth",
+    "name_hi": "करवा चौथ",
+    "date": "2027-10-18",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Uttar Pradesh",
+      "Delhi",
+      "Haryana",
+      "Punjab",
+      "Rajasthan",
+      "Madhya Pradesh",
+      "Bihar"
+    ],
+    "religion": "hindu",
+    "lead_days": 10,
+    "good_for": [
+      "jewellery",
+      "salon",
+      "boutique",
+      "clothing",
+      "gifts",
+      "sweets"
+    ],
+    "post_angle_en": "Gifts, mehendi and festive looks for the fast; jewellery and beauty offers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "dhanteras-2027",
+    "name_en": "Dhanteras",
+    "name_hi": "धनतेरस",
+    "date": "2027-10-27",
+    "end_date": null,
+    "type": "shopping",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 10,
+    "good_for": [
+      "jewellery",
+      "electronics",
+      "decor",
+      "sweets",
+      "gifts"
+    ],
+    "post_angle_en": "Buying gold, silver, utensils and appliances; auspicious-buying reminder",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "diwali-2027",
+    "name_en": "Diwali",
+    "name_hi": "दीवाली",
+    "date": "2027-10-29",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 14,
+    "good_for": [
+      "sweets",
+      "gifts",
+      "clothing",
+      "decor",
+      "electronics",
+      "salon",
+      "restaurant",
+      "jewellery"
+    ],
+    "post_angle_en": "Greetings plus festive orders and gift boxes",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "govardhan-puja-2027",
+    "name_en": "Govardhan Puja",
+    "name_hi": "गोवर्धन पूजा",
+    "date": "2027-10-30",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Uttar Pradesh",
+      "Rajasthan",
+      "Madhya Pradesh",
+      "Haryana",
+      "Delhi"
+    ],
+    "religion": "hindu",
+    "lead_days": 2,
+    "good_for": [
+      "sweets",
+      "kirana",
+      "restaurant",
+      "decor"
+    ],
+    "post_angle_en": "Annakut-style food and thali specials",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "gujarati-new-year-2027",
+    "name_en": "Gujarati New Year (Bestu Varas)",
+    "name_hi": "गुजराती नववर्ष",
+    "date": "2027-10-30",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "Gujarat"
+    ],
+    "religion": "hindu",
+    "lead_days": 7,
+    "good_for": [
+      "sweets",
+      "gifts",
+      "clothing",
+      "jewellery",
+      "restaurant"
+    ],
+    "post_angle_en": "New-year greetings; sweet boxes and new-year wear",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  },
+  {
+    "key": "bhai-dooj-2027",
+    "name_en": "Bhai Dooj (Bhaubeej)",
+    "name_hi": "भाई दूज",
+    "date": "2027-10-31",
+    "end_date": null,
+    "type": "festival",
+    "regions": [
+      "pan-india"
+    ],
+    "religion": "hindu",
+    "lead_days": 5,
+    "good_for": [
+      "sweets",
+      "gifts",
+      "restaurant",
+      "salon",
+      "clothing"
+    ],
+    "post_angle_en": "Gifts for brothers and sisters; sweets and gift hampers",
+    "confidence": "high",
+    "source_note": "Verified 2026-10-13 against drikpanchang.com, calendarific.com, hindupad.com"
+  }
+]

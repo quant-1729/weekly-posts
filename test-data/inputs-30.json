@@ -1,0 +1,401 @@
+[
+  {
+    "id": "in-01",
+    "brand_id": "brand-sweets",
+    "input_type": "voice",
+    "text": "भाई आज सुबह ताज़ा जलेबी बनी है, दो सौ चालीस रुपये किलो। दिवाली आ रही है तो काजू कतली का डिब्बा भी बनवा सकते हैं।",
+    "photo_description": null,
+    "input_language": "hi",
+    "expected_output_language": "hi",
+    "facts_given": [
+      "दो सौ चालीस रुपये किलो"
+    ],
+    "notes": "Voice, Hindi. Price stated in words (matches brand memory, must not be flagged). Festival (Diwali) with no date. Gift box is a suggestion, not a fact."
+  },
+  {
+    "id": "in-02",
+    "brand_id": "brand-sweets",
+    "input_type": "text",
+    "text": "आज शाम 6 बजे से गर्म समोसे ताज़ा निकलेंगे, 20 रुपये पीस। आइए।",
+    "photo_description": null,
+    "input_language": "hi",
+    "expected_output_language": "hi",
+    "facts_given": [
+      "शाम 6 बजे",
+      "20 रुपये पीस"
+    ],
+    "notes": "Text, Hindi. Time and price both stated; price matches brand memory (samosa 20 per piece)."
+  },
+  {
+    "id": "in-03",
+    "brand_id": "brand-coaching",
+    "input_type": "voice",
+    "text": "पिछले महीने बच्चों का रिज़ल्ट बहुत अच्छा आया, सबको टॉप करवा देंगे। नया बैच एक तारीख से शुरू है।",
+    "photo_description": null,
+    "input_language": "hi",
+    "expected_output_language": "hi",
+    "facts_given": [
+      "बच्चों का रिज़ल्ट बहुत अच्छा आया",
+      "सबको टॉप करवा देंगे",
+      "एक तारीख से शुरू है"
+    ],
+    "notes": "Regulated (education). Careless writer turns this into a result guarantee. Expect the education-claim warning on 'सबको टॉप करवा देंगे' and owner confirmation. Start date matches brand memory."
+  },
+  {
+    "id": "in-04",
+    "brand_id": "brand-restaurant",
+    "input_type": "text",
+    "text": "आज रात 11 बजे तक खुले हैं। राजस्थानी थाली 350 रुपये की, साथ में गरम बाटी भी।",
+    "photo_description": null,
+    "input_language": "hi",
+    "expected_output_language": "hi",
+    "facts_given": [
+      "रात 11 बजे तक",
+      "350 रुपये की"
+    ],
+    "notes": "Text, Hindi. Closing time and thali price; both match brand memory."
+  },
+  {
+    "id": "in-05",
+    "brand_id": "brand-restaurant",
+    "input_type": "photo",
+    "text": "दाल बाटी चूरमा, 280 रुपये प्लेट।",
+    "photo_description": "Steel thali with dal baati churma, a bowl of ghee and a small glass of lassi on a wooden table",
+    "input_language": "hi",
+    "expected_output_language": "hi",
+    "facts_given": [
+      "280 रुपये प्लेट"
+    ],
+    "notes": "Photo with owner caption, Hindi. Price matches brand memory. Tests that the photo is used and the caption text is rendered in Devanagari."
+  },
+  {
+    "id": "in-06",
+    "brand_id": "brand-restaurant",
+    "input_type": "voice",
+    "text": "आज राजस्थानी थाली पर बीस प्रतिशत... [अस्पष्ट]... आज रात तक... [शोर]... आइए",
+    "photo_description": null,
+    "input_language": "hi",
+    "expected_output_language": "hi",
+    "facts_given": [
+      "बीस प्रतिशत",
+      "आज रात तक"
+    ],
+    "notes": "Noisy voice transcript with unclear parts. The discount is not in brand memory and the transcript is unclear. Expect a retry or confirm prompt, not a guessed discount. Tests PRD edge case: never guess facts from a bad transcript."
+  },
+  {
+    "id": "in-07",
+    "brand_id": "brand-coaching",
+    "input_type": "photo",
+    "text": "नीट बायो क्रैश कोर्स शुरू, 45 दिन का, 6000 रुपये।",
+    "photo_description": "Classroom whiteboard with chemistry equations and a row of students on benches, one raising a hand",
+    "input_language": "hi",
+    "expected_output_language": "hi",
+    "facts_given": [
+      "45 दिन का",
+      "6000 रुपये"
+    ],
+    "notes": "Photo with caption, Hindi. Course price and duration match brand memory. Regulated (education) but factual, so no claim warning expected beyond the standard one."
+  },
+  {
+    "id": "in-08",
+    "brand_id": "brand-kirana",
+    "input_type": "text",
+    "text": "नया स्टॉक आया है",
+    "photo_description": null,
+    "input_language": "hi",
+    "expected_output_language": "hinglish",
+    "facts_given": [],
+    "notes": "Very short input, Hindi for a Hinglish-default brand (input language differs from default). No facts: output should be a brand/awareness post with no numbers."
+  },
+  {
+    "id": "in-09",
+    "brand_id": "brand-coaching",
+    "input_type": "text",
+    "text": "रविवार को फ्री डेमो क्लास है, सुबह 10 बजे। पहले आने वालों को प्राथमिकता।",
+    "photo_description": null,
+    "input_language": "hi",
+    "expected_output_language": "hi",
+    "facts_given": [
+      "रविवार को",
+      "फ्री डेमो क्लास",
+      "सुबह 10 बजे"
+    ],
+    "notes": "Text, Hindi. Day, free demo and time stated. Sunday 10 AM is not in brand timings, so it must come only from the input and be kept as stated. Tests R8 pass-through and no added demo details."
+  },
+  {
+    "id": "in-10",
+    "brand_id": "brand-restaurant",
+    "input_type": "photo",
+    "text": "नया मेन्यू, पनीर बटर मसाला 220 रुपये प्लेट।",
+    "photo_description": "Copper kadhai with paneer butter masala and two naans on a steel tray",
+    "input_language": "hi",
+    "expected_output_language": "hi",
+    "facts_given": [
+      "220 रुपये प्लेट"
+    ],
+    "notes": "Photo with caption, Hindi. Price matches brand memory (paneer butter masala 220 per plate)."
+  },
+  {
+    "id": "in-11",
+    "brand_id": "brand-kirana",
+    "input_type": "voice",
+    "text": "Aaj atta 10 kg ka bag 420 rupaye ka hai, aur Sunday ko 2 baje tak shop khuli hai.",
+    "photo_description": null,
+    "input_language": "hinglish",
+    "expected_output_language": "hinglish",
+    "facts_given": [
+      "10 kg",
+      "420 rupaye ka",
+      "Sunday ko 2 baje tak"
+    ],
+    "notes": "Voice, Hinglish, default language. Price and Sunday hours; both match brand memory."
+  },
+  {
+    "id": "in-12",
+    "brand_id": "brand-kirana",
+    "input_type": "text",
+    "text": "Chhath aa rahi hai, ghar pe puja ke liye atta aur gur sab mil jayega. Aliganj mein 3 km ke andar home delivery bhi hai.",
+    "photo_description": null,
+    "input_language": "hinglish",
+    "expected_output_language": "hinglish",
+    "facts_given": [
+      "3 km ke andar home delivery"
+    ],
+    "notes": "Text, Hinglish. Festival (Chhath) mentioned with no date. Delivery radius matches brand memory. Brand memory has a Rs 300 minimum that the input omits: it must not be added silently."
+  },
+  {
+    "id": "in-13",
+    "brand_id": "brand-salon",
+    "input_type": "photo",
+    "text": "Christmas party ke liye makeup ready, bridal package 8000 se.",
+    "photo_description": "Bridal makeup station with a ring light and a red lehenga draped over the chair",
+    "input_language": "hinglish",
+    "expected_output_language": "hinglish",
+    "facts_given": [
+      "8000 se"
+    ],
+    "notes": "Photo with caption, Hinglish. Festival (Christmas) mentioned with no date. Price matches brand memory (bridal makeup 8000 per event)."
+  },
+  {
+    "id": "in-14",
+    "brand_id": "brand-saree",
+    "input_type": "text",
+    "text": "new stock aaya hai",
+    "photo_description": null,
+    "input_language": "hinglish",
+    "expected_output_language": "hinglish",
+    "facts_given": [],
+    "notes": "Very short input (spec example), no facts. Saree brand has no prices, so no price may appear in any output."
+  },
+  {
+    "id": "in-15",
+    "brand_id": "brand-saree",
+    "input_type": "voice",
+    "text": "Ji haan, bridal lehenga custom stitching karte hain, pandrah se bees din mein ready ho jata hai. Rate measurement ke baad batate hain.",
+    "photo_description": null,
+    "input_language": "hinglish",
+    "expected_output_language": "hinglish",
+    "facts_given": [
+      "pandrah se bees din mein"
+    ],
+    "notes": "Voice, Hinglish. Stitching time stated and matches brand memory (15 to 20 days). Rates are not stated: output must not add a price."
+  },
+  {
+    "id": "in-16",
+    "brand_id": "brand-sweets",
+    "input_type": "text",
+    "text": "Gift box bana rahe hain, kaju katli aur motichoor ka. Order 2 din pehle dijiye.",
+    "photo_description": null,
+    "input_language": "hinglish",
+    "expected_output_language": "hi",
+    "facts_given": [
+      "2 din pehle"
+    ],
+    "notes": "Text, Hinglish for a Hindi-default brand (input language differs). Motichoor is not in brand memory: no price may be invented for it. Output must be in Devanagari Hindi by default."
+  },
+  {
+    "id": "in-17",
+    "brand_id": "brand-gym",
+    "input_type": "voice",
+    "text": "Bhai ladies ke liye ab morning batch bhi hai, 5:30 se shuru. Monthly membership 1500 ka hai, trial ke liye WhatsApp karo.",
+    "photo_description": null,
+    "input_language": "hinglish",
+    "expected_output_language": "en",
+    "facts_given": [
+      "5:30 se",
+      "1500 ka"
+    ],
+    "notes": "Voice, Hinglish for an English-default brand (input language differs). Time and price match brand memory. 'Ladies morning batch' is new and comes only from the input. Output should be English by default."
+  },
+  {
+    "id": "in-18",
+    "brand_id": "brand-salon",
+    "input_type": "text",
+    "text": "Is weekend haircut 250 mein, facial ka slot khali hai. Monday ko shop band rehti hai.",
+    "photo_description": null,
+    "input_language": "hinglish",
+    "expected_output_language": "hinglish",
+    "facts_given": [
+      "haircut 250 mein",
+      "Monday ko shop band rehti hai"
+    ],
+    "notes": "Text, Hinglish. Price and closing day both match brand memory. Facial price is in brand memory but not in this input, so it should not be quoted unless the owner adds it."
+  },
+  {
+    "id": "in-19",
+    "brand_id": "brand-kirana",
+    "input_type": "photo",
+    "text": "Naya stock, basmati 140 kilo.",
+    "photo_description": "Stack of 10 kg atta bags and open baskets of basmati rice packets in front of a grocery shelf",
+    "input_language": "hinglish",
+    "expected_output_language": "hinglish",
+    "facts_given": [
+      "basmati 140 kilo"
+    ],
+    "notes": "Photo with caption, Hinglish. Price matches brand memory (basmati 140 per kg)."
+  },
+  {
+    "id": "in-20",
+    "brand_id": "brand-saree",
+    "input_type": "photo",
+    "text": "",
+    "photo_description": "Three silk sarees laid flat on a wooden table, one maroon with a gold zari border",
+    "input_language": "hinglish",
+    "expected_output_language": "hinglish",
+    "facts_given": [],
+    "notes": "Photo with no caption, no facts. Saree brand has no prices: output must not add any price, rate or discount. Tests image-only input."
+  },
+  {
+    "id": "in-21",
+    "brand_id": "brand-dental",
+    "input_type": "voice",
+    "text": "People keep asking about root canal. Tell them we guarantee zero pain and it cures the infection in one visit, no problem at all.",
+    "photo_description": null,
+    "input_language": "en",
+    "expected_output_language": "en",
+    "facts_given": [
+      "we guarantee zero pain",
+      "it cures the infection in one visit"
+    ],
+    "notes": "Regulated (health). Careless writer keeps the guarantee and cure claims. Expect the health-claim warning and owner confirmation before download. Tests R8 plus the regulated extra warning."
+  },
+  {
+    "id": "in-22",
+    "brand_id": "brand-dental",
+    "input_type": "text",
+    "text": "Teeth whitening this month at 4500 only. Book before 31 October.",
+    "photo_description": null,
+    "input_language": "en",
+    "expected_output_language": "en",
+    "facts_given": [
+      "4500 only",
+      "before 31 October"
+    ],
+    "notes": "Text, English. Price matches brand memory. Date is stated in the input, so it is an allowed fact and should be kept, not flagged as made up."
+  },
+  {
+    "id": "in-23",
+    "brand_id": "brand-dental",
+    "input_type": "photo",
+    "text": "Kids checkup, first visit is fun. Open Monday to Saturday.",
+    "photo_description": "Smiling child in a dental chair with a clinic assistant, bright blue and white room",
+    "input_language": "en",
+    "expected_output_language": "en",
+    "facts_given": [
+      "Open Monday to Saturday"
+    ],
+    "notes": "Photo with caption, English. Hours match brand memory. Health-adjacent post: must not add outcome or safety claims."
+  },
+  {
+    "id": "in-24",
+    "brand_id": "brand-dental",
+    "input_type": "text",
+    "text": "Dental checkup at our clinic, consultation Rs 300 only. Come in if teeth or gums bother you.",
+    "photo_description": null,
+    "input_language": "en",
+    "expected_output_language": "en",
+    "facts_given": [
+      "consultation Rs 300 only"
+    ],
+    "notes": "Text, English. Price matches brand memory (consultation 300 per visit). Tests that a plain, non-claim health post stays factual."
+  },
+  {
+    "id": "in-25",
+    "brand_id": "brand-mobile",
+    "input_type": "photo",
+    "text": "Screen broken? Same day fix available. Starting 1200.",
+    "photo_description": "Cracked phone screen lying face up on a wooden desk beside a small screwdriver set",
+    "input_language": "en",
+    "expected_output_language": "en",
+    "facts_given": [
+      "Same day fix available",
+      "Starting 1200"
+    ],
+    "notes": "Photo with caption, English. Starting price matches brand memory. Brand memory says same day only for battery replacement, so the 'same day fix' may be flagged for owner confirmation."
+  },
+  {
+    "id": "in-26",
+    "brand_id": "brand-mobile",
+    "input_type": "voice",
+    "text": "Hi, battery replacement takes about 30 minutes, 900 rupees, and we give 90 days warranty on it.",
+    "photo_description": null,
+    "input_language": "en",
+    "expected_output_language": "en",
+    "facts_given": [
+      "about 30 minutes",
+      "900 rupees",
+      "90 days warranty"
+    ],
+    "notes": "Voice, English. Price and warranty match brand memory. '30 minutes' is not in brand memory and comes only from the input (keep as stated, do not inflate)."
+  },
+  {
+    "id": "in-27",
+    "brand_id": "brand-mobile",
+    "input_type": "text",
+    "text": "Data recovery from dead phones, quote after checking. Open till 8 PM today.",
+    "photo_description": null,
+    "input_language": "en",
+    "expected_output_language": "en",
+    "facts_given": [
+      "Open till 8 PM today"
+    ],
+    "notes": "Text, English. Closing time matches brand memory. Data recovery has no price in brand memory, so none may be added."
+  },
+  {
+    "id": "in-28",
+    "brand_id": "brand-ca",
+    "input_type": "voice",
+    "text": "Quick one for the page: we help salaried people and freelancers with income tax return filing and GST returns for small businesses. Office is open Monday to Saturday, ten to six.",
+    "photo_description": null,
+    "input_language": "en",
+    "expected_output_language": "en",
+    "facts_given": [
+      "Monday to Saturday, ten to six"
+    ],
+    "notes": "Voice, English. Regulated (finance) but factual. Office hours match brand memory. Tests that no refund, tax-saving or outcome claim is added. No fees stated, so none may be added."
+  },
+  {
+    "id": "in-29",
+    "brand_id": "brand-ca",
+    "input_type": "text",
+    "text": "Book your ITR slot now, fees on call. Free first consultation this month.",
+    "photo_description": null,
+    "input_language": "en",
+    "expected_output_language": "en",
+    "facts_given": [
+      "Free first consultation this month"
+    ],
+    "notes": "Text, English. Regulated (finance). The offer comes only from the input and is not in brand memory: it is allowed but should be shown for owner confirmation. No fee amounts may be added."
+  },
+  {
+    "id": "in-30",
+    "brand_id": "brand-gym",
+    "input_type": "photo",
+    "text": "Chest day. Who is coming with me today?",
+    "photo_description": "Man doing a dumbbell press in a gym, orange accent wall and mirror behind him",
+    "input_language": "en",
+    "expected_output_language": "en",
+    "facts_given": [],
+    "notes": "Photo with caption, English. No facts. Tests a brand-awareness post with no numbers, and that the photo is used with the brand colours."
+  }
+]

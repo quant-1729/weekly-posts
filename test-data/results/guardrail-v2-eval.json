@@ -1,0 +1,617 @@
+{
+  "usd": 0.075899,
+  "planted": {
+    "planted": 27,
+    "caught": 27,
+    "fp": 2,
+    "rows": [
+      {
+        "id": "gp-01",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-02",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-03",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-04",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-05",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-06",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-07",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-08",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-09",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-10",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-11",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-12",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-13",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-14",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-15",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-16",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-17",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-18",
+        "missed": [],
+        "falsePos": [
+          {
+            "id": "f_ae7acf2c",
+            "text": "from $145",
+            "kind": "price",
+            "field": "caption",
+            "layer": "ai",
+            "regulated": false,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "gp-19",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-20",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-21",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-22",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-23",
+        "missed": [],
+        "falsePos": [
+          {
+            "id": "f_8cf853c6",
+            "text": "from ₹400",
+            "kind": "price",
+            "field": "image_text.subline",
+            "layer": "ai",
+            "regulated": false,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "gp-24",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-25",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-26",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-27",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-28",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-29",
+        "missed": [],
+        "falsePos": []
+      },
+      {
+        "id": "gp-30",
+        "missed": [],
+        "falsePos": []
+      }
+    ]
+  },
+  "regulated": {
+    "promises": 12,
+    "flagged": 12,
+    "cleanFlaggedPromise": 0,
+    "rows": [
+      {
+        "id": "reg-01",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_cf292e83",
+            "text": "cure gum disease in one visit",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "both",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-02",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_73bf1bb6",
+            "text": "Pain-free dentistry guaranteed",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "both",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-03",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_91e92abc",
+            "text": "Guaranteed whiter teeth in one session",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "both",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-04",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_43c04b16",
+            "text": "Fix your back in 3 sessions",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "both",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-05",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_2381ca82",
+            "text": "guaranteed refund on every personal tax return we file",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "both",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-06",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_b5000d90",
+            "text": "Save $2,000 on tax this year with our bookkeeping",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "both",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-07",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_cf2e279f",
+            "text": "business loan approval guaranteed",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "both",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-08",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_6da40448",
+            "text": "Drink more, worry less",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "both",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-09",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_49a10480",
+            "text": "Red wine is good for your heart",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "ai",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          },
+          {
+            "id": "f_8c91e483",
+            "text": "pour another glass",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "ai",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-10",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_365a1bf3",
+            "text": "Perfect for teens who want to try wine",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "ai",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          },
+          {
+            "id": "f_877a960b",
+            "text": "Wine for teens",
+            "kind": "claim",
+            "field": "image_text.headline",
+            "layer": "ai",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-11",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_a804ffdf",
+            "text": "We win every case",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "ai",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-12",
+        "has": true,
+        "hit": true,
+        "flags": [
+          {
+            "id": "f_9543f377",
+            "text": "Maximum compensation guaranteed for every injury claim.",
+            "kind": "claim",
+            "field": "caption",
+            "layer": "both",
+            "regulated": true,
+            "highlight": true,
+            "status": "open",
+            "decided_at": null
+          }
+        ]
+      },
+      {
+        "id": "reg-13",
+        "has": false,
+        "hit": false,
+        "flags": []
+      },
+      {
+        "id": "reg-14",
+        "has": false,
+        "hit": false,
+        "flags": []
+      },
+      {
+        "id": "reg-15",
+        "has": false,
+        "hit": false,
+        "flags": []
+      },
+      {
+        "id": "reg-16",
+        "has": false,
+        "hit": false,
+        "flags": []
+      },
+      {
+        "id": "reg-17",
+        "has": false,
+        "hit": false,
+        "flags": []
+      },
+      {
+        "id": "reg-18",
+        "has": false,
+        "hit": false,
+        "flags": []
+      },
+      {
+        "id": "reg-19",
+        "has": false,
+        "hit": false,
+        "flags": []
+      },
+      {
+        "id": "reg-20",
+        "has": false,
+        "hit": false,
+        "flags": []
+      }
+    ]
+  },
+  "repetition": {
+    "correct": 20,
+    "total": 20,
+    "byKind": {
+      "rep": [
+        8,
+        8
+      ],
+      "allowed": [
+        4,
+        4
+      ],
+      "old": [
+        4,
+        4
+      ],
+      "near": [
+        4,
+        4
+      ]
+    },
+    "rows": [
+      {
+        "id": "rep-01",
+        "expected": true,
+        "found": [
+          "is shaped by hand and baked on site every morning"
+        ]
+      },
+      {
+        "id": "rep-02",
+        "expected": true,
+        "found": [
+          "our hygienists take the time to explain every step of your check-up"
+        ]
+      },
+      {
+        "id": "rep-03",
+        "expected": true,
+        "found": [
+          "fresh bouquets gift boxes and event flowers"
+        ]
+      },
+      {
+        "id": "rep-04",
+        "expected": true,
+        "found": [
+          "Bike servicing puncture repairs and wheel building all in one workshop"
+        ]
+      },
+      {
+        "id": "rep-05",
+        "expected": true,
+        "found": [
+          "हर ग्राहक की पसंद को ध्यान से सुनते हैं"
+        ]
+      },
+      {
+        "id": "rep-06",
+        "expected": true,
+        "found": [
+          "classes are capped at twelve people, so"
+        ]
+      },
+      {
+        "id": "rep-07",
+        "expected": true,
+        "found": [
+          "wine list is changed by our team every single week"
+        ]
+      },
+      {
+        "id": "rep-08",
+        "expected": true,
+        "found": [
+          "team reviews every receipt before the month closes"
+        ]
+      },
+      {
+        "id": "allowed-01",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "allowed-02",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "allowed-03",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "allowed-04",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "old-01",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "old-02",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "old-03",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "old-04",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "near-01",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "near-02",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "near-03",
+        "expected": false,
+        "found": []
+      },
+      {
+        "id": "near-04",
+        "expected": false,
+        "found": []
+      }
+    ]
+  }
+}

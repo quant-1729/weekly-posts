@@ -1,0 +1,422 @@
+[
+  {
+    "id": "gp-01",
+    "brand_id": "corner-bakery",
+    "post_language": "en-GB",
+    "channel": "instagram",
+    "post": {
+      "caption": "Our sourdough loaf is now £3.90, straight from the oven.",
+      "cta": "Pop into 27 Lansdowne Parade, London SE5 8QJ.",
+      "image_text": { "headline": "Fresh sourdough", "subline": "Baked on site every morning since 2009" }
+    },
+    "planted": [ { "text": "£3.90", "kind": "price", "field": "caption" } ],
+    "allowed": [ "27 Lansdowne Parade, London SE5 8QJ", "Baked on site every morning since 2009" ],
+    "notes": "Changed sourdough price (facts say £4.50). Price in GBP symbol, wrong amount."
+  },
+  {
+    "id": "gp-02",
+    "brand_id": "corner-bakery",
+    "post_language": "en-GB",
+    "channel": "facebook",
+    "post": {
+      "caption": "Our rye and seed loaf is yours for four pounds fifty.",
+      "cta": "Order at the counter or call +44 20 7946 0183.",
+      "image_text": { "headline": "Rye and seed loaf", "subline": "Baked on site every morning since 2009" }
+    },
+    "planted": [ { "text": "four pounds fifty", "kind": "price", "field": "caption" } ],
+    "allowed": [ "+44 20 7946 0183", "Baked on site every morning since 2009" ],
+    "notes": "Price written in words. Rye is £4.80; £4.50 is the sourdough price, so this must be flagged for rye."
+  },
+  {
+    "id": "gp-03",
+    "brand_id": "corner-bakery",
+    "post_language": "en-GB",
+    "channel": "instagram",
+    "post": {
+      "caption": "Our sourdough loaf is $4.50 and baked on site every morning.",
+      "cta": "Pop into 27 Lansdowne Parade, London SE5 8QJ.",
+      "image_text": { "headline": "Sourdough loaf", "subline": "Baked on site every morning since 2009" }
+    },
+    "planted": [ { "text": "$4.50", "kind": "price", "field": "caption" } ],
+    "allowed": [ "27 Lansdowne Parade, London SE5 8QJ", "Baked on site every morning since 2009" ],
+    "notes": "Currency symbol changed only: facts say £4.50, post says $4.50."
+  },
+  {
+    "id": "gp-04",
+    "brand_id": "cellar-door",
+    "post_language": "en-SG",
+    "channel": "google_business_profile",
+    "post": {
+      "caption": "Wine by the glass from S$18, and tasting flights at S$36.",
+      "cta": "Visit #01-03, 12 Club Street, Singapore 069414.",
+      "image_text": { "headline": "Cellar Door Wine Bar", "subline": "Rotating list of 30 wines" }
+    },
+    "planted": [ { "text": "S$36", "kind": "price", "field": "caption" } ],
+    "allowed": [ "from S$18", "#01-03, 12 Club Street, Singapore 069414", "Rotating list of 30 wines" ],
+    "notes": "MIXED: correct 'from S$18' sits beside a wrong tasting-flight price (facts say S$42). Only S$36 must be flagged."
+  },
+  {
+    "id": "gp-05",
+    "brand_id": "spoke-and-sprocket",
+    "post_language": "en-ZA",
+    "channel": "instagram",
+    "post": {
+      "caption": "Basic service now just R350. Get your bike ready to ride.",
+      "cta": "Book Monday to Friday, 8am to 5pm, or call +27 21 555 0136.",
+      "image_text": { "headline": "Bike servicing", "subline": "Unit 4, 61 Albert Road, Woodstock" }
+    },
+    "planted": [ { "text": "R350", "kind": "price", "field": "caption" } ],
+    "allowed": [ "Monday to Friday", "8am to 5pm", "+27 21 555 0136", "Unit 4, 61 Albert Road, Woodstock" ],
+    "notes": "Changed basic service price (facts say R450). Rand symbol."
+  },
+  {
+    "id": "gp-06",
+    "brand_id": "mogra-salon",
+    "post_language": "hi",
+    "channel": "instagram",
+    "post": {
+      "caption": "हेयरकट सिर्फ ₹300 में! आज ही अपॉइंटमेंट लें।",
+      "cta": "Shop 4, Linking Road, Bandra West पर आइए।",
+      "image_text": { "headline": "Mogra Beauty Salon", "subline": "Monday to Saturday, 10am to 9pm" }
+    },
+    "planted": [ { "text": "₹300", "kind": "price", "field": "caption" } ],
+    "allowed": [ "Shop 4, Linking Road, Bandra West", "Monday to Saturday", "10am to 9pm" ],
+    "notes": "Hindi (hi) post. Haircut price changed to ₹300 (facts say ₹400). Hours line is correct."
+  },
+  {
+    "id": "gp-07",
+    "brand_id": "yasmine-flowers",
+    "post_language": "ar",
+    "channel": "facebook",
+    "post": {
+      "caption": "باقة الورد القياسية بسعر 199 درهم فقط.",
+      "cta": "زورونا في Shop 12, Al Wasl Road, Jumeirah",
+      "image_text": { "headline": "Yasmine Flowers", "subline": "Flowers flown in fresh every Tuesday and Friday" }
+    },
+    "planted": [ { "text": "199 درهم", "kind": "price", "field": "caption" } ],
+    "allowed": [ "Shop 12, Al Wasl Road, Jumeirah", "Flowers flown in fresh every Tuesday and Friday" ],
+    "notes": "Arabic (ar) post. Standard bouquet price changed to 199 درهم (facts say AED 250). Planted text is in Arabic script."
+  },
+  {
+    "id": "gp-08",
+    "brand_id": "maple-ledger",
+    "post_language": "es",
+    "channel": "facebook",
+    "post": {
+      "caption": "Declaración de impuestos personales desde CAD 150, con cita previa.",
+      "cta": "Llámenos al (416) 555-0167.",
+      "image_text": { "headline": "Impuestos personales", "subline": "Member of Chartered Professional Accountants of Ontario" }
+    },
+    "planted": [ { "text": "desde CAD 150", "kind": "price", "field": "caption" } ],
+    "allowed": [ "(416) 555-0167", "Member of Chartered Professional Accountants of Ontario" ],
+    "notes": "Spanish (es) post. Personal return price changed to CAD 150 (facts say from CAD 180)."
+  },
+  {
+    "id": "gp-09",
+    "brand_id": "corner-bakery",
+    "post_language": "en-GB",
+    "channel": "instagram",
+    "post": {
+      "caption": "Free delivery on orders over £30.",
+      "cta": "Order by phone on +44 20 7946 0183.",
+      "image_text": { "headline": "Baked on site", "subline": "Sourdough loaf £4.50" }
+    },
+    "planted": [ { "text": "Free delivery on orders over £30", "kind": "offer", "field": "caption" } ],
+    "allowed": [ "+44 20 7946 0183", "Baked on site", "£4.50" ],
+    "notes": "Invented delivery offer. Facts only have 10% off on Fridays for orders over £30."
+  },
+  {
+    "id": "gp-10",
+    "brand_id": "blue-wave-yoga",
+    "post_language": "en-AU",
+    "channel": "instagram",
+    "post": {
+      "caption": "20% off your first class with us! Casual class is $25 and the 10-class pass is $220.",
+      "cta": "Book at Shop 3, 88 Crown Street, Surry Hills.",
+      "image_text": { "headline": "Blue Wave Yoga", "subline": "Classes capped at 12 people" }
+    },
+    "planted": [ { "text": "20% off your first class", "kind": "offer", "field": "caption" } ],
+    "allowed": [ "$25", "$220", "Shop 3, 88 Crown Street, Surry Hills", "Classes capped at 12 people" ],
+    "notes": "Invented 20% first-class discount. Prices in the same post are correct."
+  },
+  {
+    "id": "gp-11",
+    "brand_id": "cellar-door",
+    "post_language": "en-SG",
+    "channel": "facebook",
+    "post": {
+      "caption": "Buy one get one free on wine by the glass every Tuesday.",
+      "cta": "Rotating list of 30 wines, come by after work.",
+      "image_text": { "headline": "Cellar Door Wine Bar", "subline": "Open Tuesday to Saturday, 4pm to midnight" }
+    },
+    "planted": [ { "text": "Buy one get one free on wine by the glass every Tuesday", "kind": "offer", "field": "caption" } ],
+    "allowed": [ "Rotating list of 30 wines", "Tuesday to Saturday", "4pm to midnight" ],
+    "notes": "Invented buy-one-get-one offer on wine. Facts list no BOGO offer."
+  },
+  {
+    "id": "gp-12",
+    "brand_id": "harbour-dental",
+    "post_language": "en-US",
+    "channel": "facebook",
+    "post": {
+      "caption": "Free consultation for new patients. Check-up and cleaning from $145 at Harbour Dental.",
+      "cta": "Call (503) 555-0142 to book.",
+      "image_text": { "headline": "Harbour Dental", "subline": "Licensed by the Oregon Board of Dentistry" }
+    },
+    "planted": [ { "text": "Free consultation for new patients", "kind": "offer", "field": "caption" } ],
+    "allowed": [ "Check-up and cleaning", "$145", "(503) 555-0142", "Licensed by the Oregon Board of Dentistry" ],
+    "notes": "MIXED: free consultation is not in facts; the $145 price and licensing line are correct and must not be flagged."
+  },
+  {
+    "id": "gp-13",
+    "brand_id": "mogra-salon",
+    "post_language": "en-IN",
+    "channel": "instagram",
+    "post": {
+      "caption": "Free head massage with every haircut on Tuesdays, and on Thursdays too!",
+      "cta": "Open Monday to Saturday, 10am to 9pm.",
+      "image_text": { "headline": "Mogra Beauty Salon", "subline": "Shop 4, Linking Road, Bandra West" }
+    },
+    "planted": [ { "text": "and on Thursdays too", "kind": "offer", "field": "caption" } ],
+    "allowed": [ "Free head massage with every haircut on Tuesdays", "Monday to Saturday", "10am to 9pm", "Shop 4, Linking Road, Bandra West" ],
+    "notes": "MIXED: the Tuesday offer is correct; extending it to Thursdays is an offer on a wrong day."
+  },
+  {
+    "id": "gp-14",
+    "brand_id": "blue-wave-yoga",
+    "post_language": "en-AU",
+    "channel": "instagram",
+    "post": {
+      "caption": "Late classes now open till 10pm on weekdays. Come after work!",
+      "cta": "Find us at Shop 3, 88 Crown Street, Surry Hills.",
+      "image_text": { "headline": "Blue Wave Yoga", "subline": "Monday to Friday, 6am to 8pm" }
+    },
+    "planted": [ { "text": "open till 10pm", "kind": "hours", "field": "caption" } ],
+    "allowed": [ "Shop 3, 88 Crown Street, Surry Hills", "Monday to Friday", "6am to 8pm" ],
+    "notes": "Hours not supported by facts (weekdays are 6am to 8pm). Subline in same post is correct."
+  },
+  {
+    "id": "gp-15",
+    "brand_id": "corner-bakery",
+    "post_language": "en-GB",
+    "channel": "instagram",
+    "post": {
+      "caption": "Extra cinnamon buns this Sunday only! Baked on site every morning since 2009.",
+      "cta": "Open Sunday, 8:30am to 1pm.",
+      "image_text": { "headline": "Cinnamon buns", "subline": "Sourdough loaf £4.50" }
+    },
+    "planted": [ { "text": "this Sunday only", "kind": "date", "field": "caption" } ],
+    "allowed": [ "Baked on site every morning since 2009", "8:30am to 1pm", "£4.50" ],
+    "notes": "Date-limited promise ('this Sunday only') with no support in facts. Sunday hours are correct."
+  },
+  {
+    "id": "gp-16",
+    "brand_id": "maple-ledger",
+    "post_language": "en-CA",
+    "channel": "linkedin",
+    "post": {
+      "caption": "Open Saturdays 9am to 1pm for personal tax returns.",
+      "cta": "Book Monday to Friday, 9am to 5pm, by appointment.",
+      "image_text": { "headline": "Personal tax returns", "subline": "Suite 410, 120 Wellesley Street, Toronto, ON M4Y 1J4" }
+    },
+    "planted": [ { "text": "Open Saturdays 9am to 1pm", "kind": "hours", "field": "caption" } ],
+    "allowed": [ "Monday to Friday, 9am to 5pm, by appointment", "Suite 410, 120 Wellesley Street, Toronto, ON M4Y 1J4" ],
+    "notes": "Saturday hours not in facts (office is Monday to Friday, by appointment)."
+  },
+  {
+    "id": "gp-17",
+    "brand_id": "spoke-and-sprocket",
+    "post_language": "en-ZA",
+    "channel": "facebook",
+    "post": {
+      "caption": "Open Sundays 9am to 2pm for emergency puncture repairs, plus Saturdays 8am to 1pm as usual.",
+      "cta": "Call +27 21 555 0136 to book your slot.",
+      "image_text": { "headline": "Bike servicing", "subline": "Free pickup and drop-off within 5km on orders over R800" }
+    },
+    "planted": [ { "text": "Open Sundays 9am to 2pm", "kind": "hours", "field": "caption" } ],
+    "allowed": [ "8am to 1pm", "+27 21 555 0136", "Free pickup and drop-off within 5km on orders over R800" ],
+    "notes": "Sunday opening not in facts. Saturday hours and pickup offer are correct."
+  },
+  {
+    "id": "gp-18",
+    "brand_id": "harbour-dental",
+    "post_language": "en-US",
+    "channel": "instagram",
+    "post": {
+      "caption": "Check-up and cleaning from $145 at Harbour Dental, Portland.",
+      "cta": "Call (503) 555-0199 to book.",
+      "image_text": { "headline": "Harbour Dental", "subline": "Dr. Miriam Okafor, 14 years in practice" }
+    },
+    "planted": [ { "text": "(503) 555-0199", "kind": "phone", "field": "cta" } ],
+    "allowed": [ "Check-up and cleaning", "$145", "14 years in practice" ],
+    "notes": "Phone number not in facts (fictional 555-0199). Real number is (503) 555-0142."
+  },
+  {
+    "id": "gp-19",
+    "brand_id": "yasmine-flowers",
+    "post_language": "en-AE",
+    "channel": "instagram",
+    "post": {
+      "caption": "Gift boxes from AED 180 for every occasion.",
+      "cta": "Order by phone on +971 4 555 0177 or visit Shop 12, Al Wasl Road.",
+      "image_text": { "headline": "Yasmine Flowers", "subline": "Flowers flown in fresh every Tuesday and Friday" }
+    },
+    "planted": [ { "text": "+971 4 555 0177", "kind": "phone", "field": "cta" } ],
+    "allowed": [ "from AED 180", "Shop 12, Al Wasl Road", "Flowers flown in fresh every Tuesday and Friday" ],
+    "notes": "Phone number not in facts (real number is +971 4 555 0192). Gift box price and address are correct."
+  },
+  {
+    "id": "gp-20",
+    "brand_id": "corner-bakery",
+    "post_language": "en-GB",
+    "channel": "instagram",
+    "post": {
+      "caption": "Sourdough, croissants and cinnamon buns, all baked on site.",
+      "cta": "Visit 27 Lansdowne Parade, London SE5 8QJ.",
+      "image_text": { "headline": "The best bakery in London", "subline": "Baked on site every morning since 2009" }
+    },
+    "planted": [ { "text": "best bakery in London", "kind": "claim", "field": "image_text.headline" } ],
+    "allowed": [ "27 Lansdowne Parade, London SE5 8QJ", "Baked on site every morning since 2009" ],
+    "notes": "Superlative claim not in brand memory. Headline only."
+  },
+  {
+    "id": "gp-21",
+    "brand_id": "blue-wave-yoga",
+    "post_language": "en-AU",
+    "channel": "facebook",
+    "post": {
+      "caption": "Award-winning yoga for every level. Classes capped at 12 people.",
+      "cta": "Book a class at Shop 3, 88 Crown Street, Surry Hills.",
+      "image_text": { "headline": "Blue Wave Yoga", "subline": "10-class pass $220" }
+    },
+    "planted": [ { "text": "Award-winning", "kind": "claim", "field": "caption" } ],
+    "allowed": [ "Classes capped at 12 people", "Shop 3, 88 Crown Street, Surry Hills", "$220" ],
+    "notes": "Award claim with no award in brand memory."
+  },
+  {
+    "id": "gp-22",
+    "brand_id": "corner-bakery",
+    "post_language": "en-GB",
+    "channel": "facebook",
+    "post": {
+      "caption": "Sourdough loaf £4.50. Baked on site every morning since 2009.",
+      "cta": "Order at the counter or call +44 20 7946 0183.",
+      "image_text": { "headline": "Sourdough loaf", "subline": "100% organic flour, baked on site." }
+    },
+    "planted": [ { "text": "100% organic", "kind": "claim", "field": "image_text.subline" } ],
+    "allowed": [ "£4.50", "Baked on site every morning since 2009", "+44 20 7946 0183" ],
+    "notes": "Organic claim not in brand memory. Subline only."
+  },
+  {
+    "id": "gp-23",
+    "brand_id": "mogra-salon",
+    "post_language": "en-IN",
+    "channel": "instagram",
+    "post": {
+      "caption": "Pain-free facials at Mogra Beauty Salon, Bandra West.",
+      "cta": "Open Monday to Saturday, 10am to 9pm. Shop 4, Linking Road.",
+      "image_text": { "headline": "Mogra Beauty Salon", "subline": "Haircut from ₹400" }
+    },
+    "planted": [ { "text": "Pain-free facials", "kind": "claim", "field": "caption" } ],
+    "allowed": [ "10am to 9pm", "Shop 4, Linking Road", "₹400" ],
+    "notes": "Pain-free claim about a treatment; not in brand memory (Req 12 concern only applies to regulated brands)."
+  },
+  {
+    "id": "gp-24",
+    "brand_id": "spoke-and-sprocket",
+    "post_language": "en-ZA",
+    "channel": "facebook",
+    "post": {
+      "caption": "Guaranteed results on every service. Basic service R450.",
+      "cta": "Call +27 21 555 0136 to book.",
+      "image_text": { "headline": "Bike servicing", "subline": "Unit 4, 61 Albert Road, Woodstock" }
+    },
+    "planted": [ { "text": "Guaranteed results", "kind": "claim", "field": "caption" } ],
+    "allowed": [ "R450", "+27 21 555 0136", "Unit 4, 61 Albert Road, Woodstock" ],
+    "notes": "Outcome guarantee not in brand memory."
+  },
+  {
+    "id": "gp-25",
+    "brand_id": "corner-bakery",
+    "post_language": "en-GB",
+    "channel": "google_business_profile",
+    "post": {
+      "caption": "Family-run since 1990. Baked on site every morning since 2009.",
+      "cta": "Visit 27 Lansdowne Parade, London SE5 8QJ.",
+      "image_text": { "headline": "Corner Bakery", "subline": "Monday to Friday, 7am to 6pm" }
+    },
+    "planted": [ { "text": "Family-run since 1990", "kind": "claim", "field": "caption" } ],
+    "allowed": [ "Baked on site every morning since 2009", "27 Lansdowne Parade, London SE5 8QJ", "Monday to Friday", "7am to 6pm" ],
+    "notes": "MIXED: 'since 2009' is the fact; 'family-run since 1990' is invented. Only the 1990 claim is flagged."
+  },
+  {
+    "id": "gp-26",
+    "brand_id": "blue-wave-yoga",
+    "post_language": "en-AU",
+    "channel": "instagram",
+    "post": {
+      "caption": "Classes capped at 30 people for personal attention.",
+      "cta": "Our 10-class pass is $220.",
+      "image_text": { "headline": "Blue Wave Yoga", "subline": "Shop 3, 88 Crown Street, Surry Hills" }
+    },
+    "planted": [ { "text": "capped at 30 people", "kind": "quantity", "field": "caption" } ],
+    "allowed": [ "10-class pass", "$220", "Shop 3, 88 Crown Street, Surry Hills" ],
+    "notes": "Class size quantity wrong (facts say capped at 12 people)."
+  },
+  {
+    "id": "gp-27",
+    "brand_id": "spoke-and-sprocket",
+    "post_language": "en-ZA",
+    "channel": "instagram",
+    "post": {
+      "caption": "Get a 5-minute puncture repair at our Woodstock workshop.",
+      "cta": "Free pickup and drop-off within 5km on orders over R800.",
+      "image_text": { "headline": "Puncture repair", "subline": "R120 at our Woodstock workshop" }
+    },
+    "planted": [ { "text": "5-minute puncture repair", "kind": "quantity", "field": "caption" } ],
+    "allowed": [ "Free pickup and drop-off within 5km on orders over R800", "R120" ],
+    "notes": "Invented time quantity ('5-minute') for the repair. No time is in facts."
+  },
+  {
+    "id": "gp-28",
+    "brand_id": "harbour-dental",
+    "post_language": "en-US",
+    "channel": "instagram",
+    "post": {
+      "caption": "Check-up and cleaning at $145, and teeth whitening at $350, at Harbour Dental.",
+      "cta": "Call (503) 555-0142 or visit 2215 SE Harbour Avenue, Suite 105.",
+      "image_text": { "headline": "14 years in practice", "subline": "Open Monday to Thursday, 8am to 5pm" }
+    },
+    "planted": [],
+    "allowed": [ "Check-up and cleaning", "$145", "$350", "(503) 555-0142", "2215 SE Harbour Avenue, Suite 105", "14 years in practice", "Monday to Thursday", "8am to 5pm" ],
+    "notes": "CLEAN false-positive check: every price, phone, address and hour is in facts."
+  },
+  {
+    "id": "gp-29",
+    "brand_id": "maple-ledger",
+    "post_language": "en-CA",
+    "channel": "linkedin",
+    "post": {
+      "caption": "Personal tax returns from CAD 180. Monthly bookkeeping from CAD 350 a month.",
+      "cta": "Book by phone at (416) 555-0167.",
+      "image_text": { "headline": "Family-run practice since 2011", "subline": "Member of Chartered Professional Accountants of Ontario" }
+    },
+    "planted": [],
+    "allowed": [ "from CAD 180", "from CAD 350 a month", "(416) 555-0167", "Family-run practice since 2011", "Member of Chartered Professional Accountants of Ontario" ],
+    "notes": "CLEAN false-positive check: prices, phone, founding year and membership all match facts."
+  },
+  {
+    "id": "gp-30",
+    "brand_id": "blue-wave-yoga",
+    "post_language": "en-AU",
+    "channel": "instagram",
+    "post": {
+      "caption": "Casual class $25, or the 10-class pass for $220. Classes capped at 12 people.",
+      "cta": "Drop in Monday to Friday, 6am to 8pm.",
+      "image_text": { "headline": "Blue Wave Yoga", "subline": "Shop 3, 88 Crown Street, Surry Hills NSW 2010" }
+    },
+    "planted": [],
+    "allowed": [ "$25", "$220", "Classes capped at 12 people", "Monday to Friday", "6am to 8pm", "Shop 3, 88 Crown Street, Surry Hills NSW 2010" ],
+    "notes": "CLEAN false-positive check: prices, class cap, hours and address all match brand memory."
+  }
+]

@@ -1,0 +1,204 @@
+[
+  {
+    "id": "brand-sweets",
+    "business_name": "श्री राम स्वीट्स",
+    "category": "Sweet shop (mithai and namkeen)",
+    "city": "Indore",
+    "products": [
+      {"name": "काजू कतली", "price": "600", "unit": "per kg", "note": "gift box packing available"},
+      {"name": "मलाई बर्फी", "price": "480", "unit": "per kg", "note": ""},
+      {"name": "जलेबी", "price": "240", "unit": "per kg", "note": "fresh every morning"},
+      {"name": "समोसा", "price": "20", "unit": "per piece", "note": "evening batch from 6 PM"},
+      {"name": "बेसन लड्डू", "price": "", "unit": "per kg", "note": "price on request in festival season"}
+    ],
+    "audience": "families and local office-goers in Indore, festival gift buyers",
+    "tone": "warm, traditional, festive",
+    "languages": ["hi", "hinglish"],
+    "default_language": "hi",
+    "colors": {"primary": "#B5121B", "secondary": "#FFF4E0", "accent": "#F2A900"},
+    "whatsapp_number": "+919000000001",
+    "notes": "Shop open 8 AM to 10 PM daily. Address: 14 Sarafa Road, Indore. Standing offer: 5 percent off on orders above 2 kg. Gift boxes made on order.",
+    "regulated": false
+  },
+  {
+    "id": "brand-kirana",
+    "business_name": "Gupta General Store",
+    "category": "Kirana store (grocery)",
+    "city": "Lucknow",
+    "products": [
+      {"name": "Atta (10 kg bag)", "price": "420", "unit": "per bag", "note": "chakki ground"},
+      {"name": "Basmati rice", "price": "140", "unit": "per kg", "note": ""},
+      {"name": "Mustard oil", "price": "165", "unit": "per litre", "note": ""},
+      {"name": "Dry fruit gift pack", "price": "", "unit": "", "note": "price on request"}
+    ],
+    "audience": "housewives and families in Aliganj and Indira Nagar",
+    "tone": "friendly, practical, neighbourhood",
+    "languages": ["hinglish", "hi"],
+    "default_language": "hinglish",
+    "colors": {"primary": "#1B7F3B", "secondary": "#FFFFFF", "accent": "#FFB400"},
+    "whatsapp_number": "+919000000002",
+    "notes": "Open 7 AM to 9:30 PM; Sunday 8 AM to 2 PM. Shop no. 6, Aliganj Market, Lucknow. Home delivery within 3 km on orders above Rs 300.",
+    "regulated": false
+  },
+  {
+    "id": "brand-salon",
+    "business_name": "Glow Unisex Salon",
+    "category": "Beauty salon (unisex)",
+    "city": "Delhi",
+    "products": [
+      {"name": "Haircut (men)", "price": "250", "unit": "per service", "note": ""},
+      {"name": "Haircut (women)", "price": "400", "unit": "per service", "note": "wash and blow dry included"},
+      {"name": "Facial", "price": "1200", "unit": "per session", "note": "gold or fruit facial"},
+      {"name": "Bridal makeup", "price": "8000", "unit": "per event", "note": "trial included"}
+    ],
+    "audience": "young women and men in Rajouri Garden and nearby colonies, brides",
+    "tone": "fresh, friendly, stylish",
+    "languages": ["hinglish", "en"],
+    "default_language": "hinglish",
+    "colors": {"primary": "#D6336C", "secondary": "#2B2B2B", "accent": "#FFD6E7"},
+    "whatsapp_number": "+919000000003",
+    "notes": "Open 10 AM to 8:30 PM, closed on Mondays. B-12, Rajouri Garden market, first floor. Bridal trial on request. Appointments preferred on WhatsApp.",
+    "regulated": false
+  },
+  {
+    "id": "brand-dental",
+    "business_name": "Smile Point Dental Clinic",
+    "category": "Dental clinic",
+    "city": "Pune",
+    "products": [
+      {"name": "Checkup and consultation", "price": "300", "unit": "per visit", "note": "X-ray extra if needed"},
+      {"name": "Scaling and polishing", "price": "800", "unit": "per session", "note": ""},
+      {"name": "Teeth whitening", "price": "4500", "unit": "per session", "note": "after doctor consultation"},
+      {"name": "Root canal treatment", "price": "", "unit": "", "note": "cost given after examination"}
+    ],
+    "audience": "families, working professionals and children in Kothrud and Karve Nagar",
+    "tone": "caring, calm, professional, reassuring but not exaggerated",
+    "languages": ["en", "hinglish"],
+    "default_language": "en",
+    "colors": {"primary": "#0E6BA8", "secondary": "#EAF6FB", "accent": "#00A88F"},
+    "whatsapp_number": "+919000000004",
+    "notes": "Clinic hours Mon-Sat 10 AM to 1:30 PM and 5 PM to 9 PM; Sunday by appointment. 3rd floor, Shubham Complex, Kothrud, Pune. Lead dentist: Dr. Neha Joshi, BDS. No guaranteed-result or cure claims.",
+    "regulated": true
+  },
+  {
+    "id": "brand-coaching",
+    "business_name": "उज्ज्वल अकादमी",
+    "category": "Coaching centre (classes 9 to 12, competitive exam prep)",
+    "city": "Patna",
+    "products": [
+      {"name": "Class 10 maths batch", "price": "2500", "unit": "per month", "note": "weekend batch available"},
+      {"name": "NEET biology crash course", "price": "6000", "unit": "per course", "note": "45 days"},
+      {"name": "Spoken English batch", "price": "1200", "unit": "per month", "note": "evening batch"},
+      {"name": "Demo class", "price": "", "unit": "", "note": "free demo on request"}
+    ],
+    "audience": "students of class 9 to 12 and their parents in Boring Road, Kankarbagh and Patliputra",
+    "tone": "encouraging, respectful, clear",
+    "languages": ["hi", "hinglish"],
+    "default_language": "hi",
+    "colors": {"primary": "#1F3A93", "secondary": "#FFF8E1", "accent": "#E67E22"},
+    "whatsapp_number": "+919000000005",
+    "notes": "New batches start on the 1st of every month. Timings 7 AM to 9 AM and 5 PM to 8 PM. 2nd floor, Mithila Plaza, Boring Road, Patna. Standing offer: 10 percent fee discount for siblings. Result claims need owner confirmation.",
+    "regulated": true
+  },
+  {
+    "id": "brand-restaurant",
+    "business_name": "स्वाद दरबार",
+    "category": "Restaurant (North Indian and Rajasthani thali)",
+    "city": "Jaipur",
+    "products": [
+      {"name": "Rajasthani thali", "price": "350", "unit": "per plate", "note": "served with gatte and ghee"},
+      {"name": "Dal baati churma", "price": "280", "unit": "per plate", "note": ""},
+      {"name": "Paneer butter masala", "price": "220", "unit": "per plate", "note": ""},
+      {"name": "Kulhad lassi", "price": "80", "unit": "per glass", "note": ""}
+    ],
+    "audience": "families, office crowd and tourists near C-Scheme",
+    "tone": "warm, hospitable, rustic-royal",
+    "languages": ["hi", "en"],
+    "default_language": "hi",
+    "colors": {"primary": "#7A1E3A", "secondary": "#F5E6CC", "accent": "#D4A017"},
+    "whatsapp_number": "+919000000006",
+    "notes": "Open 11 AM to 11 PM. Ground floor, Ashok Marg, C-Scheme, Jaipur. Home delivery on WhatsApp orders within 5 km. Parking for 10 cars.",
+    "regulated": false
+  },
+  {
+    "id": "brand-saree",
+    "business_name": "Rang Boutique",
+    "category": "Saree boutique (silk, cotton and bridal)",
+    "city": "Surat",
+    "products": [
+      {"name": "Banarasi silk saree", "price": "", "unit": "", "note": "rates on call"},
+      {"name": "Cotton handloom saree", "price": "", "unit": "", "note": "rates on call"},
+      {"name": "Bridal lehenga (custom stitching)", "price": "", "unit": "", "note": "quote after measurement"},
+      {"name": "Blouse stitching", "price": "", "unit": "", "note": "rates on call"}
+    ],
+    "audience": "women buying for weddings and festivals in Surat and nearby towns",
+    "tone": "elegant, traditional, warm",
+    "languages": ["hinglish", "hi"],
+    "default_language": "hinglish",
+    "colors": {"primary": "#8E2C5B", "secondary": "#FFF0F5", "accent": "#C9A227"},
+    "whatsapp_number": "+919000000007",
+    "notes": "Open 10:30 AM to 9 PM, Sunday included. Shop 41, Ring Road Textile Market, Surat. New arrivals every Thursday. Custom stitching takes 15 to 20 days.",
+    "regulated": false
+  },
+  {
+    "id": "brand-mobile",
+    "business_name": "FixIt Mobile Care",
+    "category": "Mobile phone repair shop",
+    "city": "Delhi",
+    "products": [
+      {"name": "Screen replacement (Android)", "price": "1200", "unit": "per repair", "note": "starting price, varies by model"},
+      {"name": "Battery replacement", "price": "900", "unit": "per repair", "note": "same day in most cases; 90 day warranty"},
+      {"name": "Back glass repair", "price": "700", "unit": "per repair", "note": ""},
+      {"name": "Tempered glass", "price": "199", "unit": "per piece", "note": ""},
+      {"name": "Data recovery", "price": "", "unit": "", "note": "quote after checking"}
+    ],
+    "audience": "students, working professionals and families in Lajpat Nagar and Defence Colony",
+    "tone": "quick, honest, practical",
+    "languages": ["en", "hinglish"],
+    "default_language": "en",
+    "colors": {"primary": "#1E88E5", "secondary": "#263238", "accent": "#FFC107"},
+    "whatsapp_number": "+919000000008",
+    "notes": "Open 10 AM to 8 PM all days. Shop 22, Central Market, Lajpat Nagar, Delhi. 90 day warranty on screen and battery replacements. Pickup and drop in Lajpat Nagar.",
+    "regulated": false
+  },
+  {
+    "id": "brand-ca",
+    "business_name": "Mehta & Associates, Chartered Accountants",
+    "category": "Tax consultant and chartered accountant",
+    "city": "Pune",
+    "products": [
+      {"name": "Income tax return filing (salaried)", "price": "", "unit": "", "note": "fees on request"},
+      {"name": "GST registration and returns", "price": "", "unit": "", "note": "fees on request"},
+      {"name": "Business accounts and audit", "price": "", "unit": "", "note": "fees on request"},
+      {"name": "Tax planning consultation", "price": "", "unit": "", "note": "fees on request"}
+    ],
+    "audience": "salaried professionals, small business owners and freelancers in Pune",
+    "tone": "trustworthy, plain-language, formal but approachable",
+    "languages": ["en", "hinglish"],
+    "default_language": "en",
+    "colors": {"primary": "#1A2B4C", "secondary": "#F4F6FA", "accent": "#C8A24A"},
+    "whatsapp_number": "+919000000009",
+    "notes": "Office Mon-Sat 10 AM to 6 PM. 5th floor, Sai Chambers, Shivajinagar, Pune. Do not promise refunds, tax savings or outcome guarantees.",
+    "regulated": true
+  },
+  {
+    "id": "brand-gym",
+    "business_name": "IronHouse Fitness",
+    "category": "Gym (strength and cardio)",
+    "city": "Lucknow",
+    "products": [
+      {"name": "Monthly membership", "price": "1500", "unit": "per month", "note": "full gym access"},
+      {"name": "Quarterly membership", "price": "4000", "unit": "per 3 months", "note": ""},
+      {"name": "Personal training", "price": "3000", "unit": "per month", "note": "3 sessions a week"},
+      {"name": "Day pass", "price": "150", "unit": "per day", "note": ""}
+    ],
+    "audience": "working adults, college students and beginners in Gomti Nagar and Vibhuti Khand",
+    "tone": "motivating, energetic, direct",
+    "languages": ["en", "hinglish"],
+    "default_language": "en",
+    "colors": {"primary": "#111111", "secondary": "#F2F2F2", "accent": "#FF5A1F"},
+    "whatsapp_number": "+919000000010",
+    "notes": "Open 5:30 AM to 11 PM, all days. First floor, Vibhuti Khand Market, Lucknow. Free trial visit for new members when booked on WhatsApp.",
+    "regulated": false
+  }
+]

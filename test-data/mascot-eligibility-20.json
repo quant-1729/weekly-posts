@@ -1,0 +1,202 @@
+[
+  {
+    "id": "me-01",
+    "business_name": "Shanti Yoga Studio",
+    "category": "Yoga studio (group classes and workshops)",
+    "city": "Dehradun",
+    "audience": "office workers and beginners in Rajpur Road and nearby colonies",
+    "tone": "calm, friendly, encouraging",
+    "expected_eligible": true,
+    "reason": "Wellness and fitness, not medical, so it is a playful consumer category. Eligible, but mascot posts must avoid health or cure claims."
+  },
+  {
+    "id": "me-02",
+    "business_name": "Ghar Ka Tiffin Seva",
+    "category": "Tiffin service (home-cooked lunch and dinner)",
+    "city": "Pune",
+    "audience": "working professionals and students near Hinjewadi",
+    "tone": "warm, homely, cheerful",
+    "expected_eligible": true,
+    "reason": "Consumer food service with a homely, playful tone. Eligible."
+  },
+  {
+    "id": "me-03",
+    "business_name": "Bunty's Ice Cream Parlour",
+    "category": "Ice cream parlour",
+    "city": "Ahmedabad",
+    "audience": "families and kids in Navrangpura",
+    "tone": "fun, colourful, playful",
+    "expected_eligible": true,
+    "reason": "Playful consumer food brand with kids as a core audience. Eligible."
+  },
+  {
+    "id": "me-04",
+    "business_name": "IronCore Gym",
+    "category": "Gym (strength training and cardio)",
+    "city": "Chandigarh",
+    "audience": "young adults and college students in Sector 17 and Sector 22",
+    "tone": "Festive, energetic, bold",
+    "expected_eligible": true,
+    "reason": "Gym is a playful consumer category; the Festive tone does not make it formal. Eligible."
+  },
+  {
+    "id": "me-05",
+    "business_name": "Mehul Jewellers",
+    "category": "Jewellery shop (gold and silver, daily wear and gifts)",
+    "city": "Jaipur",
+    "audience": "families and women buying for weddings and festivals near Johari Bazaar",
+    "tone": "Friendly, warm, approachable",
+    "expected_eligible": true,
+    "reason": "Jewellery with a Friendly tone is a consumer tone, not a formal Premium one. Eligible."
+  },
+  {
+    "id": "me-06",
+    "business_name": "Aarohi Diamond House",
+    "category": "Premium jewellery showroom (diamonds and polki)",
+    "city": "Mumbai",
+    "audience": "affluent families and wedding buyers in South Mumbai",
+    "tone": "Premium, refined, understated",
+    "expected_eligible": false,
+    "reason": "Premium jewellery with a Premium tone is formal. Not offered a mascot by default."
+  },
+  {
+    "id": "me-07",
+    "business_name": "Shubh Mangal Wedding Planners",
+    "category": "Wedding planner (destination and luxury weddings)",
+    "city": "Udaipur",
+    "audience": "upper-middle-class families planning weddings",
+    "tone": "Premium, elegant, refined",
+    "expected_eligible": false,
+    "reason": "Wedding planning with a Premium tone is a formal service. Not offered a mascot by default."
+  },
+  {
+    "id": "me-08",
+    "business_name": "Little Stars Play School",
+    "category": "Play school and kids' coaching (pre-school and phonics)",
+    "city": "Bhopal",
+    "audience": "parents of children aged 2 to 6 in Arera Colony",
+    "tone": "playful, caring, colourful",
+    "expected_eligible": false,
+    "reason": "Education category even though it feels playful. Regulated, so not offered a mascot by default."
+  },
+  {
+    "id": "me-09",
+    "business_name": "Jeevan Care Pharmacy",
+    "category": "Pharmacy (medicines and health products)",
+    "city": "Nagpur",
+    "audience": "families and senior citizens in Dharampeth",
+    "tone": "friendly, caring, trustworthy",
+    "expected_eligible": false,
+    "reason": "Health category (medicines). Regulated, so not offered a mascot by default."
+  },
+  {
+    "id": "me-10",
+    "business_name": "Lakshmi Kids Wear",
+    "category": "Kids clothing boutique",
+    "city": "Kolkata",
+    "audience": "parents of children up to 12 years in Salt Lake and Ballygunge",
+    "tone": "cheerful, colourful, fun",
+    "expected_eligible": true,
+    "reason": "Kids clothing is a playful consumer category. Eligible."
+  },
+  {
+    "id": "me-11",
+    "business_name": "Chatkaara Chaat Corner",
+    "category": "Street food stall (chaat and snacks)",
+    "city": "Varanasi",
+    "audience": "students, tourists and office goers near Godowlia",
+    "tone": "fun, fresh, local",
+    "expected_eligible": true,
+    "reason": "Snack and street food stall is a core playful consumer category. Eligible."
+  },
+  {
+    "id": "me-12",
+    "business_name": "Chai Tapri Express",
+    "category": "Tea stall (chai and snacks)",
+    "city": "Ludhiana",
+    "audience": "office goers and college students near the railway station",
+    "tone": "fun, quick, local",
+    "expected_eligible": true,
+    "reason": "Tea stall is a core playful consumer category. Eligible."
+  },
+  {
+    "id": "me-13",
+    "business_name": "Pawsome Pet Shop",
+    "category": "Pet shop (food, grooming and accessories)",
+    "city": "Hyderabad",
+    "audience": "pet owners in Kondapur and Gachibowli",
+    "tone": "playful, friendly, caring",
+    "expected_eligible": true,
+    "reason": "Pet shop is a playful consumer category. Eligible."
+  },
+  {
+    "id": "me-14",
+    "business_name": "Ram Bhandar Bakery",
+    "category": "Bakery (cakes, buns and biscuits)",
+    "city": "Coimbatore",
+    "audience": "families and school kids in RS Puram",
+    "tone": "warm, cheerful, homely",
+    "expected_eligible": true,
+    "reason": "Bakery is a core playful consumer category. Eligible."
+  },
+  {
+    "id": "me-15",
+    "business_name": "Vikas Law Associates",
+    "category": "Law firm (corporate and property law)",
+    "city": "Delhi",
+    "audience": "businesses and property owners in Connaught Place",
+    "tone": "formal, authoritative, measured",
+    "expected_eligible": false,
+    "reason": "Law firm is a formal category. Not offered a mascot by default."
+  },
+  {
+    "id": "me-16",
+    "business_name": "Shanti Sewa Funeral Services",
+    "category": "Funeral services (cremation and last rites support)",
+    "city": "Kanpur",
+    "audience": "families in Kanpur city",
+    "tone": "respectful, calm, dignified",
+    "expected_eligible": false,
+    "reason": "Funeral services are a formal, sensitive category. Not offered a mascot by default."
+  },
+  {
+    "id": "me-17",
+    "business_name": "Bharat Cafe and Roastery",
+    "category": "Cafe (coffee, sandwiches and desserts)",
+    "city": "Bengaluru",
+    "audience": "students and young professionals in Indiranagar",
+    "tone": "trendy, fun, relaxed",
+    "expected_eligible": true,
+    "reason": "Cafe is a core playful consumer category. Eligible."
+  },
+  {
+    "id": "me-18",
+    "business_name": "Joshi and Co. Chartered Accountants",
+    "category": "Chartered accountant firm (tax and audit)",
+    "city": "Nashik",
+    "audience": "business owners and salaried professionals in Gangapur Road",
+    "tone": "formal, trustworthy, plain-language",
+    "expected_eligible": false,
+    "reason": "CA firm is formal and finance-regulated. Not offered a mascot by default."
+  },
+  {
+    "id": "me-19",
+    "business_name": "SecureLife Insurance Advisors",
+    "category": "Insurance agent (life and health insurance)",
+    "city": "Vadodara",
+    "audience": "families and salaried professionals in Alkapuri",
+    "tone": "reassuring, trustworthy, friendly",
+    "expected_eligible": false,
+    "reason": "Insurance is a finance category and regulated. Not offered a mascot by default."
+  },
+  {
+    "id": "me-20",
+    "business_name": "Ganga Infra Works",
+    "category": "Government contractor (road and drainage works)",
+    "city": "Patna",
+    "audience": "municipal tender bodies and state departments",
+    "tone": "formal, precise, reliable",
+    "expected_eligible": false,
+    "reason": "Government contractor is a formal B2G category. Not offered a mascot by default."
+  }
+]

@@ -1,0 +1,4 @@
+{
+  "note": "robots.txt contains 'User-agent: *' with 'Disallow: /', which disallows every path for every crawler. The reader must read nothing on this site, so the expected fact list is intentionally empty. The HTML pages are present so that a reader which ignores robots.txt would extract facts that must NOT appear in brand memory.",
+  "facts": []
+}

@@ -1,0 +1,7 @@
+# test-data
+
+- `brands.json`: 10 sample Indian small-business brand memory records (sweet shop, kirana, salon, dental, coaching, restaurant, saree, mobile repair, CA, gym); two have no prices, three are regulated, default languages mixed. Tests brand setup fields and the facts source. (R2, R5, R8)
+- `inputs-30.json`: 30 owner inputs (10 each hi/hinglish/en; 9 voice, 9 photo, 12 text) covering facts-only guardrail, festival mentions without dates, input-vs-default language mismatch, short and noisy inputs, and regulated claim traps. Tests generation from one input and output language. (R4, R5, R8)
+- `planted-facts-30.json`: 30 generated posts with planted made-up prices, discounts, dates, times, phones and claims (10 each hi/hinglish/en; 4 mixed planted+allowed cases, 3 zero-planted false-positive cases; 5 claims on regulated brands). Tests that the facts-only guardrail flags 100% of unsupported facts and does not flag brand-memory facts. (R8)
+- `mascot-eligibility-20.json`: 20 brands with category, city, audience and tone, with expected mascot eligibility (11 eligible, 9 not; covers education, health, finance, formal and Premium-tone cases). Tests the mascot eligibility rule. (R15a)
+- `devanagari-render.json`: 40 Hindi strings covering conjuncts, reph, rakar, matras, nukta, anusvara, chandrabindu, visarga, digits, rupee sign, mixed Latin, long words and long lines. Tests Devanagari rendering on images. (R6)

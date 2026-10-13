@@ -1,0 +1,20 @@
+[
+  { "id": "ar-01", "text": "مرحباً بكم في متجرنا", "note": "plain, with tanween" },
+  { "id": "ar-02", "text": "خصم 20% على جميع المنتجات", "note": "Western digits with percent sign" },
+  { "id": "ar-03", "text": "السعر AED 150 فقط", "note": "currency code and number inside Arabic" },
+  { "id": "ar-04", "text": "اطلب الآن عبر واتساب", "note": "alef with madda" },
+  { "id": "ar-05", "text": "قهوة محمصة طازجة كل صباح", "note": "plain, several words" },
+  { "id": "ar-06", "text": "افتتاح فرعنا الجديد في دبي مول", "note": "plain, place name" },
+  { "id": "ar-07", "text": "زوروا Sunrise Bakery اليوم", "note": "Latin brand name in the middle" },
+  { "id": "ar-08", "text": "العرض ساري من ١٠ إلى ١٥ ديسمبر", "note": "Arabic-Indic digits" },
+  { "id": "ar-09", "text": "iPhone 15 Pro متوفر الآن", "note": "starts with Latin and a number" },
+  { "id": "ar-10", "text": "هل لديك سؤال؟ تواصل معنا!", "note": "Arabic question mark and exclamation" },
+  { "id": "ar-11", "text": "(جديد) قهوة الموسم", "note": "parentheses must mirror" },
+  { "id": "ar-12", "text": "ساعات العمل من 9 صباحاً حتى 10 مساءً", "note": "several separate numbers" },
+  { "id": "ar-13", "text": "نحن نقدم لكم أفضل أنواع القهوة المحمصة طازجة كل يوم مع خدمة توصيل سريعة إلى جميع أنحاء المدينة وبأسعار مناسبة للجميع", "note": "long line, must wrap and shrink" },
+  { "id": "ar-14", "text": "اتصل بنا على +971 4 123 4567", "note": "phone number with plus sign" },
+  { "id": "ar-15", "text": "السَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللَّهِ", "note": "full diacritics (tashkeel)" },
+  { "id": "ar-16", "text": "(عرض خاص) 20% خصم", "note": "brackets at the start, percent after a number" },
+  { "id": "ar-17", "text": "اتصل بنا على +44 20 7946 0123", "note": "UK phone number, space-separated groups" },
+  { "id": "ar-18", "text": "الساعة 9:30 صباحاً", "note": "time with a colon" }
+]

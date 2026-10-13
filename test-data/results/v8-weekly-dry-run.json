@@ -1,0 +1,240 @@
+{
+  "model": "gemini-3.8-flash",
+  "usd": 0.010153,
+  "results": [
+    {
+      "id": "mogra-salon",
+      "ms": 15260,
+      "issues": [
+        "#1 repeats past phrase \"फ र ह ड मस ज\""
+      ],
+      "posts": [
+        {
+          "suggested_day": "2026-11-10",
+          "channel": "instagram",
+          "caption": "मंगलवार को बालों की खास देखभाल की ज़रूरत है? 💇‍♀️✨\n\nहमारे यहाँ हर हेयरकट पर पाइए फ्री हेड मसाज, वो भी सिर्फ मंगलवार के दिन!\n\nहेयरकट की कीमत केवल ₹400 है।\n\nहम सोमवार से शनिवार 10am to 9pm खुले रहते हैं। आज ही पधारें और रिलैक्स महसूस करें!",
+          "hashtags": [
+            "#MograSalon",
+            "#BandraWest",
+            "#BandraSalon",
+            "#HaircutOffer",
+            "#Khar"
+          ],
+          "cta": "आज ही हमारे सैलून पधारें!",
+          "link": false,
+          "image_text": {
+            "headline": "मंगलवार स्पेशल ऑफर",
+            "subline": "हेयरकट ₹400 के साथ फ्री हेड मसाज"
+          },
+          "photo_id": "p2",
+          "occasion_key": "",
+          "fact_ids": [
+            "f1",
+            "f4",
+            "f8"
+          ],
+          "topic": "Tuesday haircut and free head massage offer"
+        },
+        {
+          "suggested_day": "2026-11-11",
+          "channel": "facebook",
+          "caption": "भाई दूज की आप सभी को ढेरों शुभकामनाएं! 🌸✨\n\nइस पावन त्योहार पर अपने चेहरे को दीजिए एक ताज़ा और खूबसूरत निखार।\n\nमोगरा ब्यूटी सैलून में फेशियल ₹1,500 में उपलब्ध है।\n\nहमारा पता है: Shop 4, Linking Road, Bandra West, Mumbai 400050।\n\nआज ही आइए और त्योहार की खुशियों में चार चांद लगाइए!",
+          "hashtags": [
+            "#BhaiDooj",
+            "#BandraWest",
+            "#MograBeautySalon",
+            "#FacialCare"
+          ],
+          "cta": "त्योहार पर निखार पाने के लिए विजिट करें!",
+          "link": true,
+          "image_text": {
+            "headline": "भाई दूज की शुभकामनाएं",
+            "subline": "फेशियल ₹1,500 में Shop 4, Linking Road पर"
+          },
+          "photo_id": "p3",
+          "occasion_key": "bhai-dooj",
+          "fact_ids": [
+            "f2",
+            "f6"
+          ],
+          "topic": "Bhai Dooj festive facial invitation"
+        },
+        {
+          "suggested_day": "2026-11-13",
+          "channel": "instagram",
+          "caption": "शादी के खास दिन के लिए तैयार हो रही हैं? 💍✨\n\nदुल्हन के खूबसूरत रूप के लिए हमारा ब्राइडल मेकअप from ₹12,000 शुरू होता है।\n\nहमारी कुशल टीम आपके इस दिन को बेहद यादगार बनाने के लिए तैयार है।\n\nहमसे सीधे संपर्क करने के लिए कॉल करें +91 22 2640 0917।\n\nमिलने के लिए पधारें: Shop 4, Linking Road, Bandra West, Mumbai 400050।",
+          "hashtags": [
+            "#BridalMakeup",
+            "#BandraSalons",
+            "#MumbaiBrides",
+            "#MograSalon",
+            "#LinkingRoad"
+          ],
+          "cta": "कंसल्टेशन के लिए आज ही सैलून आएं!",
+          "link": false,
+          "image_text": {
+            "headline": "ब्राइडल मेकअप सेवाएं",
+            "subline": "ब्राइडल पैकेज from ₹12,000"
+          },
+          "photo_id": "p1",
+          "occasion_key": "",
+          "fact_ids": [
+            "f3",
+            "f6",
+            "f7"
+          ],
+          "topic": "Bridal makeup service invitation"
+        },
+        {
+          "suggested_day": "2026-11-15",
+          "channel": "facebook",
+          "caption": "रविवार का दिन है खुद को पैम्पर करने के लिए! 🌿✨\n\nसंडे को हमारी टाइमिंग 11am to 6pm रहती है।\n\nचाहे हेयरकट हो ₹400 में या रिलैक्सिंग फेशियल ₹1,500 में, हम तैयार हैं आपकी सेवा के लिए।\n\nआप किसी भी जानकारी के लिए हमें +91 22 2640 0917 पर कॉल कर सकते हैं।\n\nआज ही Shop 4, Linking Road, Bandra West, Mumbai 400050 पर पधारें!",
+          "hashtags": [
+            "#SundaySelfCare",
+            "#BandraWest",
+            "#KharMumbai",
+            "#MograBeauty"
+          ],
+          "cta": "इस संडे खुद के लिए वक्त निकालें और विजिट करें!",
+          "link": true,
+          "image_text": {
+            "headline": "संडे सेल्फ केयर",
+            "subline": "रविवार समय: 11am to 6pm"
+          },
+          "photo_id": "",
+          "occasion_key": "",
+          "fact_ids": [
+            "f1",
+            "f2",
+            "f5",
+            "f6",
+            "f7"
+          ],
+          "topic": "Sunday pampering and opening hours reminder"
+        }
+      ]
+    },
+    {
+      "id": "harbour-dental",
+      "ms": 10331,
+      "issues": [
+        "#2 repeats batch phrase \"is licensed by the oregon board\"",
+        "#2 repeats batch phrase \"licensed by the oregon board of\"",
+        "#2 repeats batch phrase \"by the oregon board of dentistry\""
+      ],
+      "posts": [
+        {
+          "suggested_day": "2026-11-09",
+          "channel": "facebook",
+          "caption": "Looking to schedule routine care for yourself or your family? At Harbour Dental, our standard check-up and cleaning is $145.\n\nOur team is licensed by the Oregon Board of Dentistry, providing thorough preventative dental care in Southeast Portland.\n\nWe are open Monday to Thursday from 8am to 5pm and Friday from 8am to 2pm.\n\nFree parking is available behind the building for your appointment.",
+          "hashtags": [
+            "#PortlandDentist",
+            "#SEPortland",
+            "#DentalHealth",
+            "#HarbourDental"
+          ],
+          "cta": "Call (503) 555-0142 to reserve your visit.",
+          "link": true,
+          "image_text": {
+            "headline": "Check-Up and Cleaning",
+            "subline": "Comprehensive dental care for $145 in SE Portland"
+          },
+          "photo_id": "p2",
+          "occasion_key": "",
+          "fact_ids": [
+            "f1",
+            "f3",
+            "f4",
+            "f8",
+            "f9",
+            "f25",
+            "f30"
+          ],
+          "topic": "routine check-up and cleaning service details"
+        },
+        {
+          "suggested_day": "2026-11-10",
+          "channel": "gbp",
+          "caption": "Harbour Dental provides general and cosmetic dental care in Southeast Portland. Lead dentist Dr. Miriam Okafor brings 14 years in practice, working alongside Dr. Tomas Reyes with 9 years in practice. Our office is licensed by the Oregon Board of Dentistry and located at 2215 SE Harbour Avenue, Suite 105, Portland, OR 97214. Free parking is available behind the building. Operating hours are Monday to Thursday 8am to 5pm, and Friday 8am to 2pm.",
+          "hashtags": [
+            "#SEPortland",
+            "#PortlandDental"
+          ],
+          "cta": "Call (503) 555-0142 to book an appointment.",
+          "link": true,
+          "image_text": {
+            "headline": "Experienced Dental Care",
+            "subline": "Dr. Miriam Okafor and Dr. Tomas Reyes"
+          },
+          "photo_id": "p3",
+          "occasion_key": "",
+          "fact_ids": [
+            "f7",
+            "f8",
+            "f21",
+            "f22",
+            "f25",
+            "f26",
+            "f27",
+            "f29",
+            "f30"
+          ],
+          "topic": "clinical team experience and office location"
+        },
+        {
+          "suggested_day": "2026-11-11",
+          "channel": "facebook",
+          "caption": "Today we honor and express our gratitude to all veterans and military families for your dedicated service.\n\nHarbour Dental appreciates the contributions and sacrifices made by service members throughout our community.\n\nWishing everyone in Portland a meaningful Veterans Day.",
+          "hashtags": [
+            "#VeteransDay",
+            "#SEPortland",
+            "#PortlandCommunity"
+          ],
+          "cta": "Reach our office at (503) 555-0142.",
+          "link": true,
+          "image_text": {
+            "headline": "Honoring Our Veterans",
+            "subline": "Thank you for your dedicated service"
+          },
+          "photo_id": "",
+          "occasion_key": "veterans-day",
+          "fact_ids": [
+            "f6"
+          ],
+          "topic": "honoring community members on Veterans Day"
+        },
+        {
+          "suggested_day": "2026-11-12",
+          "channel": "instagram",
+          "caption": "Considering dental implants or clear aligners to support your smile?\n\nHarbour Dental offers consultations to discuss restorative and alignment treatments.\n\nPricing for dental implants, clear aligners, and crowns and bridges is provided directly on consultation.\n\nVisit us at 2215 SE Harbour Avenue, Suite 105, Portland, OR 97214.",
+          "hashtags": [
+            "#PortlandDentist",
+            "#ClearAligners",
+            "#DentalImplants",
+            "#SEPortlandDental",
+            "#HarbourDental"
+          ],
+          "cta": "Call (503) 555-0142 to request a consultation.",
+          "link": false,
+          "image_text": {
+            "headline": "Dental Consultations",
+            "subline": "Implants, clear aligners, and restorative care"
+          },
+          "photo_id": "p1",
+          "occasion_key": "",
+          "fact_ids": [
+            "f15",
+            "f16",
+            "f17",
+            "f18",
+            "f19",
+            "f20",
+            "f29",
+            "f30"
+          ],
+          "topic": "restorative treatments and consultation pricing"
+        }
+      ]
+    }
+  ]
+}

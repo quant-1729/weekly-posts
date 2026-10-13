@@ -1,0 +1,866 @@
+{
+  "model": "gemini-3.8-flash",
+  "usd": 0.0370795,
+  "results": [
+    {
+      "id": "in-01",
+      "brand": "brand-sweets",
+      "language": "hi",
+      "regulated": false,
+      "ms": 7778,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Morning fresh jalebi at ₹240/kg and Diwali kaju katli gift box orders",
+        "outputs": {
+          "ig_feed": {
+            "caption": "सुबह की शुरुआत गरमा-गरम ताज़ा जलेबी के साथ करें ✨\nआज की ताज़ा जलेबी तैयार है केवल ₹240 प्रति किलो में।\nदिवाली के लिए काजू कतली के ख़ास गिफ़्ट डिब्बे भी तैयार करवाए जा रहे हैं।\nऑर्डर के लिए WhatsApp करें!",
+            "cta": "ऑर्डर के लिए WhatsApp करें",
+            "hashtags": [
+              "#ShriRamSweets",
+              "#IndoreFood",
+              "#IndoreSweets",
+              "#Jalebi",
+              "#SarafaIndore",
+              "#जलेबी",
+              "#दिवाली"
+            ],
+            "image_text": {
+              "headline": "ताज़ा जलेबी ₹240/kg",
+              "subline": "दिवाली काजू कतली गिफ़्ट पैक उपलब्ध",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "आज सुबह की ताज़ा जलेबी ₹240 प्रति किलो और दिवाली काजू कतली पैक उपलब्ध ✨",
+            "cta": "ऑर्डर के लिए WhatsApp करें",
+            "hashtags": [],
+            "image_text": {
+              "headline": "ताज़ा जलेबी ₹240/kg",
+              "subline": "दिवाली काजू कतली डिब्बे उपलब्ध",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "राम-राम इंदौर! आज सुबह की गरमा-गरम और ताज़ा जलेबी दुकान पर तैयार है, सिर्फ़ ₹240 प्रति किलो में।\nसाथ ही, आने वाले दिवाली के त्योहार के लिए काजू कतली के ख़ास गिफ़्ट बॉक्स भी बनाए जा रहे हैं।\nअपने परिवार और दोस्तों के लिए ताज़ा मिठाई ले जाएं या डिब्बा तैयार करवाएं।\nऑर्डर के लिए WhatsApp करें।",
+            "cta": "ऑर्डर के लिए WhatsApp करें",
+            "hashtags": [
+              "#IndoreSweets",
+              "#SarafaBazar"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "श्री राम स्वीट्स पर आज सुबह की ताज़ा जलेबी ₹240 प्रति किलो में उपलब्ध है। आने वाले दिवाली त्योहार के लिए काजू कतली के गिफ़्ट डिब्बे भी तैयार करवाए जा सकते हैं। दुकान का पता 14 Sarafa Road, Indore है और दुकान सुबह 8 AM से रात 10 PM तक खुली रहती है। ताज़ा मिठाई के लिए पधारें या ऑर्डर के लिए WhatsApp करें।",
+            "cta": "ऑर्डर के लिए WhatsApp करें",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "₹240 per per kg",
+            "kind": "price",
+            "source": "brand_memory"
+          },
+          {
+            "text": "दो सौ चालीस रुपये किलो",
+            "kind": "price",
+            "source": "input"
+          },
+          {
+            "text": "दिवाली आ रही है तो काजू कतली का डिब्बा भी बनवा सकते हैं",
+            "kind": "offer",
+            "source": "input"
+          },
+          {
+            "text": "Shop open 8 AM to 10 PM daily",
+            "kind": "time",
+            "source": "brand_memory"
+          },
+          {
+            "text": "14 Sarafa Road, Indore",
+            "kind": "claim",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "in-03",
+      "brand": "brand-coaching",
+      "language": "hi",
+      "regulated": true,
+      "ms": 11840,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Announcement of new batches starting from the 1st of the month at Ujjwal Academy.",
+        "outputs": {
+          "ig_feed": {
+            "caption": "पढ़ाई की सही तैयारी और सही मार्गदर्शन। 📚\nउज्ज्वल अकादमी में नए बैच 1 तारीख से शुरू हो रहे हैं।\nक्लास 9 से 12 और प्रतियोगी परीक्षाओं के लिए आज ही अपनी सीट पक्की करें।",
+            "cta": "एडमिशन की जानकारी के लिए WhatsApp करें",
+            "hashtags": [
+              "#PatnaCoaching",
+              "#BoringRoad",
+              "#PatnaStudents",
+              "#CoachingInPatna",
+              "#PatnaTuition",
+              "#उज्ज्वलअकादमी"
+            ],
+            "image_text": {
+              "headline": "नए बैच शुरू हो रहे हैं",
+              "subline": "1 तारीख से शुरू | बोरिंग रोड, पटना",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "उज्ज्वल अकादमी में नए बैच 1 तारीख से शुरू हो रहे हैं। 📖",
+            "cta": "पूरी जानकारी के लिए WhatsApp करें",
+            "hashtags": [],
+            "image_text": {
+              "headline": "नए बैच 1 तारीख से",
+              "subline": "उज्ज्वल अकादमी, बोरिंग रोड",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "विद्यार्थियों के उज्ज्वल भविष्य के लिए सही मार्गदर्शन बेहद ज़रूरी है। 📘\nउज्ज्वल अकादमी, बोरिंग रोड (पटना) में क्लास 9 से 12 और प्रतियोगी परीक्षाओं की तैयारी के लिए नए बैच 1 तारीख से शुरू हो रहे हैं।\n\nक्लास के समय और फ़ीस की जानकारी के लिए हमसे सीधे संपर्क करें।",
+            "cta": "जानकारी और एडमिशन के लिए WhatsApp करें",
+            "hashtags": [
+              "#PatnaEducation",
+              "#BoringRoadPatna",
+              "#CoachingPatna"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "उज्ज्वल अकादमी, बोरिंग रोड, पटना में क्लास 9 से 12 एवं प्रतियोगी परीक्षाओं की तैयारी के लिए नए बैच 1 तारीख से शुरू हो रहे हैं। हमारी कक्षाएं सुबह 7 से 9 और शाम 5 से 8 बजे तक संचालित होती हैं। नए बैच में प्रवेश और विवरण के लिए संपर्क करें।",
+            "cta": "बैच की जानकारी के लिए WhatsApp करें",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "नया बैच एक तारीख से शुरू",
+            "kind": "date",
+            "source": "input"
+          },
+          {
+            "text": "Boring Road, Patna",
+            "kind": "claim",
+            "source": "brand_memory"
+          },
+          {
+            "text": "Timings 7 AM to 9 AM and 5 PM to 8 PM",
+            "kind": "time",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "in-06",
+      "brand": "brand-restaurant",
+      "language": "hi",
+      "regulated": false,
+      "ms": 3286,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "needs_input",
+        "message_to_owner": "आपकी आवाज़ में कुछ बातें साफ़ नहीं आ रही हैं। कृपया ऑफ़र की पूरी जानकारी (जैसे छूट और समय) दोबारा बोलकर भेजें या लिखकर बताएं।",
+        "summary": "Incomplete audio input regarding a discount on Rajasthani thali",
+        "outputs": {
+          "ig_feed": {
+            "caption": "",
+            "cta": "",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "",
+            "cta": "",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "",
+            "cta": "",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "",
+            "cta": "",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": []
+      }
+    },
+    {
+      "id": "in-08",
+      "brand": "brand-kirana",
+      "language": "hinglish",
+      "regulated": false,
+      "ms": 5845,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Announcing fresh grocery stock arrival at Gupta General Store in Aliganj, Lucknow.",
+        "outputs": {
+          "ig_feed": {
+            "caption": "Ghar ke rashan ki fresh bachat! 🛒\nGupta General Store par naya stock aa gaya hai.\nDaily essentials aur kitchen supplies ke liye aaj hi contact karein. ✨\nOrder ke liye WhatsApp karein",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [
+              "#GuptaGeneralStore",
+              "#LucknowKirana",
+              "#AliganjMarket",
+              "#LucknowGroceries",
+              "#RationList",
+              "#FreshStock"
+            ],
+            "image_text": {
+              "headline": "Naya Stock Aa Gaya",
+              "subline": "Daily ration aur kitchen essentials",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "Naya stock aa chuka hai Gupta General Store par! 🛒",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [],
+            "image_text": {
+              "headline": "Fresh Stock Arrived",
+              "subline": "Shop no. 6, Aliganj Market",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "Aliganj aur Indira Nagar ke parivaron ke liye zaroori khabar! 🛒\nGupta General Store par sabhi daily essentials ka naya stock aa gaya hai.\nGhar ke rashan ki chinta chhodiye aur apni grocery list humein bhej dijiye.\nShop no. 6, Aliganj Market, Lucknow par aaiye ya ghar baithe mangwaiye. ✨",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [
+              "#Lucknow",
+              "#Aliganj",
+              "#GuptaGeneralStore"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "Gupta General Store par grocery aur daily rashan ka naya stock aa gaya hai. Aliganj aur Indira Nagar ke sabhi parivaron ke liye kitchen essentials uplabdh hain. Hamari dukaan Shop no. 6, Aliganj Market, Lucknow par sthit hai. Timings: 7 AM to 9:30 PM aur Sunday 8 AM to 2 PM. Delivery ya enquiry ke liye sampark karein.",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "Shop no. 6, Aliganj Market, Lucknow",
+            "kind": "claim",
+            "source": "brand_memory"
+          },
+          {
+            "text": "7 AM to 9:30 PM",
+            "kind": "time",
+            "source": "brand_memory"
+          },
+          {
+            "text": "Sunday 8 AM to 2 PM",
+            "kind": "time",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "in-11",
+      "brand": "brand-kirana",
+      "language": "hinglish",
+      "regulated": false,
+      "ms": 8881,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Atta 10 kg bag available at ₹420 and Sunday shop timings till 2 PM",
+        "outputs": {
+          "ig_feed": {
+            "caption": "Ghar ki rasoi ke liye chakki ground fresh atta tayyar hai 🌾\nAtta 10 kg bag sirf ₹420 mein uplabdh hai.\nSunday ko shop 2 PM tak khuli hai.\nGupta General Store se apna grocery stock karein!\nOrder ke liye WhatsApp karein",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [
+              "#GuptaGeneralStore",
+              "#LucknowGroceries",
+              "#Aliganj",
+              "#KiranaStore",
+              "#Atta",
+              "#LucknowFood"
+            ],
+            "image_text": {
+              "headline": "Fresh Atta 10 kg",
+              "subline": "₹420 per bag",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "Chakki ground atta 10 kg bag sirf ₹420 mein! Sunday ko dukan 2 PM tak khuli hai 🌾",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [],
+            "image_text": {
+              "headline": "Atta 10 kg Bag",
+              "subline": "₹420",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "Namaste Aliganj aur Indira Nagar ke parivaron! 🌾\nGupta General Store par chakki ground fresh atta uplabdh hai. 10 kg bag ka daam ₹420 hai.\nDhayan rahe, Sunday ko hamari shop dopahar 2 PM tak khuli rehti hai.\nRs 300 se upar ke order par 3 km tak home delivery uplabdh hai.\nApna monthly grocery order dene ke liye humein message karein.",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [
+              "#GuptaGeneralStore",
+              "#AliganjLucknow"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "Gupta General Store, Aliganj Market Lucknow par chakki ground atta ka 10 kg bag ₹420 mein uplabdh hai. Sunday ke din dukan subah 8 AM se 2 PM tak khuli rehti hai. Normal days par hum subah 7 AM se 9:30 PM tak open hain. 3 km ke radius mein Rs 300 se upar ke orders par home delivery ki suvidha bhi hai.",
+            "cta": "Order ke liye WhatsApp karein",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "10 kg bag — ₹420",
+            "kind": "price",
+            "source": "input"
+          },
+          {
+            "text": "Sunday 2 baje tak / 8 AM to 2 PM",
+            "kind": "time",
+            "source": "input"
+          },
+          {
+            "text": "chakki ground",
+            "kind": "claim",
+            "source": "brand_memory"
+          },
+          {
+            "text": "7 AM to 9:30 PM",
+            "kind": "time",
+            "source": "brand_memory"
+          },
+          {
+            "text": "Shop no. 6, Aliganj Market, Lucknow",
+            "kind": "claim",
+            "source": "brand_memory"
+          },
+          {
+            "text": "Home delivery within 3 km on orders above Rs 300",
+            "kind": "offer",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "in-14",
+      "brand": "brand-saree",
+      "language": "hinglish",
+      "regulated": false,
+      "ms": 6683,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Announcing fresh saree and festive collection arrivals at Rang Boutique in Surat.",
+        "outputs": {
+          "ig_feed": {
+            "caption": "Aapke festive aur wedding season ke liye Rang Boutique mein new stock aa chuka hai ✨\nKhoobsurat Banarasi silk aur cotton handloom sarees ka naya collection dekhne zaroor aaiye.\nRing Road Textile Market, Surat par visit karein ya WhatsApp par designs dekhein 🌸\nOrder aur jaankari ke liye WhatsApp karein",
+            "cta": "WhatsApp karein",
+            "hashtags": [
+              "#RangBoutique",
+              "#SuratSarees",
+              "#BanarasiSilk",
+              "#HandloomSaree",
+              "#SuratTextileMarket",
+              "#FestiveWear"
+            ],
+            "image_text": {
+              "headline": "Naya Stock Aa Gaya",
+              "subline": "Rang Boutique Surat",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "Rang Boutique mein naya stock aa gaya hai ✨ Designs dekhne ke liye message karein.",
+            "cta": "WhatsApp karein",
+            "hashtags": [],
+            "image_text": {
+              "headline": "New Stock Arrived",
+              "subline": "Rang Boutique",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "Namaste Surat! Rang Boutique mein naya stock aa chuka hai ✨\nAap sabhi ke liye Banarasi silk aur cotton handloom sarees ke pyare designs ready hain.\nShop 41, Ring Road Textile Market, Surat mein aaiye, timing hai 10:30 AM to 9 PM (Sunday included).\nWedding ya festival shopping ke liye hume visit karein ya WhatsApp par sampark karein 🌸",
+            "cta": "WhatsApp par message karein",
+            "hashtags": [
+              "#RangBoutique",
+              "#SuratShopping",
+              "#SareeCollection"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "Rang Boutique mein naya stock aa chuka hai. Wedding aur festivals ke liye Banarasi silk sarees aur cotton handloom sarees uplabdh hain. Humari shop 10:30 AM to 9 PM khuli rehti hai, Sunday included. Visit karein Shop 41, Ring Road Textile Market, Surat ya jaankari ke liye WhatsApp par sampark karein.",
+            "cta": "WhatsApp karein",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "new stock aaya hai",
+            "kind": "claim",
+            "source": "input"
+          },
+          {
+            "text": "10:30 AM to 9 PM, Sunday included",
+            "kind": "time",
+            "source": "brand_memory"
+          },
+          {
+            "text": "Shop 41, Ring Road Textile Market, Surat",
+            "kind": "claim",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "in-17",
+      "brand": "brand-gym",
+      "language": "en",
+      "regulated": false,
+      "ms": 6040,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Morning batch for ladies starting at 5:30 AM with monthly membership at ₹1500 and free trial visit.",
+        "outputs": {
+          "ig_feed": {
+            "caption": "Start your mornings strong! 💪\nWe now have a dedicated morning batch for ladies starting at 5:30 AM.\nGet full gym access with our monthly membership at ₹1500 per month.\nBook your free trial visit with us today. 🔥\nMessage us on WhatsApp to book.",
+            "cta": "Message us on WhatsApp to book",
+            "hashtags": [
+              "#IronHouseFitness",
+              "#LucknowGym",
+              "#VibhutiKhand",
+              "#GomtiNagar",
+              "#LadiesFitnessLucknow",
+              "#FitnessLucknow"
+            ],
+            "image_text": {
+              "headline": "Ladies Morning Batch",
+              "subline": "Starts 5:30 AM | ₹1500/month",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "New ladies morning batch starts at 5:30 AM! 💪 ₹1500 per month.",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [],
+            "image_text": {
+              "headline": "Ladies Morning Batch",
+              "subline": "Starts at 5:30 AM",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "Good news for our female fitness enthusiasts in Gomti Nagar and Vibhuti Khand! 💪\nWe now have a dedicated morning batch for ladies, starting early at 5:30 AM.\nEnjoy full gym access with our monthly membership at ₹1500 per month.\nNew members can also book a free trial visit before joining.\nVisit us at First floor, Vibhuti Khand Market, Lucknow, or message us to get started! 🏋️",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [
+              "#IronHouseFitness",
+              "#LucknowFitness"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "IronHouse Fitness introduces a morning batch for ladies, starting at 5:30 AM. Located at First floor, Vibhuti Khand Market, Lucknow, our gym is open to beginners and working professionals. Monthly membership is available at ₹1500 per month for full gym access. New members can avail a free trial visit by connecting with us.",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "5:30",
+            "kind": "time",
+            "source": "input"
+          },
+          {
+            "text": "1500",
+            "kind": "price",
+            "source": "input"
+          },
+          {
+            "text": "₹1500 per per month",
+            "kind": "price",
+            "source": "brand_memory"
+          },
+          {
+            "text": "Free trial visit for new members when booked on WhatsApp",
+            "kind": "offer",
+            "source": "brand_memory"
+          },
+          {
+            "text": "First floor, Vibhuti Khand Market, Lucknow",
+            "kind": "claim",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "in-21",
+      "brand": "brand-dental",
+      "language": "en",
+      "regulated": true,
+      "ms": 9117,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Information about root canal treatment consultations at Smile Point Dental Clinic in Kothrud.",
+        "outputs": {
+          "ig_feed": {
+            "caption": "Worried about a toothache or root canal treatment? 🦷\n\nDr. Neha Joshi is here to examine your teeth gently and explain each step before starting.\n\nCost is shared after a detailed clinical checkup. Message us on WhatsApp to book your visit.",
+            "cta": "Message us on WhatsApp to book",
+            "hashtags": [
+              "#SmilePointDental",
+              "#PuneDentist",
+              "#Kothrud",
+              "#KarveNagar",
+              "#RootCanalTreatment",
+              "#DentalCarePune"
+            ],
+            "image_text": {
+              "headline": "Root Canal Consultation",
+              "subline": "Dr. Neha Joshi, BDS in Kothrud",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "Toothache troubling you? Consult Dr. Neha Joshi for root canal evaluation. 🦷",
+            "cta": "Message us on WhatsApp to book",
+            "hashtags": [],
+            "image_text": {
+              "headline": "Dental Care in Kothrud",
+              "subline": "Root canal consultation and checkup",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "Many patients feel nervous when they hear the words root canal. At Smile Point Dental Clinic, Dr. Neha Joshi, BDS, conducts a thorough examination and explains the procedure calmly.\n\nThe cost of root canal treatment is shared after your checkup. We are open Monday to Saturday from 10 AM to 1:30 PM and 5 PM to 9 PM, with Sundays by appointment.\n\nMessage us on WhatsApp to schedule your consultation.",
+            "cta": "Message us on WhatsApp to book",
+            "hashtags": [
+              "#KothrudDentist",
+              "#SmilePointDental",
+              "#PuneHealthcare"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "Smile Point Dental Clinic offers root canal treatment consultations for patients in Kothrud and Karve Nagar. Dr. Neha Joshi, BDS, provides complete dental examinations to evaluate your tooth health, with treatment plans and costs explained after the checkup. Visit us on the 3rd floor, Shubham Complex, Kothrud. Open Monday to Saturday, 10 AM to 1:30 PM and 5 PM to 9 PM; Sunday by appointment.",
+            "cta": "Message us on WhatsApp to book",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "Mon-Sat 10 AM to 1:30 PM and 5 PM to 9 PM; Sunday by appointment",
+            "kind": "time",
+            "source": "brand_memory"
+          },
+          {
+            "text": "3rd floor, Shubham Complex, Kothrud, Pune",
+            "kind": "claim",
+            "source": "brand_memory"
+          },
+          {
+            "text": "Root canal treatment (cost given after examination)",
+            "kind": "claim",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "in-22",
+      "brand": "brand-dental",
+      "language": "en",
+      "regulated": true,
+      "ms": 6039,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "Teeth whitening available at ₹4500 until 31 October",
+        "outputs": {
+          "ig_feed": {
+            "caption": "Thinking about teeth whitening for your smile? ✨\nConsultation and whitening session available at ₹4500.\nBook before 31 October with Dr. Neha Joshi in Kothrud.\nAppointments open for your visit.\nMessage us on WhatsApp",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [
+              "#SmilePointDental",
+              "#PuneDentist",
+              "#Kothrud",
+              "#TeethWhitening",
+              "#DentalClinicPune",
+              "#PuneDental"
+            ],
+            "image_text": {
+              "headline": "Teeth Whitening",
+              "subline": "At ₹4500 only. Book before 31 October",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "Teeth whitening at ₹4500. Book before 31 October. ✨",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [],
+            "image_text": {
+              "headline": "Teeth Whitening",
+              "subline": "₹4500 only till 31 October",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "Planning a dental checkup and teeth whitening? ✨\nAt Smile Point Dental Clinic in Kothrud, teeth whitening is available at ₹4500 per session after doctor consultation.\nBook your visit before 31 October.\nDr. Neha Joshi and our team are here to assist you Mon-Sat.\nMessage us on WhatsApp to schedule your consultation.",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [
+              "#Kothrud",
+              "#PuneDentist"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "Smile Point Dental Clinic in Kothrud offers teeth whitening sessions at 4500 after doctor consultation. Book before 31 October. Located at 3rd floor, Shubham Complex, Kothrud, Pune. Clinic hours are Monday to Saturday from 10 AM to 1:30 PM and 5 PM to 9 PM, Sunday by appointment. Message us on WhatsApp to schedule your consultation with Dr. Neha Joshi.",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "4500",
+            "kind": "price",
+            "source": "input"
+          },
+          {
+            "text": "31 October",
+            "kind": "date",
+            "source": "input"
+          },
+          {
+            "text": "after doctor consultation",
+            "kind": "claim",
+            "source": "brand_memory"
+          },
+          {
+            "text": "Dr. Neha Joshi",
+            "kind": "claim",
+            "source": "brand_memory"
+          },
+          {
+            "text": "3rd floor, Shubham Complex, Kothrud, Pune",
+            "kind": "claim",
+            "source": "brand_memory"
+          },
+          {
+            "text": "Mon-Sat 10 AM to 1:30 PM and 5 PM to 9 PM; Sunday by appointment",
+            "kind": "time",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    },
+    {
+      "id": "in-29",
+      "brand": "brand-ca",
+      "language": "en",
+      "regulated": true,
+      "ms": 6862,
+      "statusOk": true,
+      "issues": [],
+      "result": {
+        "status": "ok",
+        "message_to_owner": "",
+        "summary": "ITR filing booking with free first consultation this month at Mehta & Associates Pune",
+        "outputs": {
+          "ig_feed": {
+            "caption": "Planning your income tax return filing? Book your ITR slot with Mehta & Associates in Shivajinagar, Pune.\n\nFree first consultation this month. Fees on call.\n\nMessage us on WhatsApp to book your slot.",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [
+              "#MehtaAndAssociates",
+              "#ITRFiling",
+              "#PuneCA",
+              "#IncomeTaxReturn",
+              "#PuneTaxConsultant",
+              "#ShivajinagarPune"
+            ],
+            "image_text": {
+              "headline": "Book Your ITR Slot",
+              "subline": "Free first consultation this month",
+              "bubble": ""
+            }
+          },
+          "status": {
+            "caption": "Book your ITR filing slot. Free first consultation this month.",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [],
+            "image_text": {
+              "headline": "ITR Filing Booking",
+              "subline": "Free first consultation this month",
+              "bubble": ""
+            }
+          },
+          "facebook": {
+            "caption": "Tax season is here, and it is a good time to organise your filing. Mehta & Associates is now booking ITR filing slots for salaried professionals, freelancers, and business owners in Pune.\n\nTake advantage of a free first consultation this month. Fees on call.\n\nVisit our office at Sai Chambers, Shivajinagar, open Monday to Saturday from 10 AM to 6 PM, or connect with us directly.\n\nMessage us on WhatsApp to book your slot.",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [
+              "#PuneCA",
+              "#ITRFilingPune",
+              "#TaxConsultantPune"
+            ],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          },
+          "gbp": {
+            "caption": "Mehta & Associates, Chartered Accountants in Shivajinagar, Pune, is now booking income tax return filing slots. We assist salaried individuals, freelancers, and small business owners with their tax compliance. Free first consultation this month. Fees on call. Office hours are Monday to Saturday, 10 AM to 6 PM, at 5th floor, Sai Chambers, Shivajinagar. Message us on WhatsApp to schedule your consultation.",
+            "cta": "Message us on WhatsApp",
+            "hashtags": [],
+            "image_text": {
+              "headline": "",
+              "subline": "",
+              "bubble": ""
+            }
+          }
+        },
+        "facts_used": [
+          {
+            "text": "Free first consultation this month",
+            "kind": "offer",
+            "source": "input"
+          },
+          {
+            "text": "Mon-Sat 10 AM to 6 PM",
+            "kind": "time",
+            "source": "brand_memory"
+          },
+          {
+            "text": "5th floor, Sai Chambers, Shivajinagar, Pune",
+            "kind": "claim",
+            "source": "brand_memory"
+          }
+        ]
+      }
+    }
+  ]
+}
