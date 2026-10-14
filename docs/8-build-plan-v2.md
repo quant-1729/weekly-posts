@@ -131,11 +131,35 @@ Every new table has RLS by brand. No-login link actions run on the server after 
 | H-4 | **Fixed 2026-10-13** (median-of-5 timing, robust temp cleanup). Was: flaky under full-suite load (pass alone): render "under 1.5 s" timing test; `tests/db/mock-steps.test.ts` (timeout, ENOTEMPTY on temp dir cleanup). Stabilise | V-21, V-22 |
 | H-5 | Gmail/Outlook rendering and real-phone share sheets: manual checklist once a sending domain exists (`docs/email-checklist.md`) | V-15, V-17 |
 | H-6 | Gemini via the shared Vertex project stalls on ~1 in 5 calls; dedicated GCP project before the pilot | live checks |
-| H-7 | Supabase backend stubs (auth admin delete, storage list/removePrefix, Postgres driver) to implement at Supabase integration | V-2, V-20 |
+| H-7 | **Fixed 2026-10-13** (pg over the pooler, Supabase Storage, own magic links per D8, admin-API user create/delete; `npm run test:supabase` 32 tests passed twice; browser pass on the real project: sign-in, setup, week generated in under 84 s, images served, account deleted to zero rows and files). Was: Supabase backend stubs (auth admin delete, storage list/removePrefix, Postgres driver) to implement at Supabase integration | V-2, V-20 |
 | H-8 | Mascot polish: small mascot slot in tall text-only templates; pose label "Namaste" could read "Greeting" for a global audience | V-25 review |
 | H-9 | **Fixed 2026-10-13** (pipes become ": " or ", " in saved values; quotes unchanged). Was: Website table cells are joined with " \| " in cleaned text, so facts like "Monday to Friday \| 7am to 6pm" carry a pipe into posts; normalise separators in fact values at extraction | V-24 demo |
 | H-10 | **Fixed 2026-10-13** (old links show the week's current posts with a "replaced" note; a POST never acts). Was: After "Generate new posts", links in the already-sent weekly email point at replaced drafts and show "We could not find that". Fall back to the week's current posts with a short "these posts were replaced" note | V-24 browser pass |
 | H-11 | **Fixed 2026-10-13** (real PNG `canShare` probe; Share hidden unless it passes, on the ready page and dashboard). Was: Ready page shows "Share" / "Share as story" on browsers that cannot share files (desktop); hide them when `navigator.canShare({files})` is false and lead with Download/Copy | V-24 browser pass |
 | H-12 | **Fixed 2026-10-13** (consent says owners can delete in settings, with a Terms and privacy link). Was: Login consent line still says "You can ask us to delete them"; owners can now delete themselves in settings | V-24 browser pass |
 | H-13 | **Fixed 2026-10-13** (lint scans style attributes only). Was: email lint test flakes when a random JWT in an href matches the CSS-unit regex; strip hrefs before scanning | V-23 |
+| H-14 | Account-delete request link (`src/lib/account/request-delete.ts`) still rate-limits in memory, which does not hold across serverless instances. Count from the database like sign-in links | H-7 review |
+| H-15 | Database connection uses TLS without certificate checking (`rejectUnauthorized: false`). Pin Supabase's CA certificate before launch | H-7 review |
+| H-16 | Setup keeps answers in the page only: a reload mid-setup starts again at step 1 (seen in the browser pass). Save each step, or keep answers in session storage | H-7 browser pass |
+| H-17 | Render timing test ("under 1.5 s") fails under full-suite load (twice more on 2026-10-14 with the dev server running, after Tween replaced the old mascot); passes alone. Measure Tween's render cost (the halo filter is the likely extra) and widen the margin or cache the mascot SVG | H-7 review, M-2 |
+| H-18 | Privacy text (`/terms`) should say that public pages of websites that need JavaScript are read through a third-party reading service (Jina Reader), and set `READER_API_KEY` in production (free tier is about 20 requests a minute) | W-1 review |
+| H-19 | Docked Tween can sit over the bottom-right of a card (e.g. a section's open arrow) while scrolling on mid-width screens; consider docking in free space or shrinking when it overlaps controls | L-1 browser pass |
+| H-20 | Instagram: a post the owner deletes comes back on Refresh if it is still among the newest 12. Decide: remember hidden post ids so deletions stick (small schema change) | I-1 review |
 | — | Fixed in V-24: setup location and business name were not facts, so "Mumbai" was flagged as an unsupported contact; plain invitations ("visit us today") were flagged as dates | V-24 browser pass |
+
+## 6. Tween mascot (owner decision 2026-10-13, D9)
+
+Source: `vendor/tween-mascot-kit/` (the owner's Tween kit: rig code, state machine, copy format, 18 reference poses). Replaces the V-25 per-brand mascot generator.
+
+| ID | Task | Owner | Status |
+|---|---|---|---|
+| M-1 | Tween as the live app guide: port the rig, state machine, movement and bubbles; Weekly Posts copy in `src/content/tween.json`; reacts to app events (generating, posts ready, approved, error, empty) | builder | **Done 2026-10-14**: 78 tween tests; lazy chunk 11.7 KB gzip; mounted in the real app (seen docked on /setup); approve hooks wired by the orchestrator. Browser pass of the dialogue and events still to do with the owner |
+| M-2 | Tween as each brand's mascot in posts: server-side static renderer (tested against the kit's reference poses), brand scarf colour, new mascot page, old generator removed | builder | **Done 2026-10-14**: 16 poses match the kit (IoU 0.9988-0.9993); brand colours with contrast fallback and halo checked by eye; old generator removed |
+
+## 7. Layout change (owner decision 2026-10-14, D10)
+
+| ID | Task | Owner | Status |
+|---|---|---|---|
+| L-1 | Desktop-first responsive layout: sidebar shell, wide pages, phone layout kept below 768 px; Tween placement for the wide layout | builder | **Done 2026-10-14**: sidebar ≥ 1024 px (measured 256 px + 1169 px main at 1440), top bar 768-1023, phone layout below; checked in the browser at 1440 and 800 |
+| W-1 | Read websites that build pages with JavaScript: Jina Reader for no-text pages, title/description fallback, clearer message | builder | **Done 2026-10-14**: live read of nostaviahealth.com: 2 pages through the reader, 21 facts with real quotes, 1 invented fact dropped, $0.0097, 17.5 s. Read reason now stored in `brand_memory.website_read_reason` (0013), so setup and the Brand page explain it after a reload. Privacy text to mention the reader service (H-18) |
+| I-1 | Instagram import by @handle (Meta Business Discovery, no owner login); handle found on the website; captions become past posts, chosen images become photos; screenshots stay as fallback. Migration 0013. Needs the owner's Meta app + token to switch on | builder | **Done 2026-10-14 (fixtures)**: 125 tests; website footer link → handle (wired by the orchestrator, tested); 0013 applied to Supabase; card shown in 'not switched on' mode. Live Meta test pending the token |

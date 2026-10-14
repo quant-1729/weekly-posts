@@ -1,10 +1,11 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { BottomNav } from "@/components/bottom-nav";
+import { AppShell } from "@/components/app-shell/app-shell";
+import { TweenLoader } from "@/components/tween/TweenLoader";
 import { getCurrentUser, signOut } from "@/lib/auth";
 import { PATHNAME_HEADER } from "@/lib/auth/public-paths";
 import { getCurrentBrand, needsSetup } from "@/lib/brand/current";
-import { s } from "@/lib/i18n/strings";
+import { isTweenEnabled } from "@/lib/tween/bundle";
 
 async function signOutAction() {
   "use server";
@@ -27,20 +28,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/setup");
   }
 
+  // Tween, the guide (M-1): signed-in app pages only. Off with "enabled": false in src/content/tween.json or TWEEN_ENABLED=0.
+  const tween = isTweenEnabled();
+
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col bg-white shadow-sm">
-      <header className="flex items-center justify-between gap-2 border-b border-stone-200 px-4 py-3">
-        <span className="text-lg font-bold text-[#E4572E]">{s.appName}</span>
-        {/* One business per account: the name is plain text. The switcher component is kept but not shown. */}
-        {brand && !setupNeeded && <span className="min-w-0 flex-1 truncate text-center text-sm font-medium text-stone-700">{brand.name}</span>}
-        <form action={signOutAction}>
-          <button type="submit" className="text-sm text-stone-600 underline">
-            {s.signOut}
-          </button>
-        </form>
-      </header>
-      <main className="flex-1 px-4 pb-24 pt-4">{children}</main>
-      <BottomNav />
-    </div>
+    <AppShell businessName={brand && !setupNeeded ? brand.name : null} signOutAction={signOutAction} overlay={tween ? <TweenLoader /> : undefined}>
+      {children}
+    </AppShell>
   );
 }

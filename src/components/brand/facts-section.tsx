@@ -5,7 +5,7 @@ import { addFactAction, editFactAction, removeFactAction, rereadWebsiteAction } 
 import { errorClass, hintClass, inputClass, labelClass, primaryButton, secondaryButton } from "@/components/ui";
 import { fill, s } from "@/lib/i18n/strings";
 import { FACT_GROUPS, FACT_KINDS, groupOfKind, parseFact, type FactKind, type FactView } from "@/lib/memory/schema";
-import { formatDate, rereadMessage } from "@/lib/memory/messages";
+import { formatDate, rereadMessage, savedReadNote } from "@/lib/memory/messages";
 import type { WebsiteInfo } from "@/lib/memory/website";
 import { FactSource } from "./fact-source";
 
@@ -260,6 +260,7 @@ export function FactsSection({
           onChange={(e) => setUrl(e.target.value)}
         />
         <p className="text-sm text-stone-500">{readLine}</p>
+        {!readResult && savedReadNote(website.status, website.reason) && <p className="text-sm text-amber-900">{savedReadNote(website.status, website.reason)}</p>}
         <button type="button" className={secondaryButton} disabled={reading || pending} onClick={reread}>
           {reading ? t.reread.reading : website.url ? t.reread.button : t.reread.buttonFirst}
         </button>

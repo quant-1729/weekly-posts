@@ -21,6 +21,8 @@ export interface PageLink {
 }
 export interface CleanedPage {
   title: string;
+  /** The og:title meta tag, or an empty string. */
+  ogTitle: string;
   metaDescription: string;
   /** Visible text, at most MAX_PAGE_CHARS characters. */
   text: string;
@@ -86,7 +88,7 @@ interface Entry {
 }
 
 /** Shortens text over the cap by keeping the start and the end, where footers are. */
-function capText(text: string): { text: string; truncated: boolean } {
+export function capText(text: string): { text: string; truncated: boolean } {
   if (text.length <= MAX_PAGE_CHARS) return { text, truncated: false };
   const marker = "\n[...]\n";
   const tail = 2400;
@@ -113,6 +115,7 @@ export function cleanHtml(html: string, pageUrl: string): CleanedPage {
   let title = "";
   let metaDescription = "";
   let ogDescription = "";
+  let ogTitle = "";
   let themeColor: string | null = null;
   let base = pageUrl;
   const logos: LogoCandidate[] = [];
@@ -216,6 +219,7 @@ export function cleanHtml(html: string, pageUrl: string): CleanedPage {
         if (!content) continue;
         if (key === "description" && !metaDescription) metaDescription = content;
         else if (key === "og:description" && !ogDescription) ogDescription = content;
+        else if (key === "og:title" && !ogTitle) ogTitle = content;
         else if (key === "theme-color" && !themeColor && content.length <= 40) themeColor = content;
         else if (key === "og:image" || key === "og:image:url" || (attrs.property ?? "").toLowerCase() === "og:image") {
           addLogo(absoluteUrl(attrs.content, base), "og_image");
@@ -292,6 +296,7 @@ export function cleanHtml(html: string, pageUrl: string): CleanedPage {
 
   return {
     title,
+    ogTitle,
     metaDescription: metaDescription || ogDescription,
     text: capped.text,
     truncated: capped.truncated,

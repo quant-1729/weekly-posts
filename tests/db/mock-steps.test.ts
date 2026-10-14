@@ -68,7 +68,7 @@ describe("mock-only steps", () => {
       tx.query<{ name: string }>("select name from mock_meta.applied order by name"),
     );
     expect(applied.map((a) => a.name)).toEqual(
-      expect.arrayContaining(["mock/auth_users_email", "mock/magic_links"]),
+      expect.arrayContaining(["mock/auth_users_email", "migrations/0012_magic_links.sql"]),
     );
 
     // Opening it again applies nothing twice.
@@ -79,10 +79,10 @@ describe("mock-only steps", () => {
     const n = await again.withAdmin((tx) =>
       tx.query<{ n: number }>("select count(*)::int as n from mock_meta.applied where name like 'mock/%'"),
     );
-    expect(n[0].n).toBe(3);
+    expect(n[0].n).toBe(2); // the stub and mock/auth_users_email (magic_links is a normal migration now)
   });
 
-  it("a fresh database has the email column and the magic_links table outside public", async () => {
+  it("a fresh database has the magic_links table in public only (no mock-only copy)", async () => {
     const db = await createMockDb();
     dbs.push(db);
     const rows = await db.withAdmin((tx) =>
@@ -90,6 +90,6 @@ describe("mock-only steps", () => {
         "select table_schema, table_name from information_schema.tables where table_name = 'magic_links'",
       ),
     );
-    expect(rows).toEqual([{ table_schema: "mock_meta", table_name: "magic_links" }]);
+    expect(rows).toEqual([{ table_schema: "public", table_name: "magic_links" }]);
   });
 });

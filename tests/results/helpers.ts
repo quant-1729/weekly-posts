@@ -11,6 +11,8 @@ export interface SeedPostOpts {
   shares?: string[];
   /** Instants of clicks. */
   clicks?: string[];
+  /** Instants of QR scans (clicks with source 'qr'). */
+  scans?: string[];
   /** Remove original.topic so the caption's first line is used. */
   noTopic?: boolean;
   suggestedDay?: string;
@@ -31,6 +33,9 @@ export async function seedResultPost(db: MockDb, brandId: string, userId: string
     }
     for (const at of o.clicks ?? []) {
       await tx.query('insert into public.clicks (post_id, brand_id, clicked_at, user_agent) values ($1, $2, $3::timestamptz, $4)', [postId, brandId, at, 'Mozilla/5.0']);
+    }
+    for (const at of o.scans ?? []) {
+      await tx.query("insert into public.clicks (post_id, brand_id, clicked_at, user_agent, source) values ($1, $2, $3::timestamptz, $4, 'qr')", [postId, brandId, at, 'Mozilla/5.0']);
     }
   });
   return postId;

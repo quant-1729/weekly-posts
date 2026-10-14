@@ -5,14 +5,13 @@ import type { Actor } from '@/lib/approvals/types';
 import type { MockDb } from '@/lib/db/mock';
 import { setStorageForTests } from '@/lib/storage';
 import { signLink } from '@/lib/links/tokens';
-import { FIXTURE_SPECS } from '@/lib/mascot/fixtures';
-import { generateMascotConcepts, pickMascot } from '@/lib/mascot/service';
+import { saveMascot } from '@/lib/mascot/service';
 import { generateWeek } from '@/lib/weekly/generate';
 import { fixtureWeeklyBatch, PLANTED_PRICE, type FixtureContext } from '@/lib/weekly/fixtures';
 import { closeTestDb, createUser, openTestDb } from '../brand/helpers';
 import { cookieOf, nonceOf, openLink, pressLink } from '../links/helpers';
 import { dashActor, emailActor, imageBytes, imageRows, postRow } from '../approvals/helpers';
-import { seedMascotBrand, bodyPixels, GREEN_SPEC } from './helpers';
+import { seedMascotBrand, colorPixels, GREEN } from './helpers';
 import { tempStorage } from '../weekly/helpers';
 
 const WEEK = '2026-12-21';
@@ -55,7 +54,7 @@ async function mascotWeek(opts: { switchOn?: boolean; weekly?: (ctx: FixtureCont
 const ref = (w: Week, i: number, actor: Actor) => ({ brandId: w.brandId, postId: w.postIds[i], actor });
 const d = () => ({ ...deps, storage: store.storage });
 const mascotOf = async (postId: string) => (await rows('select mascot_id::text as m, image_text from public.posts where id = $1', [postId]))[0];
-const squareGreen = async (w: Week, i: number, spec = GREEN_SPEC) => bodyPixels(await imageBytes(store.storage, w.brandId, w.postIds[i], 'square'), spec);
+const squareGreen = async (w: Week, i: number, hex = GREEN) => colorPixels(await imageBytes(store.storage, w.brandId, w.postIds[i], 'square'), hex);
 
 describe('per post: show mascot on or off (R15e)', () => {
   it('off sets mascot_id to null and redraws all three pictures without it; on brings the active mascot back', async () => {
@@ -69,7 +68,7 @@ describe('per post: show mascot on or off (R15e)', () => {
     expect(off.post.mascotId).toBeNull();
     expect((await mascotOf(w.postIds[0])).m).toBeNull();
     expect(await squareGreen(w, 0)).toBe(0);
-    expect(await bodyPixels(await imageBytes(store.storage, w.brandId, w.postIds[0], 'vertical'))).toBe(0);
+    expect(await colorPixels(await imageBytes(store.storage, w.brandId, w.postIds[0], 'vertical'))).toBe(0);
     expect((await imageBytes(store.storage, w.brandId, w.postIds[0], 'vertical')).equals(before)).toBe(false);
     expect((await imageRows(db, w.postIds[0])).map((r) => r.format)).toEqual(['landscape', 'square', 'vertical']);
     // The bubble words are kept, so switching back on restores them.
@@ -184,36 +183,60 @@ describe('a flagged bubble can be removed', () => {
   });
 });
 
-describe('regenerating the mascot never changes old posts', () => {
-  it('old posts keep their mascot_id and pictures; edits to them still use their own mascot; new weeks use the new one', async () => {
+describe('changing the scarf colour never changes old posts', () => {
+  it('old posts keep their pictures; an edit redraws with the current colour; a new week uses it', async () => {
     const w = await mascotWeek();
     const oldBytes = await imageBytes(store.storage, w.brandId, w.postIds[0], 'square');
+    const PINK = '#d4145a';
 
-    // The owner makes a new mascot: concepts, then a pick.
-    const { concepts } = await generateMascotConcepts({ userId: w.userId, brandId: w.brandId });
-    const fresh = await pickMascot({ userId: w.userId, brandId: w.brandId, mascotId: concepts[0].id, storage: store.storage });
-    expect((await rows('select status::text as s from public.mascots where id = $1', [w.mascotId]))[0].s).toBe('archived');
+    // The owner picks another scarf colour. It is the same mascot row.
+    const saved = await saveMascot({ userId: w.userId, brandId: w.brandId, scarf: PINK, storage: store.storage });
+    expect(saved.id).toBe(w.mascotId);
 
     // Old posts: same mascot_id, same stored pictures.
     for (const id of w.postIds) expect((await mascotOf(id)).m).toBe(w.mascotId);
     expect((await imageBytes(store.storage, w.brandId, w.postIds[0], 'square')).equals(oldBytes)).toBe(true);
 
-    // Editing an old post redraws it with its own (archived) mascot, not the new one.
+    // Editing an old post redraws it with the mascot's current colours.
     const r = await editPost({ ...ref(w, 0, dashActor(w.userId)), input: { image_text: { headline: 'Edited later' } } }, d());
     if (!r.ok) throw new Error(r.message);
     expect((await mascotOf(w.postIds[0])).m).toBe(w.mascotId);
-    expect(await squareGreen(w, 0)).toBeGreaterThan(1500);
-    expect(await squareGreen(w, 0, FIXTURE_SPECS[0])).toBe(0);
+    expect(await squareGreen(w, 0, PINK)).toBeGreaterThan(1500);
+    expect(await squareGreen(w, 0)).toBe(0);
 
-    // A new week uses the new mascot.
-    await db.withAdmin((tx) => tx.query('update public.brand_memory set mascot_in_posts = true where brand_id = $1', [w.brandId]));
+    // A new week uses the new colour.
     const next = await generateWeek({ brandId: w.brandId, weekStart: '2026-12-28', trigger: 'cron' }, { now: new Date('2026-12-28T08:00:00Z'), storage: store.storage });
     if (next.status !== 'ready') throw new Error(JSON.stringify(next));
     for (const p of next.posts) {
-      expect(p.mascotId).toBe(fresh.id);
-      expect(await bodyPixels(await imageBytes(store.storage, w.brandId, p.id, 'square'), FIXTURE_SPECS[0])).toBeGreaterThan(1500);
-      expect(await bodyPixels(await imageBytes(store.storage, w.brandId, p.id, 'square'))).toBe(0);
+      expect(p.mascotId).toBe(w.mascotId);
+      const bytes = await imageBytes(store.storage, w.brandId, p.id, 'square');
+      expect(await colorPixels(bytes, PINK)).toBeGreaterThan(1500);
+      expect(await colorPixels(bytes)).toBe(0);
     }
+  });
+});
+
+describe('per post: the pose', () => {
+  it('changing the pose redraws the pictures and is saved; an unknown pose is ignored; the same pose changes nothing', async () => {
+    const w = await mascotWeek();
+    const before = await imageBytes(store.storage, w.brandId, w.postIds[0], 'square');
+    const was = ((await mascotOf(w.postIds[0])).image_text as { pose: string }).pose;
+    const to = was === 'think' ? 'present' : 'think';
+
+    const r = await editPost({ ...ref(w, 0, dashActor(w.userId)), input: { image_text: { pose: to } } }, d());
+    if (!r.ok) throw new Error(r.message);
+    expect(r.changed).toBe(true);
+    expect(((await mascotOf(w.postIds[0])).image_text as { pose: string }).pose).toBe(to);
+    expect((await imageBytes(store.storage, w.brandId, w.postIds[0], 'square')).equals(before)).toBe(false);
+    expect(await squareGreen(w, 0)).toBeGreaterThan(1500);
+    const log = await rows("select detail from public.post_actions where post_id = $1 and action = 'edit' order by id", [w.postIds[0]]);
+    expect(log.map((x) => (x.detail as { fields: string[] }).fields)).toEqual([['pose']]);
+
+    const same = await editPost({ ...ref(w, 0, dashActor(w.userId)), input: { image_text: { pose: to } } }, d());
+    expect(same).toMatchObject({ ok: true, changed: false });
+    const junk = await editPost({ ...ref(w, 0, dashActor(w.userId)), input: { image_text: { pose: 'namaste' } } }, d());
+    expect(junk).toMatchObject({ ok: true, changed: false });
+    expect(((await mascotOf(w.postIds[0])).image_text as { pose: string }).pose).toBe(to);
   });
 });
 

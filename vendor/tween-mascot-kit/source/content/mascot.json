@@ -1,0 +1,408 @@
+{
+  "enabled": true,
+  "name": "Tween",
+  "greeting": "Hi, I am Tween, the Tweencrew mascot. Click me for a quick way around.",
+  "intro": {
+    "letterLabel": "Open the letter Tween left for you",
+    "letterTitle": "A note from Tween",
+    "letterBody": "Hi, I am Tween, the Tweencrew mascot. Thanks for stopping by. Click me any time, up on the header or down in the corner, for a quick way around.",
+    "letterCta": { "label": "Say hello", "href": "/contact" },
+    "close": "Close the letter"
+  },
+  "start": "root",
+  "nodes": {
+    "root": {
+      "say": [
+        "Hi, I am Tween, the Tweencrew mascot. Where would you like to start?",
+        "{tip}"
+      ],
+      "pose": "wave",
+      "choices": [
+        {
+          "label": "What does a pilot involve?",
+          "next": "pilot"
+        },
+        {
+          "label": "Show me work",
+          "next": "work"
+        },
+        {
+          "label": "What does it cost?",
+          "next": "cost"
+        },
+        {
+          "label": "More options",
+          "next": "more"
+        }
+      ]
+    },
+    "more": {
+      "say": [
+        "A few more ways in. Pick one."
+      ],
+      "pose": "talk",
+      "choices": [
+        {
+          "label": "I am an agency or a startup",
+          "next": "who"
+        },
+        {
+          "label": "Plan a pilot",
+          "next": "plan"
+        },
+        {
+          "label": "Just browsing",
+          "next": "browse"
+        }
+      ]
+    },
+    "pilot": {
+      "say": [
+        "A pilot is the first step: a fixed-price project before any monthly plan.",
+        "Here is how the work runs, from brief to delivery."
+      ],
+      "pose": "point",
+      "do": [
+        {
+          "goto": "/how-it-works"
+        },
+        {
+          "point": "steps"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Show me the plans",
+          "next": "pilot-plans"
+        },
+        {
+          "label": "Plan a pilot",
+          "next": "plan"
+        },
+        {
+          "label": "Back to the start",
+          "next": "root"
+        }
+      ]
+    },
+    "pilot-plans": {
+      "say": [
+        "Plans sit on one page. Start with a pilot, then choose a monthly plan sized by finished videos."
+      ],
+      "pose": "point",
+      "do": [
+        {
+          "goto": "/plans"
+        },
+        {
+          "point": "pilot"
+        }
+      ],
+      "choices": [
+        {
+          "label": "What does it cost?",
+          "next": "cost"
+        },
+        {
+          "label": "Plan a pilot",
+          "next": "plan"
+        },
+        {
+          "label": "Back to the start",
+          "next": "root"
+        }
+      ]
+    },
+    "work": {
+      "say": [
+        "The Work page lists what is published, each piece labelled for what it is."
+      ],
+      "pose": "point",
+      "do": [
+        {
+          "goto": "/work"
+        },
+        {
+          "point": "index"
+        }
+      ],
+      "variants": {
+        "hasWork": {
+          "say": [
+            "Here is a published piece. Each one says who owns it and how it was made."
+          ],
+          "do": [
+            {
+              "goto": "/work"
+            },
+            {
+              "point": "index"
+            },
+            {
+              "lightbox": "first-published"
+            }
+          ]
+        },
+        "slots": {
+          "say": [
+            "No real work is published yet.",
+            "These slots are placeholders for pieces we plan to make. I will not pretend they are finished."
+          ],
+          "pose": "shrug",
+          "do": [
+            {
+              "goto": "/"
+            },
+            {
+              "point": "work"
+            }
+          ]
+        },
+        "empty": {
+          "say": [
+            "No real work is published yet. A piece appears here once we have confirmed it is ours and checked its facts."
+          ],
+          "pose": "shrug"
+        }
+      },
+      "choices": [
+        {
+          "label": "Show me the plans",
+          "next": "pilot-plans"
+        },
+        {
+          "label": "Plan a pilot",
+          "next": "plan"
+        },
+        {
+          "label": "Back to the start",
+          "next": "root"
+        }
+      ]
+    },
+    "cost": {
+      "say": [
+        "Prices come from the Plans page. This is what it lists:",
+        "{priceLines}"
+      ],
+      "pose": "point",
+      "do": [
+        {
+          "goto": "/plans"
+        },
+        {
+          "point": "pilot"
+        }
+      ],
+      "variants": {
+        "priceHidden": {
+          "say": [
+            "Pricing is scoped per pilot, so there is no price list to show.",
+            "Plans shows what each size covers. A pilot is quoted at a fixed price."
+          ],
+          "pose": "talk"
+        }
+      },
+      "choices": [
+        {
+          "label": "What does a pilot involve?",
+          "next": "pilot"
+        },
+        {
+          "label": "Plan a pilot",
+          "next": "plan"
+        },
+        {
+          "label": "Back to the start",
+          "next": "root"
+        }
+      ]
+    },
+    "who": {
+      "say": [
+        "Which sounds like you?"
+      ],
+      "pose": "talk",
+      "choices": [
+        {
+          "label": "An agency",
+          "next": "agency"
+        },
+        {
+          "label": "A startup",
+          "next": "startup"
+        },
+        {
+          "label": "Back to the start",
+          "next": "root"
+        }
+      ]
+    },
+    "agency": {
+      "say": [
+        "This page is about video capacity for agencies, under your brand.",
+        "It shows how white-label works and what a pilot looks like."
+      ],
+      "pose": "point",
+      "do": [
+        {
+          "goto": "/for/agencies"
+        },
+        {
+          "point": "how-white-label-works"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Plan a pilot",
+          "next": "plan"
+        },
+        {
+          "label": "Back to the start",
+          "next": "root"
+        }
+      ]
+    },
+    "startup": {
+      "say": [
+        "This page is for software teams from seed to Series A: a launch video without a shoot.",
+        "Here is what the pilot includes."
+      ],
+      "pose": "point",
+      "do": [
+        {
+          "goto": "/for/startups"
+        },
+        {
+          "point": "pilot"
+        }
+      ],
+      "choices": [
+        {
+          "label": "Plan a pilot",
+          "next": "plan"
+        },
+        {
+          "label": "Back to the start",
+          "next": "root"
+        }
+      ]
+    },
+    "plan": {
+      "say": [
+        "Happy to take your details here. It sends the same request as the form, as a short chat.",
+        "You can open the full form at any time."
+      ],
+      "pose": "talk",
+      "do": [
+        {
+          "leadFlow": true
+        }
+      ]
+    },
+    "browse": {
+      "say": [
+        "No problem. I will stay quiet. Click me if you want a hand."
+      ],
+      "pose": "wave",
+      "do": [
+        {
+          "quiet": true
+        }
+      ],
+      "choices": [
+        {
+          "label": "Show me around",
+          "next": "root"
+        }
+      ]
+    }
+  },
+  "tips": {
+    "default": [
+      "Short on time? Plans and Work are the two pages most people read first.",
+      "Ready when you are: a pilot request is a short form, or I can take it as a chat."
+    ],
+    "/": [
+      "A monthly animation team for software companies. Start with a pilot.",
+      "Want proof first? The Work page shows what is published."
+    ],
+    "/work": [
+      "Work shows who owns each piece and how it was made.",
+      "Like a format? Tell us in the pilot request and we will scope it."
+    ],
+    "/plans": [
+      "Plans start with a pilot, so you can see the work before you commit.",
+      "Not sure which plan fits? The pilot request is short."
+    ],
+    "/how-it-works": [
+      "Brief, script, storyboard, animation, review, delivery. You approve at the gates."
+    ],
+    "/about": [
+      "We are a new studio, and we say so. Ask anything."
+    ]
+  },
+  "nudges": {
+    "/plans": "Not sure which plan fits? Ask me about the pilot.",
+    "/work": "Want to know what is published and what is not? Ask me."
+  },
+  "ui": {
+    "openLabel": "Open Tween, the Tweencrew mascot",
+    "closeLabel": "Close Tween's panel",
+    "panelLabel": "Tween, the Tweencrew mascot",
+    "hide": "Hide Tween",
+    "show": "Bring Tween back",
+    "pause": "Pause Tween",
+    "resume": "Resume Tween",
+    "voiceOn": "Turn on Tween's voice",
+    "voiceOff": "Turn off Tween's voice",
+    "restart": "Restart the tour",
+    "noRoam": "Do not roam",
+    "roam": "Let Tween roam",
+    "settings": "Settings",
+    "settingsLabel": "Tween settings",
+    "quickLabel": "Quick controls",
+    "transcriptShow": "Show conversation",
+    "transcriptHide": "Hide conversation",
+    "transcriptLabel": "Conversation so far",
+    "speakerTween": "Tween",
+    "speakerYou": "You",
+    "skip": "Skip typing",
+    "dismiss": "Dismiss",
+    "choicesLabel": "Choose a reply",
+    "thinking": "Tween is thinking",
+    "linePrefix": "Tween says",
+    "closeButton": "Close"
+  },
+  "lead": {
+    "name": {
+      "prompt": "What is your name?"
+    },
+    "email": {
+      "prompt": "And your work email?"
+    },
+    "website": {
+      "prompt": "What is your company website?"
+    },
+    "make": {
+      "prompt": "What would you like to make?"
+    },
+    "role": {
+      "prompt": "What is your role?"
+    },
+    "consent": {
+      "prompt": "Last step. Please confirm you are happy to be contacted about this request."
+    },
+    "next": "Next",
+    "send": "Send request",
+    "sending": "Sending",
+    "openForm": "Open the full form",
+    "cancel": "Cancel",
+    "retry": "Try again",
+    "honeypotLabel": "Leave this field empty",
+    "answerGiven": "Answer given",
+    "stepLabel": "Question {n} of {total}",
+    "formLabel": "Pilot request chat",
+    "formOpened": "Opening the full form. I kept what you told me."
+  }
+}

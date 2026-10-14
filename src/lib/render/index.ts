@@ -3,6 +3,8 @@
 
 import { Resvg } from '@resvg/resvg-js';
 import sharp from 'sharp';
+import { luminance } from './color';
+import type { Box } from './layout';
 import { detectDirection, initShaping, type Dir } from './shape';
 import {
   Canvas,
@@ -14,12 +16,13 @@ import {
   type Format,
   type FormatInput,
   type LogoImage,
+  type MascotInput,
   type Placement,
   type PostText,
   type TemplateDef,
 } from './templates';
 
-export type { Format, FormatInput, Placement, PostText };
+export type { Format, FormatInput, MascotInput, Placement, PostText };
 export { FORMATS, FORMAT_SIZE, MASCOT_BOX, STORY_SAFE, normaliseFormat } from './templates';
 export { detectDirection, initShaping, measureText, textToSvg } from './shape';
 export type { Dir } from './shape';
@@ -38,8 +41,8 @@ export interface RenderInput {
   };
   photo?: Buffer; // owner photo, any common format; may be absent
   text: PostText; // any may be ''
-  /** SVG group for the mascot pose, authored in a 400x400 space. Slot only for now. */
-  mascot?: { svg: string } | null;
+  /** The mascot: an SVG group authored in a 400x400 space, or a builder that gets the slot's side and background. */
+  mascot?: MascotInput | null;
   /** Text direction of the post. Default: detected from the headline, subline and CTA. */
   dir?: Dir | 'auto';
 }
@@ -95,11 +98,60 @@ async function preparePhoto(buf: Buffer | undefined, frame: { w: number; h: numb
   }
 }
 
+/** One cell of the photo luminance grid is this many pixels of the picture. */
+const LUMA_CELL = 20;
+
+/**
+ * Average luminance of the cover-cropped photo, by area, so the mascot slot can tell whether the photo behind it
+ * is dark. Returns null when the photo cannot be read.
+ */
+async function photoLumaGrid(buf: Buffer | undefined, frame: { w: number; h: number }): Promise<((area: Box) => number) | null> {
+  if (!buf || !buf.length) return null;
+  try {
+    const gw = Math.ceil(frame.w / LUMA_CELL);
+    const gh = Math.ceil(frame.h / LUMA_CELL);
+    const { data, info } = await sharp(buf, { failOn: 'none' })
+      .rotate()
+      .resize(gw, gh, { fit: 'cover', position: 'centre' })
+      .removeAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    const lum = new Float32Array(gw * gh);
+    for (let i = 0; i < gw * gh; i++) {
+      const o = i * info.channels;
+      lum[i] = luminance({ r: data[o], g: data[o + 1], b: data[o + 2] });
+    }
+    return (area) => {
+      const x0 = Math.max(0, Math.floor(area.x / LUMA_CELL));
+      const x1 = Math.min(gw - 1, Math.floor((area.x + area.w - 1) / LUMA_CELL));
+      const y0 = Math.max(0, Math.floor(area.y / LUMA_CELL));
+      const y1 = Math.min(gh - 1, Math.floor((area.y + area.h - 1) / LUMA_CELL));
+      let sum = 0;
+      let count = 0;
+      for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+          sum += lum[y * gw + x];
+          count++;
+        }
+      return count ? sum / count : 0.5;
+    };
+  } catch {
+    return null;
+  }
+}
+
 function rasterise(svg: string): Buffer {
   return Buffer.from(new Resvg(svg, { font: { loadSystemFonts: false }, fitTo: { mode: 'original' } }).render().asPng());
 }
 
-function draw(tpl: TemplateDef, input: RenderInput, dir: Dir, photoUri: string | null, logo: LogoImage | null, withMascot: boolean) {
+function draw(
+  tpl: TemplateDef,
+  input: RenderInput,
+  dir: Dir,
+  photoUri: string | null,
+  logo: LogoImage | null,
+  withMascot: boolean,
+  photoLuma: ((area: Box) => number) | null,
+) {
   const { w, h } = FORMAT_SIZE[tpl.format];
   const canvas = new Canvas({
     format: tpl.format,
@@ -114,6 +166,7 @@ function draw(tpl: TemplateDef, input: RenderInput, dir: Dir, photoUri: string |
     },
     photoUri,
     logo,
+    photoLuma,
     mascot: withMascot ? (input.mascot ?? null) : null,
   });
   const body = tpl.build(canvas);
@@ -143,8 +196,10 @@ export async function renderPostDetailed(input: RenderInput, shared?: { logo: Lo
 
   let tpl = requested;
   let photoUri: string | null = null;
+  let photoLuma: ((area: Box) => number) | null = null;
   if (tpl.needsPhoto) {
     photoUri = await preparePhoto(input.photo, tpl.photoFrame!);
+    if (photoUri && input.mascot?.build) photoLuma = await photoLumaGrid(input.photo, tpl.photoFrame!);
     if (!photoUri) {
       // No usable photo: replace with a text-only template of the same format.
       tpl = TEMPLATES.find((t) => t.format === format && !t.needsPhoto)!;
@@ -154,7 +209,7 @@ export async function renderPostDetailed(input: RenderInput, shared?: { logo: Lo
   const dir = postDirection(input);
 
   let mascotDropped = false;
-  let drawn = draw(tpl, input, dir, photoUri, logo, true);
+  let drawn = draw(tpl, input, dir, photoUri, logo, true, photoLuma);
   let png: Buffer;
   try {
     png = rasterise(drawn.svg);
@@ -162,7 +217,7 @@ export async function renderPostDetailed(input: RenderInput, shared?: { logo: Lo
     if (!input.mascot) throw err;
     // A malformed mascot fragment must not stop the post: draw it without the mascot.
     mascotDropped = true;
-    drawn = draw(tpl, input, dir, photoUri, logo, false);
+    drawn = draw(tpl, input, dir, photoUri, logo, false, photoLuma);
     png = rasterise(drawn.svg);
   }
   const { w, h } = FORMAT_SIZE[format];

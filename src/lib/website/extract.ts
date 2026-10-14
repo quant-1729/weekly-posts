@@ -5,6 +5,7 @@
 // Only the daily cap, access errors and programming errors propagate. A failed AI call is
 // reported as status "failed" with error "ai_failed".
 
+import { rememberInstagramFromWebsite } from "@/lib/instagram/import";
 import { AiError, generateJson } from "@/lib/ai/client";
 import { buildWebsiteFactsPrompt, type WebsitePage } from "@/lib/ai/prompts/v2-memory";
 import { websiteFactsJsonSchema, websiteFactsSchema, type WebsiteFacts } from "@/lib/ai/schemas-v2";
@@ -17,6 +18,7 @@ import type { FetchEnv } from "./fetch";
 import { websiteFactsFixture } from "./fixtures";
 import { loadWebsitePages, type LoadedPage } from "./load";
 import { pageKey, type SkippedPage } from "./pages";
+import type { ReaderFn } from "./reader";
 
 export type WebsiteStatus = "none" | "ok" | "partial" | "blocked" | "failed";
 
@@ -24,6 +26,8 @@ export interface WebsiteReadResult {
   status: WebsiteStatus;
   /** URLs of the pages that were read (home first). */
   pagesRead: string[];
+  /** The pages (a subset of pagesRead) whose text came from the reading service because they build their content with JavaScript. */
+  readerPages: string[];
   skipped: SkippedPage[];
   factsSaved: number;
   /** Facts the model returned that failed verification (quote or page not found) or were duplicates. */
@@ -35,13 +39,15 @@ export interface WebsiteReadResult {
   themeColor: string | null;
   /** One plain sentence about the business, from the pages. Empty when nothing was read. */
   summary: string;
-  /** Short machine-readable reason when the status is not ok. */
+  /** Short machine-readable reason when the status is not ok ("js_only_meta": only the title and description could be read). */
   reason: string | null;
 }
 
 export interface ReadWebsiteOptions {
   /** Fetch settings. Tests inject a resolver/transport and set allowPrivate; production passes nothing. */
   fetch?: FetchEnv;
+  /** The reading service for pages built with JavaScript. Undefined = the app default (Jina unless READER_PROVIDER=off); null = none. Tests inject one. */
+  reader?: ReaderFn | null;
   /** Overrides the built-in AI fixture. Only used when AI is in fixture mode. */
   fixture?: (pages: WebsitePage[]) => WebsiteFacts;
 }
@@ -195,19 +201,22 @@ export async function readWebsiteFacts(args: {
   if (brand.length === 0) throw new BrandAccessError();
   const businessName = brand[0].business_name?.trim() || brand[0].name;
 
-  const setStatus = (status: WebsiteStatus, websiteUrl: string | null) =>
+  // The reason is kept with the status (brand_memory.website_read_reason, at most 40 characters; null for a clean read)
+  // so the setup and Brand screens can explain a partial or failed read after a reload.
+  const setStatus = (status: WebsiteStatus, websiteUrl: string | null, reason: string | null = null) =>
     getDb().withUser(userId, (tx) =>
       tx.query(
         `update public.brand_memory
-            set website_url = $2, website_status = $3::public.website_status, website_read_at = $4
+            set website_url = $2, website_status = $3::public.website_status, website_read_at = $4, website_read_reason = $5
           where brand_id = $1`,
-        [brandId, websiteUrl, status, status === "none" ? null : new Date().toISOString()],
+        [brandId, websiteUrl, status, status === "none" ? null : new Date().toISOString(), status === "none" ? null : reason?.slice(0, 40) ?? null],
       ),
     );
 
   const base: WebsiteReadResult = {
     status: "none",
     pagesRead: [],
+    readerPages: [],
     skipped: [],
     factsSaved: 0,
     factsDropped: 0,
@@ -226,7 +235,10 @@ export async function readWebsiteFacts(args: {
   await assertUnderDailyCap(brandId);
   await assertUnderWeeklyCap(brandId, "website_read"); // 3 reads a week (Req 23)
 
-  const loaded = await loadWebsitePages(typed, args.options?.fetch);
+  const loaded = await loadWebsitePages(typed, args.options?.fetch, { reader: args.options?.reader });
+  // The owner's Instagram is often linked from their website: remember it and start the import
+  // (no-op when the brand already has a handle; never throws, never waits for Instagram).
+  if (loaded.socialSources.length) await rememberInstagramFromWebsite(brandId, loaded.socialSources, userId);
   const common = {
     ...base,
     skipped: loaded.skipped,
@@ -235,7 +247,7 @@ export async function readWebsiteFacts(args: {
     reason: loaded.reason,
   };
   if (loaded.status === "blocked" || loaded.status === "failed") {
-    await setStatus(loaded.status, typed.slice(0, 2000));
+    await setStatus(loaded.status, typed.slice(0, 2000), loaded.reason);
     return { ...common, status: loaded.status };
   }
 
@@ -262,8 +274,8 @@ export async function readWebsiteFacts(args: {
     if (!(e instanceof AiError)) throw e;
     // The call was made, so it counts against the cap, but nothing is replaced.
     await recordUsage(brandId, userId, "website_read", failedCallUsd(e));
-    await setStatus("failed", typed.slice(0, 2000));
-    return { ...common, status: "failed", pagesRead: loaded.pages.map((p) => p.url), reason: "ai_failed" };
+    await setStatus("failed", typed.slice(0, 2000), "ai_failed");
+    return { ...common, status: "failed", pagesRead: loaded.pages.map((p) => p.url), readerPages: loaded.readerPages, reason: "ai_failed" };
   }
   await recordUsage(brandId, userId, "website_read", usd);
 
@@ -301,9 +313,9 @@ export async function readWebsiteFacts(args: {
     }
     await tx.query(
       `update public.brand_memory
-          set website_url = $2, website_status = $3::public.website_status, website_read_at = now()
+          set website_url = $2, website_status = $3::public.website_status, website_read_at = now(), website_read_reason = $4
         where brand_id = $1`,
-      [brandId, typed.slice(0, 2000), status],
+      [brandId, typed.slice(0, 2000), status, loaded.reason?.slice(0, 40) ?? null],
     );
   });
 
@@ -311,6 +323,7 @@ export async function readWebsiteFacts(args: {
     ...common,
     status,
     pagesRead: loaded.pages.map((p) => p.url),
+    readerPages: loaded.readerPages,
     factsSaved: saved,
     factsDropped: dropped,
     factsSkippedOwnerEdited: skippedOwnerEdited,

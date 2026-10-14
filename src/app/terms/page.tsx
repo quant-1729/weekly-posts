@@ -5,9 +5,9 @@ import { HOLIDAY_DATA_ATTRIBUTION } from "@/lib/occasions";
 /** Public terms and privacy page (no sign-in). Draft text: to be reviewed by a lawyer before launch. */
 export default function Page() {
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-[480px] space-y-5 bg-white px-4 py-6">
+    <main className="mx-auto min-h-dvh w-full max-w-[480px] space-y-5 bg-white px-4 py-6 md:max-w-[720px] md:px-10 md:py-12">
       <div>
-        <h1 className="text-xl font-bold">{s.terms.title}</h1>
+        <h1 className="text-xl font-bold md:text-3xl">{s.terms.title}</h1>
         <p className="mt-1 inline-block rounded bg-amber-100 px-2 py-0.5 text-sm font-medium text-amber-900">
           {s.terms.draftNote}
         </p>

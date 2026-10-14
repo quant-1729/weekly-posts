@@ -36,7 +36,7 @@ export function fixtureWeeklyBatch(ctx: FixtureContext): WeeklyBatch {
         hashtags: ['#behindthescenes', '#smallbusiness', '#madewithcare', '#shoplocal', '#handmade'],
         cta: 'Send us a message to get started.',
         link: false,
-        image_text: { headline: 'Behind the scenes', subline: 'Made by hand, checked with care', ...talk('Made with care!', 'happy') },
+        image_text: { headline: 'Behind the scenes', subline: 'Made by hand, checked with care', ...talk('Made with care!', 'talk') },
         photo_id: photo(0),
         occasion_key: '',
         fact_ids: [],

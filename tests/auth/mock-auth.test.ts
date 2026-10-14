@@ -29,6 +29,7 @@ import {
   createMockAuth,
   resetMockAuthState,
 } from "@/lib/auth/mock";
+import { resetRateLimits } from "@/lib/auth/rate-limit";
 import { MAGIC_LINK_TTL_SECONDS, signMagicToken } from "@/lib/auth/magic-link";
 import { AuthError } from "@/lib/auth/types";
 import { linksIn, listOutbox, setOutboxDirForTests } from "@/lib/email/outbox";
@@ -79,7 +80,7 @@ afterAll(async () => {
   await db.close();
 });
 beforeEach(async () => {
-  resetMockAuthState();
+  await resetMockAuthState();
   jar.store.clear();
   outbox = await mkdtemp(path.join(os.tmpdir(), "outbox-"));
   setOutboxDirForTests(outbox);
@@ -122,7 +123,7 @@ describe("mock magic-link sign-in (Req 1)", () => {
   it("answers the same for a known and an unknown address", async () => {
     await auth.consumeMagicLink(await linkFor("known@example.com"));
     jar.store.clear();
-    resetMockAuthState();
+    await resetMockAuthState();
 
     const known = await auth.requestMagicLink("known@example.com", true).then(() => "ok", (e) => e);
     const unknown = await auth.requestMagicLink("stranger@example.com", true).then(() => "ok", (e) => e);
@@ -144,25 +145,33 @@ describe("mock magic-link sign-in (Req 1)", () => {
     const token = await linkFor();
     const rows = await db.withAdmin((tx) =>
       tx.query<{ email: string; used_at: Date | null }>(
-        "select email, used_at from mock_meta.magic_links where email = $1",
+        "select email, used_at from public.magic_links where email = $1",
         [NORMAL],
       ),
     );
     expect(rows.length).toBeGreaterThan(0);
     await auth.consumeMagicLink(token);
     const after = await db.withAdmin((tx) =>
-      tx.query<{ used_at: Date | null }>("select used_at from mock_meta.magic_links where email = $1", [NORMAL]),
+      tx.query<{ used_at: Date | null }>("select used_at from public.magic_links where email = $1", [NORMAL]),
     );
     expect(after.some((r) => r.used_at instanceof Date)).toBe(true);
   });
 
-  it("the magic_links table is in mock_meta, not public", async () => {
+  it("the magic_links table is in public, with row-level security and no access for anon or authenticated", async () => {
     const rows = await db.withAdmin((tx) =>
       tx.query<{ table_schema: string }>(
         "select table_schema from information_schema.tables where table_name = 'magic_links'",
       ),
     );
-    expect(rows).toEqual([{ table_schema: "mock_meta" }]);
+    expect(rows).toEqual([{ table_schema: "public" }]);
+    const [rls] = await db.withAdmin((tx) =>
+      tx.query<{ relrowsecurity: boolean }>("select relrowsecurity from pg_class where oid = 'public.magic_links'::regclass"),
+    );
+    expect(rls.relrowsecurity).toBe(true);
+    const grants = await db.withAdmin((tx) =>
+      tx.query("select 1 from information_schema.role_table_grants where table_schema = 'public' and table_name = 'magic_links' and grantee in ('anon', 'authenticated')"),
+    );
+    expect(grants).toHaveLength(0);
   });
 
   it("a link works once; the second use is rejected and starts no session", async () => {
@@ -263,7 +272,7 @@ describe("mock magic-link sign-in (Req 1)", () => {
       tx.query<{ consent_at: Date }>("select consent_at from public.profiles where id = $1", [first.id]),
     );
 
-    resetMockAuthState(); // skip the 60-second resend gap
+    await resetMockAuthState(); // skip the 60-second resend gap
     const second = await auth.consumeMagicLink(await linkFor("  BACK@example.com "));
     expect(second.id).toBe(first.id);
 
@@ -369,6 +378,59 @@ describe("rate limits", () => {
     );
     // Another IP is fine, and the refused request used up nothing for that address.
     expect(await code(() => auth.requestMagicLink("one-more@example.com", true, { ip: "203.0.113.8" }))).toBeUndefined();
+  });
+
+  it("counts from public.magic_links, not memory: a fresh auth instance and an empty in-memory limiter still refuse", async () => {
+    await auth.requestMagicLink(EMAIL, true, { ip: "203.0.113.50" });
+    resetRateLimits(); // what a new serverless instance would have in memory
+    const fresh = createMockAuth();
+    expect(await code(() => fresh.requestMagicLink(EMAIL, true))).toBe("rate_limited"); // 60-second gap
+
+    // The address and the IP are stored with the link.
+    const [row] = await db.withAdmin((tx) =>
+      tx.query<{ email: string; ip: string | null }>("select email, ip from public.magic_links"),
+    );
+    expect(row).toEqual({ email: NORMAL, ip: "203.0.113.50" });
+  });
+
+  it("the per-address and per-IP counts come from rows written by anyone, in any instance", async () => {
+    // Links already recorded (as if by other instances) in the last hour, spaced beyond the 60-second gap.
+    await db.withAdmin(async (tx) => {
+      for (let i = 0; i < LINKS_PER_EMAIL_PER_HOUR; i++) {
+        await tx.query(
+          `insert into public.magic_links (jti, email, ip, expires_at, created_at)
+           values ($1, $2, null, now() + interval '15 minutes', now() - ($3 || ' minutes')::interval)`,
+          [`other-${i}`, NORMAL, String(5 + i * 5)],
+        );
+      }
+      for (let i = 0; i < LINKS_PER_IP_PER_HOUR; i++) {
+        await tx.query(
+          `insert into public.magic_links (jti, email, ip, expires_at, created_at)
+           values ($1, $2, '203.0.113.60', now() + interval '15 minutes', now() - interval '10 minutes')`,
+          [`ip-${i}`, `p${i}@example.com`],
+        );
+      }
+    });
+    resetRateLimits();
+    const fresh = createMockAuth();
+    expect(await code(() => fresh.requestMagicLink(EMAIL, true))).toBe("rate_limited");
+    expect(await code(() => fresh.requestMagicLink("new-person@example.com", true, { ip: "203.0.113.60" }))).toBe(
+      "rate_limited",
+    );
+    expect(await code(() => fresh.requestMagicLink("new-person@example.com", true, { ip: "203.0.113.61" }))).toBeUndefined();
+    // Links older than an hour no longer count.
+    await db.withAdmin((tx) => tx.query("update public.magic_links set created_at = now() - interval '2 hours'"));
+    expect(await code(() => fresh.requestMagicLink(EMAIL, true))).toBeUndefined();
+  });
+
+  it("two requests for one address at the same moment: only one link is made", async () => {
+    const results = await Promise.all([
+      code(() => auth.requestMagicLink(EMAIL, true)),
+      code(() => auth.requestMagicLink(EMAIL, true)),
+    ]);
+    expect(results.filter((r) => r === undefined)).toHaveLength(1);
+    expect(results.filter((r) => r === "rate_limited")).toHaveLength(1);
+    expect(await listOutbox()).toHaveLength(1);
   });
 
   it("a refused or invalid request does not use up allowance", async () => {

@@ -95,7 +95,7 @@ export async function getWebsiteAssets(args: { userId: string; brandId: string; 
   let assets: WebsiteAssets = { logoCandidates: [], themeColor: null };
   let ttl = FRESH_MS;
   try {
-    const loaded = await loadWebsitePages(state.website_url, args.fetch);
+    const loaded = await loadWebsitePages(state.website_url, args.fetch, { reader: null }); // logos are in the HTML head: no need to send the page to the reading service
     if (loaded.status === "ok" || loaded.status === "partial") {
       assets = { logoCandidates: loaded.logoCandidates, themeColor: loaded.themeColor };
     } else ttl = EMPTY_MS;
@@ -190,13 +190,13 @@ export function themePalette(themeColor: string | null): Palette | null {
   return hex ? paletteFromPrimary(hex) : null;
 }
 
-/** Saves the three brand colours (validated as hex). Throws ColorsValidationError or BrandAccessError. */
+/** Saves the three brand colours (validated as hex); a background colour chosen in the brand kit is kept. Throws ColorsValidationError or BrandAccessError. */
 export async function saveColors(userId: string, brandId: string, raw: ColorsInput | unknown): Promise<Palette> {
   await requireBrandMember(userId, brandId);
   const parsed = colorsSchema.safeParse(raw);
   if (!parsed.success) throw new ColorsValidationError();
   const rows = await getDb().withUser(userId, (tx) =>
-    tx.query("update public.brand_memory set colors = $2::jsonb where brand_id = $1 returning brand_id", [brandId, JSON.stringify(parsed.data)]),
+    tx.query("update public.brand_memory set colors = coalesce(colors, '{}'::jsonb) || $2::jsonb where brand_id = $1 returning brand_id", [brandId, JSON.stringify(parsed.data)]),
   );
   if (rows.length === 0) throw new BrandAccessError();
   return parsed.data;

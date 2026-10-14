@@ -11,6 +11,7 @@
 
 import { V2_CHANNEL_SPECS, V2_IMAGE_TEXT_LIMITS } from '@/lib/ai/prompts/v2-weekly';
 import { BUBBLE_MAX_CHARS, loadUsableMascot } from '@/lib/mascot/posts';
+import { postPoseOrDefault, TWEEN_POST_POSES } from '@/lib/mascot/poses';
 import { getDb } from '@/lib/db';
 import {
   GuardrailActionError,
@@ -197,8 +198,8 @@ export interface EditInput {
   caption?: string;
   cta?: string;
   hashtags?: string[];
-  /** `bubble` is what the mascot says (V-25). */
-  image_text?: { headline?: string; subline?: string; bubble?: string };
+  /** `bubble` is what the mascot says and `pose` is how it stands (one of TWEEN_POST_POSES; anything else is ignored) (V-25, D9). */
+  image_text?: { headline?: string; subline?: string; bubble?: string; pose?: string };
   /** true = show the brand's mascot; false = no mascot; omitted = leave as it is. */
   showMascot?: boolean;
 }
@@ -230,6 +231,8 @@ export async function editPost(ref: PostRef & { input: EditInput }, deps: OpDeps
   };
 
   const bubble = input.image_text?.bubble === undefined ? post.imageText.bubble : cleanText(input.image_text.bubble).replace(/\s+/g, ' ');
+  const pose =
+    typeof input.image_text?.pose === 'string' && (TWEEN_POST_POSES as readonly string[]).includes(input.image_text.pose) ? input.image_text.pose : post.imageText.pose;
   let mascotId = post.mascotId;
   const errors: string[] = [];
   if (input.showMascot === false) mascotId = null;
@@ -271,16 +274,18 @@ export async function editPost(ref: PostRef & { input: EditInput }, deps: OpDeps
   const sameTags = hashtags.length === post.hashtags.length && hashtags.every((t, i) => t === post.hashtags[i]);
   const bubbleChanged = bubble !== post.imageText.bubble;
   const mascotChanged = mascotId !== post.mascotId;
+  // 'wave' is what an empty pose draws, so the two are the same pose.
+  const poseChanged = postPoseOrDefault(pose) !== postPoseOrDefault(post.imageText.pose);
   const changed =
-    caption !== post.caption || cta !== post.cta || !sameTags || imageText.headline !== post.imageText.headline || imageText.subline !== post.imageText.subline || bubbleChanged || mascotChanged;
+    poseChanged || caption !== post.caption || cta !== post.cta || !sameTags || imageText.headline !== post.imageText.headline || imageText.subline !== post.imageText.subline || bubbleChanged || mascotChanged;
   if (!changed) return { ok: true, post, changed: false, reapprove: false };
 
   const flags = resolveRemovedSpans(copy, post.flags, now);
   // The bubble is only on the picture when the post has a mascot.
   const onImage =
-    cta !== post.cta || imageText.headline !== post.imageText.headline || imageText.subline !== post.imageText.subline || mascotChanged || (bubbleChanged && mascotId !== null);
+    cta !== post.cta || imageText.headline !== post.imageText.headline || imageText.subline !== post.imageText.subline || mascotChanged || ((bubbleChanged || poseChanged) && mascotId !== null);
   const storage = storageOf(deps);
-  const images = onImage ? await renderPost({ storage, post, photoId: post.photoId, cta, imageText: { ...imageText, bubble }, mascotId }) : undefined;
+  const images = onImage ? await renderPost({ storage, post, photoId: post.photoId, cta, imageText: { ...imageText, bubble, pose }, mascotId }) : undefined;
   const fields = [
     caption !== post.caption && 'caption',
     cta !== post.cta && 'cta',
@@ -288,9 +293,10 @@ export async function editPost(ref: PostRef & { input: EditInput }, deps: OpDeps
     imageText.headline !== post.imageText.headline && 'headline',
     imageText.subline !== post.imageText.subline && 'subline',
     bubbleChanged && 'bubble',
+    poseChanged && 'pose',
     mascotChanged && (mascotId ? 'mascot_on' : 'mascot_off'),
   ].filter(Boolean);
-  const saved = await commitChange({ ref, deps, storage, patch: { caption, cta, hashtags, imageText: { ...imageText, bubble }, mascotId, flags }, images, action: 'edit', detail: { fields } });
+  const saved = await commitChange({ ref, deps, storage, patch: { caption, cta, hashtags, imageText: { ...imageText, bubble, pose }, mascotId, flags }, images, action: 'edit', detail: { fields } });
   return saved.ok ? { ...saved, changed: true } : saved;
 }
 

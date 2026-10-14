@@ -1,5 +1,5 @@
 // Mascot eligibility (old R15a, kept as an owner-approved extra in v2). Deterministic,
-// so the same brand always gets the same answer. Owned by the orchestrator. See docs/mascot.md.
+// so the same brand always gets the same answer. Owned by the orchestrator. See docs/mascot.md (eligibility rules).
 
 import { isRegulatedCategory, regulatedGroup, type RegulatedGroup } from './regulated';
 

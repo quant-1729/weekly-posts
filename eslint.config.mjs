@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Reference copy of the Tween mascot kit; the ported code lives in src/.
+    "vendor/**",
   ]),
 ]);
 

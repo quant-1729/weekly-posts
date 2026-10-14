@@ -26,6 +26,14 @@ export interface Storage {
    * account deletion (Req 22).
    */
   removePrefix(bucket: Bucket, prefix: string): Promise<number>;
+  /**
+   * A link that serves the file to anyone holding it, without signing in, until it expires
+   * (`ttlSeconds`, 1 second to 7 days). Phase 3 publishing gives these to Meta and YouTube, which must
+   * fetch the image themselves. Never put one in a page or email for the owner: use /api/files for that.
+   * The mock returns the app's own /api/files URL (needs sign-in, does not expire), which is enough
+   * for development and tests.
+   */
+  signedUrl?(bucket: Bucket, path: string, ttlSeconds: number): Promise<string>;
 }
 
 export class StoragePathError extends Error {

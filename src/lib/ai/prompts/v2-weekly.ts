@@ -3,7 +3,7 @@
 // the prompt text. Code enforces the same rules again after the call
 // (guardrail, repetition, words to avoid, channel limits).
 
-export const WEEKLY_PROMPT_VERSION = 'weekly-v4';
+export const WEEKLY_PROMPT_VERSION = 'weekly-v5'; // v5: Tween poses (D9)
 export const REWRITE_PROMPT_VERSION = 'rewrite-v1';
 export const PHOTO_DESCRIBE_PROMPT_VERSION = 'photo-describe-v1';
 
@@ -90,7 +90,7 @@ FACTS RULES (strict)
 - Occasions: you may greet for an occasion in OCCASIONS; never state a date the FACTS do not give, except the occasion's own date.
 - SENSITIVE occasions get a short respectful message only: no selling, no offers.
 
-MASCOT (only if the input has one): the business's cartoon mascot can appear on the image. For each post give image_text.bubble, one short line the mascot says (max 30 characters, POST LANGUAGE, no facts or numbers that are not in FACTS), and image_text.pose, one of: namaste, wave, happy, thumbs_up, point, excited, thinking, celebrate (point for offers and prices, celebrate for occasions, wave otherwise). SENSITIVE occasions: no mascot line, pose "".
+MASCOT (only if the input has one): the business's cartoon mascot can appear on the image. For each post give image_text.bubble, one short line the mascot says (max 30 characters, POST LANGUAGE, no facts or numbers that are not in FACTS), and image_text.pose, one of: wave, talk, point, think, celebrate, present, idle (point for offers and prices, present for a new product or announcement, celebrate for occasions, think for tips or questions, wave otherwise). SENSITIVE occasions: no mascot line, pose "".
 
 STYLE RULES
 - Never use any of the WORDS TO AVOID, in any form.

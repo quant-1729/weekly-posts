@@ -24,7 +24,7 @@ export default async function Page({ params }: { params: Promise<{ code: string 
   if (!card) notFound();
   const empty = !card.phones.length && !card.emails.length && !card.addresses.length && !card.hours.length;
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-[480px] space-y-5 bg-white px-4 py-8">
+    <main className="mx-auto min-h-dvh w-full max-w-[480px] space-y-5 bg-white px-4 py-8 md:max-w-[640px] md:px-10 md:py-12">
       <div>
         <h1 className="text-2xl font-bold">{card.businessName}</h1>
         {card.city ? <p className="mt-1 text-stone-600">{card.city}</p> : null}

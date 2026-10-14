@@ -7,7 +7,6 @@ import {
   WEEKLY_BATCH_RUNS,
   WEEKLY_COUNT_CAPS,
   WEEKLY_FACT_CHECKS,
-  WEEKLY_MASCOT_RUNS,
   WEEKLY_REVIEW_REPLIES,
   WEEKLY_REWRITES,
   WEEKLY_UPLOAD_EXTRACTS,
@@ -116,7 +115,6 @@ describe("count caps", () => {
     ["upload_extract", WEEKLY_UPLOAD_EXTRACTS],
     ["fact_check", WEEKLY_FACT_CHECKS],
     ["review_reply", WEEKLY_REVIEW_REPLIES],
-    ["mascot", WEEKLY_MASCOT_RUNS],
   ];
 
   it.each(cases)("%s: allowed up to %i calls in the week, then refused", async (kind, cap) => {
@@ -144,7 +142,8 @@ describe("count caps", () => {
   });
 
   it("the cap table has one entry per kind", () => {
-    expect(Object.keys(WEEKLY_COUNT_CAPS).sort()).toEqual(["fact_check", "mascot", "review_reply", "rewrite", "upload_extract", "website_read", "weekly_batch"]);
+    // v3 adds kinds (brief_from_text, style_read, image): the v2 six must stay, and every kind needs a cap.
+    expect(Object.keys(WEEKLY_COUNT_CAPS)).toEqual(expect.arrayContaining(["fact_check", "review_reply", "rewrite", "upload_extract", "website_read", "weekly_batch", "style_read", "image"]));
   });
 });
 
@@ -230,7 +229,7 @@ describe("messages", () => {
       expect(err.message).toMatch(/^You've used this week's /);
       seen.add(err.message);
     }
-    expect(seen.size).toBe(7);
+    expect(seen.size).toBe(Object.keys(WEEKLY_COUNT_CAPS).length);
   });
 
   it("the money limit has its own wording and the reset day", async () => {

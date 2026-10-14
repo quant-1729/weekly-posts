@@ -93,4 +93,12 @@ describe("email and app URL settings", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "");
     expect(getEnv().appUrl).toBe("");
   });
+
+  it("treats Cloud Run (K_SERVICE set) as hosted production, where mock sign-in is refused", () => {
+    clear();
+    vi.stubEnv("K_SERVICE", "");
+    expect(getEnv().isHostedProduction).toBe(false);
+    vi.stubEnv("K_SERVICE", "weekly-posts");
+    expect(getEnv().isHostedProduction).toBe(true);
+  });
 });

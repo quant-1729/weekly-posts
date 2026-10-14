@@ -29,6 +29,10 @@ export interface PastPostView {
   storagePath: string | null;
   imageUrl: string | null;
   createdAt: string;
+  /** 'instagram' for posts brought in from the owner's Instagram account. */
+  source: "upload" | "instagram";
+  /** Link to the original Instagram post, when there is one. */
+  sourceUrl: string | null;
 }
 
 interface PastPostRow {
@@ -36,9 +40,11 @@ interface PastPostRow {
   extracted_text: string | null;
   storage_path: string | null;
   created_at: string | Date;
+  source: "upload" | "instagram";
+  source_url: string | null;
 }
 
-const COLUMNS = "id, extracted_text, storage_path, created_at";
+const COLUMNS = "id, extracted_text, storage_path, created_at, source, source_url";
 
 function toView(r: PastPostRow): PastPostView {
   return {
@@ -47,6 +53,8 @@ function toView(r: PastPostRow): PastPostView {
     storagePath: r.storage_path,
     imageUrl: uploadUrl(r.storage_path),
     createdAt: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at),
+    source: r.source,
+    sourceUrl: r.source_url,
   };
 }
 
@@ -72,7 +80,8 @@ export async function listPastPosts(userId: string, brandId: string): Promise<Pa
 async function assertRoomForPastPost(userId: string, brandId: string): Promise<void> {
   const n = await getDb().withUser(userId, async (tx) => {
     const [r] = await tx.query<{ n: number }>(
-      "select count(*)::int as n from public.photos where brand_id = $1 and kind = 'past_post'",
+      // Posts brought in from Instagram have their own cap (src/lib/instagram/limits.ts) and do not use up the owner's own ten.
+      "select count(*)::int as n from public.photos where brand_id = $1 and kind = 'past_post' and source = 'upload'",
       [brandId],
     );
     return r?.n ?? 0;

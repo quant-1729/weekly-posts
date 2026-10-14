@@ -10,6 +10,7 @@ import {
   nonceMatches,
 } from "@/lib/auth/continue";
 import { verifyMagicToken } from "@/lib/auth/magic-link";
+import { publicUrl } from "@/lib/links/public-url";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ function harden(res: NextResponse): NextResponse {
 }
 
 function invalid(request: NextRequest): NextResponse {
-  const url = request.nextUrl.clone();
+  const url = publicUrl(request); // behind Cloud Run's proxy the request's own host is internal (0.0.0.0:8080)
   url.pathname = "/auth/invalid";
   url.search = "";
   return harden(NextResponse.redirect(url, 303));
@@ -87,7 +88,7 @@ export async function POST(request: NextRequest) {
     if (!(e instanceof AuthError)) console.error("[auth] callback", e);
     return invalid(request);
   }
-  const url = request.nextUrl.clone();
+  const url = publicUrl(request); // behind Cloud Run's proxy the request's own host is internal (0.0.0.0:8080)
   url.pathname = "/";
   url.search = "";
   const res = harden(NextResponse.redirect(url, 303));

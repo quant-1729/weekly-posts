@@ -59,8 +59,12 @@ function decodeURIComponentSafe(s: string): string {
   }
 }
 
+function bareHost(u: URL): string {
+  return u.host.toLowerCase().replace(/\.$/, "").replace(/^www\./, "");
+}
+/** Same host, or the same host with or without "www." (www.shop.example and shop.example are one site). */
 function sameSite(a: URL, b: URL): boolean {
-  return a.host.toLowerCase().replace(/\.$/, "") === b.host.toLowerCase().replace(/\.$/, "");
+  return bareHost(a) === bareHost(b);
 }
 
 export function pageKey(u: URL | string): string {
@@ -94,8 +98,8 @@ export function selectPages(home: URL, links: PageLink[], robots: RobotsRules): 
       return;
     }
     if (!sameSite(url, home)) return;
-    url.protocol = home.protocol; // stay on the scheme the home page was read with
-    url.port = home.port;
+    url.protocol = home.protocol; // stay on the scheme and host the home page was read with
+    url.host = home.host; // (www. and the bare host are one site; the one that answered is the one we use)
     if (NON_HTML_EXT.test(url.pathname)) return;
     const segs = segments(url.pathname);
     if (segs.length > 3 || segs.some((s) => DENY_SEGMENT.test(s.toLowerCase()))) return;

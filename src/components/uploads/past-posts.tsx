@@ -22,7 +22,9 @@ export function PastPosts({ brandId, initialPosts }: { brandId: string; initialP
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const input = useRef<HTMLInputElement>(null);
-  const full = posts.length >= MAX_PAST_POSTS;
+  // Posts brought in from Instagram have their own limit and do not count towards the owner's own ten.
+  const ownCount = posts.filter((p) => p.source !== "instagram").length;
+  const full = ownCount >= MAX_PAST_POSTS;
 
   function saveText() {
     setError(null);
@@ -97,7 +99,7 @@ export function PastPosts({ brandId, initialPosts }: { brandId: string; initialP
           {reading ? t.reading : t.uploadScreenshot}
         </button>
       </div>
-      <p className="text-sm text-stone-500">{fill(t.count, { n: posts.length, max: MAX_PAST_POSTS })}</p>
+      <p className="text-sm text-stone-500">{fill(t.count, { n: ownCount, max: MAX_PAST_POSTS })}</p>
       {error && (
         <p role="alert" className={errorClass}>
           {error}
@@ -136,6 +138,16 @@ export function PastPosts({ brandId, initialPosts }: { brandId: string; initialP
           {posts.map((p) => (
             <li key={p.id} className="space-y-2 rounded-xl border border-stone-200 p-3">
               {p.imageUrl && <p className="text-xs text-stone-500">{t.screenshotBadge}</p>}
+              {p.source === "instagram" && (
+                <p className="flex flex-wrap items-center gap-x-3 text-xs text-stone-500">
+                  <span className="rounded-full bg-stone-100 px-2 py-0.5">{s.instagram.tag}</span>
+                  {p.sourceUrl && (
+                    <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline">
+                      {s.instagram.viewOriginal}
+                    </a>
+                  )}
+                </p>
+              )}
               {editingId === p.id ? (
                 <div className="space-y-2">
                   {p.imageUrl && <p className="text-sm text-stone-600">{t.editHint}</p>}

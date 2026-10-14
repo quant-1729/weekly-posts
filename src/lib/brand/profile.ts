@@ -144,7 +144,7 @@ export async function saveBrandProfile(
       `update public.brand_memory set
          business_name = $2, category = $3, city = $4, products = $5::jsonb, audience = $6, tone = $7,
          languages = $8::public.content_language[], default_language = $9::public.content_language,
-         colors = $10::jsonb, whatsapp_number = $11, notes = $12
+         colors = case when jsonb_typeof($10::jsonb) = 'object' then coalesce(colors, '{}'::jsonb) || $10::jsonb else colors end, whatsapp_number = $11, notes = $12
          ${setup ? ", setup_transcript = $13, setup_completed_at = now()" : ""}
        where brand_id = $1
        returning brand_id`,

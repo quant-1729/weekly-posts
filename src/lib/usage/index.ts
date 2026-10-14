@@ -7,7 +7,7 @@ export type UsageKind =
   | "switch_language"
   | "plan"
   | "transcribe"
-  | "mascot"
+  | "mascot" // enum value kept (0001_init.sql); unused since the mascot became Tween (D9), which makes no AI call
   | "photo_cleanup"
   | "setup"
   | "website_read" // v2 kinds (0005_v2.sql); other v2 kinds are added by their tasks
@@ -16,6 +16,10 @@ export type UsageKind =
   | "weekly_batch" // 0005_v2.sql; weekly generation (V-10)
   | "rewrite"
   | "review_reply" // 0005_v2.sql; review replies (V-22)
+  | "brief_from_text" // 0016_v3_design.sql; "Describe your post" (C-08)
+  | "style_read" // 0016_v3_design.sql; "Keep my look" (C-17)
+  | "post_copy" // 0016_v3_design.sql; the words of a post made from a brief (C-16)
+  | "image" // 0005_v2.sql; used for Imagen backgrounds (C-18)
   | "auto_rewrite"; // 0011_hardening.sql; the weekly pipeline's own repeat/avoid-word rewrites (H-1)
 
 /**
@@ -39,15 +43,6 @@ export class DailyCapError extends Error {
   }
 }
 
-const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000; // Asia/Kolkata has no daylight saving
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** The IST calendar day containing `now`, as [start, end) instants. */
-export function istDayRange(now: Date = new Date()): { start: Date; end: Date } {
-  const startMs = Math.floor((now.getTime() + IST_OFFSET_MS) / DAY_MS) * DAY_MS - IST_OFFSET_MS;
-  return { start: new Date(startMs), end: new Date(startMs + DAY_MS) };
-}
-
 /**
  * Writes one usage event. Server-only: runs as service_role, so the caller must
  * already have checked that `userId` is a member of `brandId`.
@@ -68,34 +63,34 @@ export async function recordUsage(
   );
 }
 
-/** Number of AI calls the brand has made today (IST day). */
+/**
+ * The brand's own calendar day containing `now`, in its time zone (`brand_memory.timezone`, UTC when there is none),
+ * as [start, end) instants. Worked out in Postgres, so daylight-saving days (23 or 25 hours) are right.
+ */
+const TODAY_SQL = `
+  with tz as (select coalesce((select timezone from public.brand_memory where brand_id = $1), 'UTC') as name),
+       day as (
+         select (((($2::timestamptz at time zone tz.name)::date))::timestamp at time zone tz.name) as start,
+                ((((($2::timestamptz at time zone tz.name)::date) + 1))::timestamp at time zone tz.name) as stop
+           from tz)
+  select (select count(*)::int from public.usage_events u, day d
+           where u.brand_id = $1 and u.created_at >= d.start and u.created_at < d.stop) as used`;
+
+/** Number of AI calls the brand has made today (the day in the brand's time zone). */
 export async function countUsageToday(brandId: string, now: Date = new Date()): Promise<number> {
-  const { start, end } = istDayRange(now);
-  const [row] = await getDb().withService((tx) =>
-    tx.query<{ n: number }>(
-      `select count(*)::int as n from public.usage_events
-       where brand_id = $1 and created_at >= $2 and created_at < $3`,
-      [brandId, start.toISOString(), end.toISOString()],
-    ),
-  );
-  return row?.n ?? 0;
+  const [row] = await getDb().withService((tx) => tx.query<{ used: number }>(TODAY_SQL, [brandId, now.toISOString()]));
+  return row?.used ?? 0;
 }
 
 /**
- * Throws DailyCapError when today's events (IST day) have reached
+ * Throws DailyCapError when today's events (the day in the brand's time zone) have reached
  * brands.daily_generation_cap. Call before every AI call.
  */
 export async function assertUnderDailyCap(brandId: string, now: Date = new Date()): Promise<void> {
-  const { start, end } = istDayRange(now);
-  const [row] = await getDb().withService((tx) =>
-    tx.query<{ cap: number; used: number }>(
-      `select b.daily_generation_cap as cap,
-              (select count(*)::int from public.usage_events u
-                where u.brand_id = b.id and u.created_at >= $2 and u.created_at < $3) as used
-         from public.brands b where b.id = $1`,
-      [brandId, start.toISOString(), end.toISOString()],
-    ),
+  const [brand] = await getDb().withService((tx) =>
+    tx.query<{ cap: number }>("select daily_generation_cap as cap from public.brands where id = $1", [brandId]),
   );
-  if (!row) throw new Error("Brand not found");
-  if (row.used >= row.cap) throw new DailyCapError(row.cap, row.used);
+  if (!brand) throw new Error("Brand not found");
+  const used = await countUsageToday(brandId, now);
+  if (used >= brand.cap) throw new DailyCapError(brand.cap, used);
 }

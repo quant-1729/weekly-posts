@@ -184,7 +184,7 @@ export async function renderPost(args: {
     brand,
     photo: photo ?? undefined,
     text: { headline: args.imageText.headline, subline: args.imageText.subline, cta: args.cta, bubble },
-    mascot: mascot ? mascotForRender(mascot.spec, pose) : null,
+    mascot: mascot ? mascotForRender(mascot.colors, pose) : null,
     seed: extra.index,
   });
 }

@@ -32,7 +32,7 @@ export function AccountPanel() {
         <h3 className="font-semibold">{t.download.title}</h3>
         <p className="text-sm text-stone-600">{t.download.body}</p>
         {/* A plain link: the browser downloads the ZIP as it streams. */}
-        <a href="/api/account/export" download className={`${secondaryButton} block text-center`}>
+        <a href="/api/account/export" download className={`${secondaryButton} inline-block text-center`}>
           {t.download.button}
         </a>
       </div>

@@ -57,7 +57,7 @@ describe("buildExport", () => {
     const a = await seedAccount(db, storage);
     const zip = parseZip(await collect(await buildExport(a.userId, { storage, now: NOW })));
 
-    const jsonFiles = ["account.json", "brand.json", "facts.json", "photos.json", "posts.json", "actions.json", "checkins.json", "clicks.json", "owner-dates.json", "emails.json"];
+    const jsonFiles = ["account.json", "brand.json", "facts.json", "photos.json", "posts.json", "actions.json", "checkins.json", "clicks.json", "owner-dates.json", "emails.json", "usps.json", "contact-points.json", "post-briefs.json", "payment-ids.json", "connections.json", "queue.json", "queue-settings.json"];
     const files = expectedFiles(a);
     expect(zip.names.slice().sort()).toEqual(["README.txt", ...jsonFiles, ...files.keys()].sort());
     expect(zip.names).not.toContain("MISSING-FILES.txt");
@@ -219,6 +219,31 @@ describe("buildExport", () => {
     await collect(full);
     expect(gets).toBe(a.files.length);
     expect(maxLive).toBe(1);
+  });
+
+  it("exports selling points, contacts, briefs and payment IDs, never a payment confirmation secret", async () => {
+    const a = await seedAccount(db, storage);
+    await db.withAdmin(async (tx) => {
+      await tx.query(
+        `insert into public.payment_ids (brand_id, scheme, address, payee_name, confirm_token_hash, confirm_expires_at)
+         values ($1, 'upi', 'shop@okbank', 'Corner Bakery', 'SECRET-TOKEN-HASH', now() + interval '1 day')`,
+        [a.brandId],
+      );
+    });
+    const zip = parseZip(await collect(await buildExport(a.userId, { storage, now: NOW })));
+    const usps = jsonOf(zip.files, "usps.json");
+    expect(usps.map((u: { title: string }) => u.title)).toEqual(["20% off cakes", "Family run"]);
+    expect(usps[0]).toMatchObject({ kind: "discount", details: { percent: 20 } });
+    expect(jsonOf(zip.files, "contact-points.json").map((c: { value: string }) => c.value).sort()).toEqual(["+442079460958", "https://bakery.example.com"]);
+    const briefs = jsonOf(zip.files, "post-briefs.json");
+    expect(briefs).toHaveLength(1);
+    expect(briefs[0]).toMatchObject({ post_type: "offer", cta: "visit", photo_id: a.photoId });
+    const pay = jsonOf(zip.files, "payment-ids.json");
+    expect(pay).toHaveLength(1);
+    expect(pay[0]).toMatchObject({ address: "shop@okbank", payee_name: "Corner Bakery", status: "pending" });
+    expect(Object.keys(pay[0])).not.toContain("confirm_token_hash");
+    expect(Object.keys(pay[0])).not.toContain("confirm_expires_at");
+    for (const bytes of zip.files.values()) expect(new TextDecoder().decode(bytes)).not.toContain("SECRET-TOKEN-HASH");
   });
 
   it("an account with no business still exports its account file", async () => {

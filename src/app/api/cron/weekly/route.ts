@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 export const dynamic = "force-dynamic";
 
-// Intended schedule (added to vercel.json at deployment, not now): hourly, so each brand's
+// Schedule (in vercel.json): hourly, so each brand's
 // weekly run starts within an hour of its chosen local time.
 //
 //   { "crons": [{ "path": "/api/cron/weekly", "schedule": "0 * * * *" }] }

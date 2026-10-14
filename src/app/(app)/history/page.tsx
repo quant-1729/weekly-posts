@@ -33,9 +33,9 @@ export default async function Page({ searchParams }: PageProps<"/history">) {
 
   return (
     <section className="space-y-4">
-      <h1 className="text-xl font-bold">{s.history.title}</h1>
+      <h1 className="text-xl font-bold md:text-2xl">{s.history.title}</h1>
 
-      <div role="group" aria-label={s.history.filtersLabel} className="space-y-3">
+      <div role="group" aria-label={s.history.filtersLabel} className="space-y-3 md:flex md:flex-wrap md:items-start md:gap-x-12 md:gap-y-3 md:space-y-0">
         <div>
           <p className="mb-1 text-sm font-medium text-stone-700">{s.history.dateLabel}</p>
           <div className="flex flex-wrap gap-2">
@@ -50,7 +50,7 @@ export default async function Page({ searchParams }: PageProps<"/history">) {
               </Link>
             ))}
           </div>
-          <form method="get" action="/history" className="mt-2 flex items-center gap-2">
+          <form method="get" action="/history" className="mt-2 flex max-w-sm items-center gap-2 md:max-w-md">
             {filters.language && <input type="hidden" name="lang" value={filters.language} />}
             <label htmlFor="history-date" className="sr-only">
               {s.history.pickDateLabel}
@@ -91,11 +91,11 @@ export default async function Page({ searchParams }: PageProps<"/history">) {
           <p className="text-lg font-semibold">{filtered ? s.history.emptyFilteredTitle : s.history.emptyTitle}</p>
           <p className="text-stone-600">{filtered ? s.history.emptyFilteredBody : s.history.emptyBody}</p>
           {filtered ? (
-            <Link href="/history" className={`${secondaryButton} block`}>
+            <Link href="/history" className={`${secondaryButton} inline-block`}>
               {s.history.clearFilters}
             </Link>
           ) : (
-            <Link href="/create" className={`${primaryButton} block`}>
+            <Link href="/create" className={`${primaryButton} inline-block`}>
               {s.history.createFirst}
             </Link>
           )}

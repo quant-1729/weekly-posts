@@ -7,6 +7,8 @@
 
 import { GoogleGenAI, ThinkingLevel, type Part } from '@google/genai';
 import type { z } from 'zod';
+// Payment IDs (UPI etc.) never reach a model (CLAUDE.md rule); callers redact owner text too, this is the last line of defence.
+import { redactPaymentIds } from '@/lib/payments/redact';
 
 export const DEFAULT_TEXT_MODEL = 'gemini-3.8-flash';
 export const DEFAULT_TRANSCRIBE_MODEL = 'gemini-3.8-flash';
@@ -35,15 +37,43 @@ export function transcribeModel(): string {
   return process.env.GEMINI_TRANSCRIBE_MODEL || DEFAULT_TRANSCRIBE_MODEL;
 }
 
+/**
+ * Service account credentials for Vertex. On Vercel there is no key file, so the key's
+ * JSON goes in GOOGLE_SERVICE_ACCOUNT_JSON; locally GOOGLE_APPLICATION_CREDENTIALS (a
+ * file path) is read by the Google auth library itself. Never logs the value.
+ */
+export function serviceAccountCredentials(): Record<string, unknown> | undefined {
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_JSON?.trim();
+  if (!raw) return undefined;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new AiError('call_failed', 'GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON (paste the whole key file).');
+  }
+  const creds = parsed as Record<string, unknown>;
+  // Any Google credential file works (service_account is the one to use in production;
+  // authorized_user is a personal gcloud login). A service account needs its key.
+  if (typeof creds?.type !== 'string') {
+    throw new AiError('call_failed', 'GOOGLE_SERVICE_ACCOUNT_JSON has no "type" (paste the whole key file).');
+  }
+  if (creds.type === 'service_account' && (typeof creds.client_email !== 'string' || typeof creds.private_key !== 'string')) {
+    throw new AiError('call_failed', 'GOOGLE_SERVICE_ACCOUNT_JSON is missing client_email or private_key.');
+  }
+  return creds;
+}
+
 let client: GoogleGenAI | null = null;
 function genai(): GoogleGenAI {
   if (client) return client;
+  const credentials = serviceAccountCredentials();
   client =
     process.env.GOOGLE_GENAI_USE_VERTEXAI === 'true'
       ? new GoogleGenAI({
           vertexai: true,
           project: process.env.GOOGLE_CLOUD_PROJECT,
           location: process.env.GOOGLE_CLOUD_LOCATION || 'global',
+          ...(credentials ? { googleAuthOptions: { credentials } } : {}),
         })
       : new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   return client;
@@ -173,10 +203,10 @@ export async function generateJson<T>(args: {
       const res = await withRetry((signal) =>
         genai().models.generateContent({
           model,
-          contents: [{ role: 'user', parts: [...mediaParts(args.media), { text: args.user }] }],
+          contents: [{ role: 'user', parts: [...mediaParts(args.media), { text: redactPaymentIds(args.user) }] }],
           config: {
             abortSignal: signal,
-            systemInstruction: args.system,
+            systemInstruction: redactPaymentIds(args.system),
             responseMimeType: 'application/json',
             responseJsonSchema: args.jsonSchema,
             temperature: args.temperature ?? 0.7,
@@ -226,7 +256,7 @@ export async function generateText(args: {
     (signal) =>
       genai().models.generateContent({
         model,
-        contents: [{ role: 'user', parts: [...mediaParts(args.media), { text: args.instruction }] }],
+        contents: [{ role: 'user', parts: [...mediaParts(args.media), { text: redactPaymentIds(args.instruction) }] }],
         config: { abortSignal: signal, temperature: 0, thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } },
       }),
     { timeoutMs: args.timeoutMs ?? DEFAULT_CALL_TIMEOUT_MS, deadline: Date.now() + (args.budgetMs ?? 30_000) },

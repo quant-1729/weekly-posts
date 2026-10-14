@@ -7,6 +7,7 @@ import type { HistoryPost } from "@/lib/posts/history";
 import type { HistoryFilters } from "@/lib/posts/history-filters";
 import { loadMorePosts } from "./actions";
 import { HistoryCard } from "./history-card";
+import { HistoryTable } from "./history-table";
 
 /** The post cards plus "Load more". The page remounts this (key) when the filters change. */
 export function HistoryList({
@@ -42,11 +43,15 @@ export function HistoryList({
 
   return (
     <div className="space-y-3">
-      <ul className="space-y-3">
+      {/* Phones: cards. From 768 px: a table. */}
+      <ul className="space-y-3 md:hidden">
         {posts.map((p) => (
           <HistoryCard key={p.id} post={p} brandName={brandName} />
         ))}
       </ul>
+      <div className="hidden md:block">
+        <HistoryTable posts={posts} brandName={brandName} />
+      </div>
       {failed && (
         <p role="alert" className="text-sm text-red-700">
           {s.history.loadMoreFailed}

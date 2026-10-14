@@ -44,7 +44,7 @@ import { defaultPostLanguage, languageOptions, POST_LANGUAGE_CODES } from "@/lib
 import { regionsByCountry, timezonesByCountry } from "@/lib/setup/regions";
 import { completeSetupV2, SetupValidationError } from "@/lib/setup/save";
 import { parseSetup } from "@/lib/setup/schema";
-import { SETUP_STEPS } from "@/lib/setup/steps";
+import { SETUP_STEPS, stepsFor } from "@/lib/setup/steps";
 import { browserTimezone, countryOfTimezone, describeTimezone, isValidTimezone } from "@/lib/setup/timezones";
 import { validateSetup } from "@/lib/setup/validate";
 import { runWebsiteRead } from "@/lib/setup/website";
@@ -521,7 +521,7 @@ describe("the setup page and screens", () => {
     await expect(Page()).rejects.toThrow("REDIRECT:/login");
   });
 
-  it("the first screen has a progress bar for 10 steps and the business questions", () => {
+  it("the first screen has a progress bar for the 13 screens of Path B and the business questions", () => {
     const html = renderToString(
       createElement(SetupWizard, {
         countries: countryOptions(),
@@ -531,21 +531,22 @@ describe("the setup page and screens", () => {
       }),
     );
     expect(html).toContain('role="progressbar"');
-    expect(html).toContain('aria-valuemax="10"');
-    expect(html).toContain("Step 1 of 10");
+    expect(html).toContain('aria-valuemax="13"');
+    expect(html).toContain("Step 1 of 13");
     expect(html).toContain(s.setupV2.business.sellLabel);
-    // Voice, products/prices, colours and logo are gone from setup.
+    // The first screen asks only for the name and what is sold.
     expect(html).not.toMatch(/voice|logo|colou?r/i);
   });
 });
 
 describe("timing: a no-website setup is quick (AC 2/6, under 5 minutes)", () => {
-  it("has 10 screens, and a scripted run through the server actions takes seconds, not minutes", async () => {
-    expect(SETUP_STEPS).toHaveLength(10);
+  it("Path B has 13 screens, and a scripted run through the server actions takes seconds, not minutes", async () => {
+    expect(SETUP_STEPS).toHaveLength(14);
     expect(SETUP_STEPS.at(-1)).toBe("done");
-    // The website screen can be skipped, so the shortest path is still the full 10 screens, one
-    // short question each. At a generous 20 s per screen that is under 4 minutes.
-    expect(SETUP_STEPS.length * 20).toBeLessThan(5 * 60);
+    // Path B has no "addresses" screen: 13 screens, one short question each, most of them skippable.
+    // At a generous 20 s per screen that is under 4.5 minutes.
+    expect(stepsFor([])).toHaveLength(13);
+    expect(stepsFor([]).length * 20).toBeLessThan(5 * 60);
 
     const t0 = performance.now();
     // Screens 1-9 only collect answers in the browser; the server work is one save at screen 9.

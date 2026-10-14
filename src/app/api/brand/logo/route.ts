@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { describeError } from "@/lib/brand/errors";
 import { LOGO_MAX_BYTES } from "@/lib/brand/logo";
 import { clearBrandLogo, setBrandLogo } from "@/lib/brand/profile";
+import { clearLogoVariants, finishLogoUpload, type LogoReport } from "@/lib/logo";
 import { s } from "@/lib/i18n/strings";
 
 export const dynamic = "force-dynamic";
@@ -37,13 +38,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const logo = await setBrandLogo({
-      userId: user.id,
-      brandId,
-      bytes: new Uint8Array(await file.arrayBuffer()),
-      declaredType: file.type,
-    });
-    return Response.json({ ok: true, logoPath: logo.logoPath, palette: logo.palette });
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const logo = await setBrandLogo({ userId: user.id, brandId, bytes, declaredType: file.type });
+    // Low-resolution warning and white-background removal (C-19). The logo is already saved: a problem here never fails the upload.
+    let report: LogoReport | null = null;
+    try {
+      report = await finishLogoUpload({ brandId, uploaded: bytes });
+    } catch (e) {
+      console.warn("[brand] could not check the logo", e instanceof Error ? e.message : e);
+    }
+    return Response.json({ ok: true, logoPath: logo.logoPath, palette: logo.palette, report });
   } catch (e) {
     return errorResponse(e);
   }
@@ -57,6 +61,7 @@ export async function DELETE(req: NextRequest) {
   if (!brandId) return Response.json({ ok: false, code: "not_found", message: s.brand.noBrand }, { status: 400 });
   try {
     await clearBrandLogo({ userId: user.id, brandId });
+    await clearLogoVariants(brandId).catch(() => undefined);
     return Response.json({ ok: true });
   } catch (e) {
     return errorResponse(e);

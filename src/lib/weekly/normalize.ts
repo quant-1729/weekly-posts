@@ -4,7 +4,7 @@
 
 import { V2_CHANNEL_SPECS, V2_IMAGE_TEXT_LIMITS, type V2Channel, type WeeklyOccasion } from '@/lib/ai/prompts/v2-weekly';
 import type { WeeklyPost } from '@/lib/ai/schemas-v2';
-import { MASCOT_POSES, type MascotPose } from '@/lib/ai/prompts/mascot';
+import { TWEEN_POST_POSES, type TweenPostPose } from '@/lib/mascot/poses';
 import { IMAGE_TEXT_LIMITS } from '@/lib/ai/prompts/shared';
 import { addDaysIso, isValidIsoDate } from '@/lib/occasions/dates';
 
@@ -84,10 +84,10 @@ export function fitBubble(raw: string | undefined): string {
   return trimAtWord((raw ?? '').replace(/\s+/g, ' '), IMAGE_TEXT_LIMITS.bubble);
 }
 
-/** The model's pose when it is one of the 8, else '' (the renderer then draws `wave`). */
-export function validPose(raw: string | undefined): MascotPose | '' {
+/** The model's pose when it is one of the 7 post poses, else '' (the renderer then draws `wave`). */
+export function validPose(raw: string | undefined): TweenPostPose | '' {
   const p = (raw ?? '').trim();
-  return (MASCOT_POSES as readonly string[]).includes(p) ? (p as MascotPose) : '';
+  return (TWEEN_POST_POSES as readonly string[]).includes(p) ? (p as TweenPostPose) : '';
 }
 
 export function fitImageText(t: { headline: string; subline: string }): { headline: string; subline: string } {
@@ -135,7 +135,7 @@ export interface NormalizedPost {
   imageText: { headline: string; subline: string };
   /** What the mascot says and its pose. Both '' when the brand's mascot is off or the occasion is sensitive. */
   bubble: string;
-  pose: MascotPose | '';
+  pose: TweenPostPose | '';
   /** The post is for a sensitive occasion: no mascot, whatever the model said. */
   sensitive: boolean;
   /** A real photos.id, or null when the post is text-only. */

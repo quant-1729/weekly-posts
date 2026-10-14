@@ -3,6 +3,7 @@ import { logBrandAction } from "@/lib/links/log";
 import { setEmailUnsubscribed } from "@/lib/links/ops";
 import { verifyLink } from "@/lib/links/tokens";
 import { getDb } from "@/lib/db";
+import { publicUrl } from "@/lib/links/public-url";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   const token = request.nextUrl.searchParams.get("t") ?? "";
-  const url = request.nextUrl.clone();
+  const url = publicUrl(request); // behind Cloud Run's proxy the request's own host is internal (0.0.0.0:8080)
   url.pathname = `/e/${encodeURIComponent(token)}`;
   url.search = "";
   return NextResponse.redirect(url, 303);

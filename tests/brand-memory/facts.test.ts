@@ -74,7 +74,7 @@ const rows = (where = "true") =>
 
 function render(facts: FactView[], regulated = false): string {
   return renderToString(
-    createElement(FactsSection, { brandId: brand, facts, regulated, website: { url: "https://cornerbakery.example", status: "ok", readAt: "2026-10-13" } }),
+    createElement(FactsSection, { brandId: brand, facts, regulated, website: { url: "https://cornerbakery.example", status: "ok", readAt: "2026-10-13", reason: null } }),
   );
 }
 
@@ -323,7 +323,7 @@ describe("re-read replaces the website facts", () => {
       userId: owner,
       brandId: brand,
       url: `${server!.origin}/`,
-      read: async () => ({ status: "failed", pagesRead: [], skipped: [], factsSaved: 0, factsDropped: 0, factsSkippedOwnerEdited: 0, logoCandidates: [], themeColor: null, summary: "", reason: "ai_failed" }),
+      read: async () => ({ status: "failed", pagesRead: [], readerPages: [], skipped: [], factsSaved: 0, factsDropped: 0, factsSkippedOwnerEdited: 0, logoCandidates: [], themeColor: null, summary: "", reason: "ai_failed" }),
     });
     expect(failing).toMatchObject({ status: "failed", reason: "ai_failed", factsSaved: 0 });
     expect((await rows("source_type = 'website' and active")).length).toBe(22);

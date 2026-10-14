@@ -27,12 +27,10 @@ vi.mock("@/lib/ai/client", async (importOriginal) => {
   };
 });
 
-import { mascotConceptsSchema } from "@/lib/ai/schemas";
 import { photoDescribeSchema, rewriteSchema, reviewReplySchema, v2FactCheckSchema, weeklyBatchSchema } from "@/lib/ai/schemas-v2";
 import { rewritePost } from "@/lib/approvals/ops";
 import type { MockDb } from "@/lib/db/mock";
 import { createMockDb, setMockDbForTests } from "@/lib/db/mock";
-import { generateMascotConcepts } from "@/lib/mascot/service";
 import { samplePhoto } from "@/lib/render/fixtures";
 import { ReviewReplyAiError, draftReviewReply } from "@/lib/reviews/reply";
 import { addPhoto } from "@/lib/uploads/photos";
@@ -160,15 +158,5 @@ describe("other call sites record the stats of a failed call", () => {
     expect(all[0].kind).toBe("upload_extract");
     expect(all[0].usd).toBeCloseTo(0.003, 9);
     expect(await db.withAdmin((tx) => tx.query("select 1 from public.photos where brand_id = $1 and kind = 'photo'", [brandId]))).toHaveLength(1);
-  });
-
-  it("a mascot run whose calls fail is recorded as one mascot event with the sum", async () => {
-    const { userId, brandId } = await seedWeeklyBrand(db, {});
-    fail(mascotConceptsSchema, [0.003, 0.004]);
-    await expect(generateMascotConcepts({ userId, brandId })).rejects.toBeTruthy();
-    const all = await events(brandId);
-    expect(all).toHaveLength(1);
-    expect(all[0].kind).toBe("mascot");
-    expect(all[0].usd).toBeCloseTo(0.007, 9);
   });
 });

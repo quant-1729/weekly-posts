@@ -4,7 +4,7 @@
 //  - DNS is resolved here, every address is checked, and the connection goes to
 //    the checked IP (so DNS rebinding cannot swap it)
 //  - redirects are followed by hand (max 3) and every hop is checked again
-//  - 8 s per request, 1.5 MB body cap, only text/html (pages) or text/plain (robots)
+//  - 8 s per request, 1.5 MB body cap, only text/html (pages), text/plain (robots) or xml (sitemaps)
 //  - accept "image" (logo download): only png, jpeg and webp, never SVG; bytes come back in `body`
 
 import http from "node:http";
@@ -84,7 +84,7 @@ export interface FetchEnv {
 }
 
 export interface SafeFetchOptions extends FetchEnv {
-  accept: "text/html" | "text/plain" | "image";
+  accept: "text/html" | "text/plain" | "xml" | "image";
   /** Called with every URL about to be requested (the first one and each redirect). Return false to refuse it. */
   allowUrl?: (url: URL) => Promise<boolean>;
 }
@@ -102,6 +102,7 @@ export interface FetchResult {
   body?: Buffer;
 }
 
+const XML_TYPES = new Set(["application/xml", "text/xml", "text/plain"]);
 const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/jpg", "image/webp"]);
 
 function userAgent(): string {
@@ -275,7 +276,9 @@ async function requestOnce(url: URL, env: FetchEnv, accept: string, signal: Abor
         ? "text/html,application/xhtml+xml;q=0.9"
         : accept === "image"
           ? "image/png,image/jpeg,image/webp"
-          : "text/plain",
+          : accept === "xml"
+            ? "application/xml,text/xml;q=0.9,text/plain;q=0.5"
+            : "text/plain",
     "Accept-Encoding": "gzip, deflate, br",
     Connection: "close",
   };
@@ -339,7 +342,9 @@ export async function safeFetch(rawUrl: string | URL, opts: SafeFetchOptions): P
           ? mime === "text/html" || mime === "application/xhtml+xml"
           : opts.accept === "image"
             ? IMAGE_TYPES.has(mime)
-            : mime === "text/plain";
+            : opts.accept === "xml"
+              ? XML_TYPES.has(mime)
+              : mime === "text/plain";
       if (!ok) {
         res.destroy();
         throw new FetchError("wrong_content_type", `Expected ${opts.accept}, got ${mime || "no content type"}`, url.href, res.status);

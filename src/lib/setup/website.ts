@@ -26,7 +26,7 @@ async function markFailedIfStillReading(userId: string, brandId: string, url: st
     await getDb().withUser(userId, (tx) =>
       tx.query(
         `update public.brand_memory
-            set website_status = 'failed', website_read_at = now()
+            set website_status = 'failed', website_read_at = now(), website_read_reason = 'read_timeout'
           where brand_id = $1 and website_url = $2 and website_status = 'none' and website_read_at is null`,
         [brandId, url],
       ),
@@ -79,6 +79,8 @@ export interface WebsiteReadSummary {
   facts: number;
   /** Pages those facts came from. */
   pages: number;
+  /** brand_memory.website_read_reason: why the read was not clean ("js_only_meta", "no_text", "robots" ...), null when it was. */
+  reason: string | null;
 }
 
 /** Where the website read stands, for the Done screen. Null when the user cannot see the brand. */
@@ -88,10 +90,11 @@ export async function getWebsiteReadSummary(userId: string, brandId: string): Pr
       website_url: string | null;
       status: Exclude<WebsiteReadState, "reading">;
       read_at: string | null;
+      reason: string | null;
       facts: number;
       pages: number;
     }>(
-      `select m.website_url, m.website_status::text as status, m.website_read_at as read_at,
+      `select m.website_url, m.website_status::text as status, m.website_read_at as read_at, m.website_read_reason as reason,
               (select count(*)::int from public.brand_facts f
                 where f.brand_id = m.brand_id and f.source_type = 'website' and f.active) as facts,
               (select count(distinct f.source_ref)::int from public.brand_facts f
@@ -103,5 +106,5 @@ export async function getWebsiteReadSummary(userId: string, brandId: string): Pr
   );
   if (!row) return null;
   const reading = row.website_url !== null && row.status === "none" && row.read_at === null;
-  return { state: reading ? "reading" : row.status, facts: row.facts, pages: row.pages };
+  return { state: reading ? "reading" : row.status, facts: row.facts, pages: row.pages, reason: reading ? null : row.reason };
 }

@@ -16,12 +16,27 @@ export function rereadMessage(o: {
   if (o.websiteUrl === null) return t.removed;
   if ((o.status === "blocked" || o.status === "failed") && o.addressChanged) return t.failedNewAddress;
   if (o.status === "blocked") return t.blocked;
-  if (o.status === "failed") return o.reason === "ai_failed" ? t.aiFailed : t.failed;
+  if (o.status === "failed") {
+    if (o.reason === "ai_failed") return t.aiFailed;
+    return o.reason === "no_text" ? t.failedNoText : t.failed; // no_text: the address loaded fine, so do not ask to check it
+  }
+  if (o.reason === "js_only_meta") return t.jsOnly + (o.factsSkippedOwnerEdited ? ` ${fill(t.keptEdited, { n: o.factsSkippedOwnerEdited })}` : "");
   const pages = fill(o.pagesRead === 1 ? t.pages.one : t.pages.other, { n: o.pagesRead });
   const facts = fill(o.factsSaved === 1 ? t.facts.one : t.facts.other, { n: o.factsSaved });
   const kept = o.factsSkippedOwnerEdited ? ` ${fill(t.keptEdited, { n: o.factsSkippedOwnerEdited })}` : "";
   if (o.factsSaved === 0) return fill(t.noFacts, { pages }) + kept;
   return fill(o.status === "partial" ? t.partial : t.ok, { pages, facts }) + kept;
+}
+
+/**
+ * A line about the last saved read, for the Brand page after a reload (the click result has its own message).
+ * Only the cases that need an explanation; null otherwise.
+ */
+export function savedReadNote(status: string, reason: string | null): string | null {
+  const t = s.brandV2.facts.reread;
+  if (status === "partial" && reason === "js_only_meta") return t.jsOnly;
+  if (status === "failed" && reason === "no_text") return t.failedNoText;
+  return null;
 }
 
 /** "14 Oct 2026" for a "YYYY-MM-DD" date, without any time zone shift. */

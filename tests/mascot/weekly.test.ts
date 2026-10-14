@@ -9,13 +9,14 @@ import { generateJson } from '@/lib/ai/client';
 import type { WeeklyBatch } from '@/lib/ai/schemas-v2';
 import type { MockDb } from '@/lib/db/mock';
 import { fitBubble, validPose } from '@/lib/weekly/normalize';
+import { TWEEN_POST_POSES } from '@/lib/mascot/poses';
 import { poseOrDefault } from '@/lib/mascot/posts';
 import { generateWeek, type GenerateDeps } from '@/lib/weekly/generate';
 import { fixtureWeeklyBatch, PLANTED_PRICE, type FixtureContext } from '@/lib/weekly/fixtures';
 import { loadWeekView } from '@/lib/weekly/view';
 import { closeTestDb, openTestDb } from '../brand/helpers';
 import { seedWeeklyBrand, tempStorage } from '../weekly/helpers';
-import { bodyPixels, GREEN_SPEC, insertActiveMascot, seedMascotBrand } from './helpers';
+import { colorPixels as bodyPixels, insertActiveMascot, seedMascotBrand } from './helpers';
 
 const ai = vi.mocked(generateJson);
 const WEEK = '2026-12-21';
@@ -63,7 +64,7 @@ describe('weekly posts with the mascot on (R15d)', () => {
 
     // The prompt carries the mascot's name and personality.
     const weeklyCall = ai.mock.calls.map((c) => c[0] as { user: string }).find((c) => c.user.includes('MASCOT:'));
-    expect(weeklyCall?.user).toContain('MASCOT: Pip, Cheerful and kind.');
+    expect(weeklyCall?.user).toContain('MASCOT: Pip, friendly, curious and a little playful');
 
     const posts = await postsOf(res.batchId);
     expect(posts).toHaveLength(4);
@@ -72,8 +73,8 @@ describe('weekly posts with the mascot on (R15d)', () => {
       const it = p.image_text as { bubble?: string; pose?: string };
       expect(it.bubble?.length).toBeGreaterThan(0);
       expect(Array.from(it.bubble!).length).toBeLessThanOrEqual(30);
-      expect(['namaste', 'wave', 'happy', 'thumbs_up', 'point', 'excited', 'thinking', 'celebrate']).toContain(it.pose);
-      // Square and vertical show the mascot's body colour; landscape has no mascot.
+      expect(TWEEN_POST_POSES as readonly string[]).toContain(it.pose);
+      // Square and vertical show Tween's scarf colour; landscape has no mascot.
       expect(await bodyPixels(await image(brandId, p.id as string, 'square')), 'square').toBeGreaterThan(1500);
       expect(await bodyPixels(await image(brandId, p.id as string, 'vertical')), 'vertical').toBeGreaterThan(1500);
       expect(await bodyPixels(await image(brandId, p.id as string, 'landscape')), 'landscape').toBe(0);
@@ -121,13 +122,16 @@ describe('weekly posts with the mascot on (R15d)', () => {
       const it = p.image_text as { bubble: string; pose: string };
       expect(Array.from(it.bubble).length).toBeLessThanOrEqual(30);
       expect(long.startsWith(it.bubble)).toBe(true);
-      expect(it.pose).toBe(''); // not one of the 8: the renderer draws `wave`
+      expect(it.pose).toBe(''); // not one of the 7: the renderer draws `wave`
       expect(await bodyPixels(await image(brandId, p.id as string, 'square'))).toBeGreaterThan(1500); // still drawn
     }
   });
 
   it('unit: pose and bubble clean-up', () => {
     expect(poseOrDefault('point')).toBe('point');
+    for (const pose of TWEEN_POST_POSES) expect(poseOrDefault(pose)).toBe(pose);
+    expect(poseOrDefault('namaste')).toBe('wave'); // an old v1 pose name
+    expect(validPose('thinking')).toBe('');
     expect(poseOrDefault('dancing')).toBe('wave');
     expect(poseOrDefault('')).toBe('wave');
     expect(poseOrDefault(undefined)).toBe('wave');
@@ -216,7 +220,7 @@ describe('the week screen knows about the mascot', () => {
     if (res2.status !== 'ready') throw new Error(JSON.stringify(res2));
     const view2 = await loadWeekView(plain.userId, plain.brandId, WEEK);
     for (const p of view2.posts) expect([p.mascotId ?? null, p.canShowMascot]).toEqual([null, false]);
-    await insertActiveMascot(db, plain.brandId, GREEN_SPEC, 'Late');
+    await insertActiveMascot(db, plain.brandId, { name: 'Late' });
     expect((await loadWeekView(plain.userId, plain.brandId, WEEK)).posts.every((p) => p.canShowMascot === true)).toBe(true);
   });
 });

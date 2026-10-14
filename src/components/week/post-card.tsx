@@ -6,6 +6,7 @@ import { errorClass, hintClass, inputClass, labelClass } from "@/components/ui";
 import { fill, s } from "@/lib/i18n/strings";
 import { formatDayMonth } from "@/lib/links/format";
 import { UNMARK_WINDOW_MS } from "@/lib/share/formats";
+import { tweenSignal } from "@/lib/tween/events";
 import type { PhotoChoice, WeekPostView, WeekView as WeekData } from "@/lib/weekly/view";
 import { MascotControls } from "./mascot-controls";
 import {
@@ -60,19 +61,26 @@ export function PostCard({ post, photos, weekStart, onView }: { post: WeekPostVi
     setMessage(null);
     const r = await fn();
     if (r.view) onView(r.view);
+    if (r.ok && name === "approve") {
+      // Tween reacts to the owner's approval; the whole week done gets the bigger celebration.
+      const ps = r.view?.posts ?? [];
+      const allDone = ps.some((p) => p.status === "approved") && ps.every((p) => ["approved", "posted", "skipped"].includes(p.status));
+      tweenSignal(allDone ? "all_approved" : "approved");
+    }
     setMessage(r.ok ? { kind: "ok", text: r.message, lines: r.lines } : { kind: "error", text: r.errors?.length ? "" : r.message, lines: r.errors ?? [] });
     setBusy(null);
     return r;
   }
 
   return (
-    <li className="space-y-3 rounded-xl border border-stone-200 bg-white p-3" data-post-id={post.id}>
-      <div className="flex gap-3">
+    <li className={`space-y-3 rounded-xl border border-stone-200 bg-white p-3 md:p-4 ${editing && !posted ? "lg:col-span-2" : ""}`} data-post-id={post.id}>
+      {/* Phones: a small picture beside the words. Tablets: a bigger picture beside them. Desktop grid: the picture on top, large enough to judge. */}
+      <div className="flex gap-3 md:gap-4 lg:flex-col">
         {post.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={post.imageUrl} alt={s.week.imageAlt} className="size-24 shrink-0 rounded-lg bg-stone-100 object-cover" />
+          <img src={post.imageUrl} alt={s.week.imageAlt} className="size-24 shrink-0 rounded-lg bg-stone-100 object-cover md:size-56 md:object-contain lg:h-80 lg:w-full" />
         ) : (
-          <div className="flex size-24 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-xs text-stone-500">{s.week.noImage}</div>
+          <div className="flex size-24 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-xs text-stone-500 md:size-56 lg:h-80 lg:w-full">{s.week.noImage}</div>
         )}
         <div className="min-w-0 flex-1 space-y-1">
           <p className="text-sm font-semibold text-stone-800">
@@ -83,7 +91,7 @@ export function PostCard({ post, photos, weekStart, onView }: { post: WeekPostVi
             </span>
           </p>
           {post.occasion ? <p className="text-xs text-stone-500">{fill(s.week.occasion, { name: post.occasion })}</p> : null}
-          <p className="whitespace-pre-line text-sm text-stone-700">{post.caption}</p>
+          <p className="whitespace-pre-line text-sm text-stone-700 md:text-base">{post.caption}</p>
           <p className={`text-xs font-medium ${post.flagCount > 0 ? "text-amber-700" : "text-green-700"}`}>
             {post.flagCount > 0 ? fill(s.week.flagsCount, { n: post.flagCount }) : s.week.flagsNone}
           </p>
@@ -256,7 +264,8 @@ function PostEditor({
   }
 
   return (
-    <div className="space-y-6 border-t border-stone-200 pt-4">
+    <div className="space-y-6 border-t border-stone-200 pt-4 lg:grid lg:grid-cols-2 lg:gap-x-10 lg:space-y-0">
+      <div className="space-y-6">
       <MascotControls post={post} weekStart={weekStart} busy={busy} run={run} />
       <form
         className="space-y-3"
@@ -290,7 +299,9 @@ function PostEditor({
           {busy === "save" ? t.dash.working : t.edit.save}
         </button>
       </form>
+      </div>
 
+      <div className="space-y-6">
       <fieldset className="space-y-3">
         <legend className="font-semibold">{t.edit.photoTitle}</legend>
         <p className={hintClass}>{t.edit.photoHelp}</p>
@@ -345,6 +356,7 @@ function PostEditor({
           {busy === "rewrite" ? t.dash.working : t.edit.rewriteButton}
         </button>
       </form>
+      </div>
     </div>
   );
 }

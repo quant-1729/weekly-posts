@@ -92,18 +92,20 @@ export interface WebsiteInfo {
   status: string;
   /** "YYYY-MM-DD" (UTC) or null */
   readAt: string | null;
+  /** brand_memory.website_read_reason: why the last read was partial or failed, null when it was clean. */
+  reason: string | null;
 }
 
 /** Where the website read stands, for the Facts section. */
 export async function getWebsiteInfo(userId: string, brandId: string): Promise<WebsiteInfo> {
   await requireBrandMember(userId, brandId);
   const [row] = await getDb().withUser(userId, (tx) =>
-    tx.query<{ url: string | null; status: string; read_at: string | null }>(
+    tx.query<{ url: string | null; status: string; read_at: string | null; reason: string | null }>(
       `select website_url as url, website_status::text as status,
-              to_char(website_read_at at time zone 'UTC', 'YYYY-MM-DD') as read_at
+              to_char(website_read_at at time zone 'UTC', 'YYYY-MM-DD') as read_at, website_read_reason as reason
          from public.brand_memory where brand_id = $1`,
       [brandId],
     ),
   );
-  return { url: row?.url ?? null, status: row?.status ?? "none", readAt: row?.read_at ?? null };
+  return { url: row?.url ?? null, status: row?.status ?? "none", readAt: row?.read_at ?? null, reason: row?.reason ?? null };
 }

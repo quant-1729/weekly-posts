@@ -38,7 +38,8 @@ const nonZero = (counts: Record<string, number>) => Object.entries(counts).filte
 const CORE_TABLES = [
   "profiles", "brands", "brand_members", "brand_memory", "brand_facts", "photos", "owner_dates", "voice_feedback",
   "weekly_plans", "plan_ideas", "mascots", "weekly_batches", "posts", "post_images", "outputs", "post_actions", "clicks",
-  "checkins", "approval_links", "approvals", "approval_comments", "summary_shares", "usage_events", "email_log",
+  "checkins", "approval_links", "approvals", "approval_comments", "summary_shares", "usage_events", "email_log", "magic_links",
+  "usps", "contact_points", "post_briefs",
 ];
 
 describe("deleteAccount (AC 22)", () => {
@@ -49,8 +50,9 @@ describe("deleteAccount (AC 22)", () => {
     const { rules, allTables } = await accountRules(db);
     // Every table must be tied to an account by some column, or this test cannot see it.
     // Only tables that hold no personal data may be left out, and each must be named here on purpose
-    // (used_tokens: a hash of a random link id, no brand and no user).
-    const NO_PERSONAL_DATA = ["used_tokens"];
+    // (used_tokens: a hash of a random link id, no brand and no user; deletion_requests: Meta's
+    // data-deletion receipts, only a platform account id and a code, kept after the account is gone).
+    const NO_PERSONAL_DATA = ["used_tokens", "deletion_requests"];
     expect([...rules].filter(([t, conds]) => conds.length === 0 && !NO_PERSONAL_DATA.includes(t)).map(([t]) => t)).toEqual([]);
     expect(allTables).toEqual(expect.arrayContaining(CORE_TABLES));
 

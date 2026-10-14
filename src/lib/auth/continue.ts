@@ -70,6 +70,7 @@ export function continuePageHtml(args: { token: string; nonce: string }): string
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>${title}</title>
+<style>@media (min-width:768px){body{background:#fafaf9 !important}main{max-width:560px !important;min-height:0 !important;margin:10vh auto !important;padding:40px 48px !important;background:#ffffff;border:1px solid #e7e5e4;border-radius:16px}}</style>
 </head>
 <body style="margin:0;background:#ffffff;color:#1c1917;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;">
 <main style="box-sizing:border-box;max-width:480px;min-height:100vh;margin:0 auto;padding:32px 20px;display:flex;flex-direction:column;justify-content:center;">

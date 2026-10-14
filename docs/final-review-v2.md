@@ -11,7 +11,7 @@ Date: 2026-10-13. PRD: [6-prd-v2.md](6-prd-v2.md). Plan and hardening list: [8-b
 
 | Req | Acceptance criterion | Evidence | Status |
 |---|---|---|---|
-| 1 | Magic link lands in setup within 1 min | V-2/V-3. Browser pass: link to Continue to /setup in about 1.3 s warm. Scanner-safe Continue step; single use; 15-minute expiry | Pass (local). Supabase Auth email not connected (H-7) |
+| 1 | Magic link lands in setup within 1 min | V-2/V-3. Browser pass: link to Continue to /setup in about 1.3 s warm. Scanner-safe Continue step; single use; 15-minute expiry. Same flow verified on real Supabase (D8) | Pass. Real email delivery needs Resend |
 | 2, 6 | Setup completes with no website in under 5 min | V-3: 10 short screens (about 3 minutes for a person). Browser pass done; the website read never blocks | Pass |
 | 3 | 80% of listed facts extracted; robots.txt respected | Live end to end with the real reader: 22/22 and 23/23. The robots-blocked site fetched only robots.txt. SSRF protection: 103 tests | Pass |
 | 4, 5 | Every fact shown with its source; edits persist | V-6: source badge, page link and quote per fact. Edits survive reloads and re-reads (the owner's edit wins) | Pass |
@@ -26,7 +26,7 @@ Date: 2026-10-13. PRD: [6-prd-v2.md](6-prd-v2.md). Plan and hardening list: [8-b
 | 17 | Native share sheet with image and caption on iOS/Android; WhatsApp status reachable | Share code tested with a mocked browser. Browser pass: ready page script runs, Download gives a real PNG, the copy fallback works | Manual (real phones, checklist). Share is hidden where the browser can't share files (H-11, fixed) |
 | 19 | Clicks logged within 1 min; redirect adds 300 ms or less | Handler p95 3.4 ms (local); click visible immediately; bots and prefetch not counted | Pass (local) |
 | 20, 21 | One-tap check-in; month-over-month, time saved, "not measured" line | V-19 tests incl. time-zone month edges; the email summary line; browser pass shows the empty state and "not counted" line | Pass |
-| 22 | Delete removes all rows and storage | V-20: schema-driven test: 0 rows in every table, 0 files in every bucket, no auth user. Export ZIP verified | Pass (local). Supabase admin delete and storage listing are stubs (H-7) |
+| 22 | Delete removes all rows and storage | V-20: schema-driven test: 0 rows in every table, 0 files in every bucket, no auth user. Export ZIP verified. On real Supabase: integration tests plus a browser pass deleted the account to 0 auth users, 0 rows and 0 files | Pass |
 | 23 | Weekly cost logged and under cap (under $0.50) | Heavy week simulated at $0.17; all caps maxed at $0.29. Live demo account: $0.027 a week. Failed and retried AI calls are costed too (H-2) | Pass |
 | 25 | Exactly one reminder 3 days after approval; none if posted | V-17: fake-clock tests at 71.9 h, 72 h and after; retries; never for paused, unsubscribed or posted | Pass |
 | 26 | Review reply under 10 s, in voice, no outside facts | Live: 1.7-4.9 s; serious reviews flagged for attention; promises of refunds or free items flagged | Pass |
@@ -35,7 +35,7 @@ Date: 2026-10-13. PRD: [6-prd-v2.md](6-prd-v2.md). Plan and hardening list: [8-b
 
 ## Before the pilot (needs the owner or real accounts)
 
-1. **Supabase project:** apply migrations 0001-0011, then implement the H-7 stubs (auth email via Supabase, admin delete, storage list/remove, Postgres connection).
+1. **Supabase project:** connected and working (2026-10-13). Migrations 0001-0012 and 5 private buckets applied; RLS on all 26 tables. The app runs on it end to end (H-7): sign-in, setup, a week generated in under 84 s, images from storage, account delete to zero rows and files. Before real owners: reset the database password and keys (they were shared in chat), turn off public sign-ups in Supabase Auth, and see H-14 to H-16.
 2. **Vercel project:** deploy; add `vercel.json` crons (hourly `/api/cron/weekly` and `/api/cron/reminders` with `CRON_SECRET`); set the env vars from `.env.example`.
 3. **Resend and a sending domain:** set up SPF, DKIM and DMARC, then run `docs/email-checklist.md` (Gmail and Outlook rendering, real-phone share sheets).
 4. **Dedicated Google Cloud project for Gemini (H-6):** the shared project stalled or failed on about 1 in 5 calls during the build. Retries and time limits contain it, but a dedicated project will make the weekly email reliable.

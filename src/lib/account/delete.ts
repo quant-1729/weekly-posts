@@ -1,7 +1,9 @@
 import { createHmac } from "node:crypto";
 import { getDb } from "@/lib/db";
 import { getMockDb } from "@/lib/db/mock";
+import { revokeBrandConnections } from "@/lib/connections/service";
 import { getEnv } from "@/lib/env";
+import { deleteSupabaseUser } from "@/lib/supabase/users";
 import { BUCKETS, getStorage, type Storage } from "@/lib/storage";
 
 /**
@@ -45,7 +47,7 @@ export function auditId(userId: string): string {
   return createHmac("sha256", getEnv().authSecret).update(`account-delete:${userId}`).digest("hex").slice(0, 16);
 }
 
-/** Deletes the auth user. Mock: the owner connection (the stub does not grant auth.users to service_role). */
+/** Deletes the auth user. Mock: the owner connection (the stub does not grant auth.users to service_role). Supabase: the Auth admin API. */
 async function deleteAuthUser(userId: string): Promise<boolean> {
   if (getEnv().dataBackend === "mock") {
     const mock = await getMockDb();
@@ -54,8 +56,7 @@ async function deleteAuthUser(userId: string): Promise<boolean> {
     );
     return gone.length > 0;
   }
-  // Supabase: will call the Auth admin API (auth.admin.deleteUser) with the service role key.
-  throw new Error("Supabase admin API not configured yet");
+  return deleteSupabaseUser(userId);
 }
 
 export async function deleteAccount(
@@ -100,6 +101,9 @@ export async function deleteAccount(
     }
   }
 
+  // 2b. Ask Meta to drop our access for connected accounts while their tokens still exist. Best effort: never blocks deletion.
+  await revokeBrandConnections(plan.sole).catch(() => undefined);
+
   // 3. Rows.
   let membershipsRemoved = 0;
   try {
@@ -142,20 +146,18 @@ export async function deleteAccount(
       // Sign-in emails carry only the address, so they are matched by it.
       if (plan.email) {
         await tx.query("delete from public.email_log where lower(to_email) = lower($1)", [plan.email]);
+        // Single-use sign-in link ids hold the address too.
+        await tx.query("delete from public.magic_links where lower(email) = lower($1)", [plan.email]);
       }
     });
   } catch (e) {
     throw new AccountDeleteError("database", "Could not delete the account rows", { cause: e });
   }
 
-  // 4. The user. In mock mode also forget its single-use link ids (mock sign-in only; they hold the address).
+  // 4. The user.
   let deleted: boolean;
   try {
     deleted = await deleteAuthUser(userId);
-    if (getEnv().dataBackend === "mock" && plan.email) {
-      const mock = await getMockDb();
-      await mock.withAdmin((tx) => tx.query("delete from mock_meta.magic_links where lower(email) = lower($1)", [plan.email]));
-    }
   } catch (e) {
     throw new AccountDeleteError("user", "Could not delete the user", { cause: e });
   }

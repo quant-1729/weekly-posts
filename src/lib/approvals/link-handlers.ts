@@ -31,6 +31,7 @@ import {
   unmarkPosted,
   UNMARK_WINDOW_MS,
 } from './ops';
+import { deliveryReadyPage } from '@/lib/queue/ready-page';
 import { loadPost } from './data';
 import {
   MUTED,
@@ -532,8 +533,11 @@ async function readyView(ctx: LinkContext, flash: Notice[] = []): Promise<LinkPa
 }
 
 const readyHandler: LinkHandler = {
-  view: (ctx) => readyView(ctx),
+  // A link for one post made from a brief (v3 delivery) opens that post's page; every other ready link is the v2 week page.
+  view: async (ctx) => (await deliveryReadyPage(ctx)) ?? readyView(ctx),
   async act(ctx, form) {
+    const delivery = await deliveryReadyPage(ctx, form);
+    if (delivery) return delivery;
     switch (formText(form, 'op')) {
       case 'posted':
       case 'unposted': {

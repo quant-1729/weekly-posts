@@ -1,3 +1,5 @@
+import { InstagramCard } from "@/components/instagram/instagram-card";
+import { getInstagramState } from "@/lib/instagram/import";
 import { s } from "@/lib/i18n/strings";
 import { listPastPosts } from "@/lib/uploads/past-posts";
 import { listPhotos } from "@/lib/uploads/photos";
@@ -22,10 +24,11 @@ export async function UploadsSection({
   voice?: boolean;
   heading?: boolean;
 }) {
-  const [photos, pastPosts, voiceView] = await Promise.all([
+  const [photos, pastPosts, voiceView, instagram] = await Promise.all([
     listPhotos(userId, brandId),
     listPastPosts(userId, brandId),
     voice ? getVoice(userId, brandId) : Promise.resolve(null),
+    getInstagramState(userId, brandId), // database only; Instagram itself is never called on page load
   ]);
   return (
     <section className={heading ? "space-y-6 border-t border-stone-200 pt-6" : "space-y-6"} aria-labelledby={heading ? "uploads-heading" : undefined}>
@@ -37,8 +40,18 @@ export async function UploadsSection({
           <p className="text-stone-600">{s.uploads.sectionIntro}</p>
         </div>
       )}
-      <PhotoLibrary brandId={brandId} initialPhotos={photos} />
-      <PastPosts brandId={brandId} initialPosts={pastPosts} />
+      <InstagramCard brandId={brandId} initial={instagram} />
+      {/* The key changes only when Instagram photos or posts do, so the lists below pick up what the Instagram card added. */}
+      <PhotoLibrary
+        key={`photos:${photos.filter((p) => p.source === "instagram").map((p) => p.id).join(",")}`}
+        brandId={brandId}
+        initialPhotos={photos}
+      />
+      <PastPosts
+        key={`past:${pastPosts.filter((p) => p.source === "instagram").map((p) => p.id).join(",")}`}
+        brandId={brandId}
+        initialPosts={pastPosts}
+      />
       {voiceView && <VoiceCard brandId={brandId} voice={voiceView} hasPastPosts={pastPosts.length > 0} />}
     </section>
   );

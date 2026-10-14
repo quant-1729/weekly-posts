@@ -1,0 +1,206 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="550" height="550" role="img" aria-label="Tween: walk-right" viewBox="-75 -80 550 550" class="tw-rig" data-state="walk" data-face="neutral" data-facing="right" data-point="left" data-talking="false" data-still="true" data-cycle="walk"><title>Tween: walk-right</title><style><![CDATA[
+.tw-rig {
+  display: block;
+  overflow: visible;
+  --ual: 24deg;
+  --fal: 10deg;
+  --uar: -24deg;
+  --far: -10deg;
+  --ll: 0deg;
+  --lr: 0deg;
+  --turn: 0px;
+  --lean: 0deg;
+  --tilt: 0deg;
+  --drop: 0px;
+  --tail: 0deg;
+  --ex: calc(var(--px, 0) + var(--lx, 0));
+  --ey: calc(var(--py, 0) + var(--ly, 0));
+  --ease: cubic-bezier(0.3, 0.9, 0.3, 1);
+  transition: --walk 360ms ease;
+}
+.tw-arm,
+.tw-fore,
+.tw-leg,
+.tw-face,
+.tw-bob,
+.tw-tail,
+.tw-feather,
+.tw-pupils {
+  transition: transform 320ms var(--ease), translate 320ms var(--ease), rotate 320ms var(--ease);
+  transform-box: view-box;
+}
+.tw-arm-l { transform: rotate(var(--ual)); }
+.tw-arm-r { transform: rotate(var(--uar)); }
+.tw-arm-l .tw-fore { transform: rotate(var(--fal)); }
+.tw-arm-r .tw-fore { transform: rotate(var(--far)); }
+.tw-leg-l { transform: rotate(var(--ll)); }
+.tw-leg-r { transform: rotate(var(--lr)); }
+.tw-bob { transform: rotate(var(--lean)) translateY(var(--drop)); transform-origin: 200px 440px; }
+.tw-face { translate: var(--turn) 0; transform: rotate(var(--tilt)); transform-origin: 200px 200px; }
+.tw-pupils { translate: calc(var(--ex) * 1px) calc(var(--ey) * 1px); transition-duration: 140ms; }
+.tw-tail { transform: rotate(var(--tail)); }
+.tw-feather { transform-origin: 266px 112px; }
+.tw-eyes { transform-origin: 200px 190px; transform-box: view-box; }
+.tw-all { transform-origin: 200px 440px; transform-box: view-box; }
+.tw-eyes,
+.tw-eyes-sleep,
+.tw-eyes-joy,
+.tw-brows-think,
+.tw-brows-worried,
+.tw-m,
+.tw-dots,
+.tw-zs,
+.tw-confetti {
+  transition: opacity 160ms ease;
+}
+.tw-eyes-sleep,
+.tw-eyes-joy,
+.tw-brows-think,
+.tw-brows-worried,
+.tw-m,
+.tw-dots,
+.tw-zs,
+.tw-confetti {
+  opacity: 0;
+}
+[data-face="neutral"] .tw-m-smile,
+[data-face="happy"] .tw-m-happy,
+[data-face="think"] .tw-m-flat,
+[data-face="worried"] .tw-m-wavy,
+[data-face="sleep"] .tw-m-sleep,
+[data-face="joy"] .tw-m-joy {
+  opacity: 1;
+}
+[data-face="sleep"] .tw-eyes,
+[data-face="joy"] .tw-eyes { opacity: 0; }
+[data-face="sleep"] .tw-eyes-sleep { opacity: 1; }
+[data-face="joy"] .tw-eyes-joy { opacity: 1; }
+[data-face="think"] .tw-brows-think { opacity: 1; }
+[data-face="worried"] .tw-brows-worried { opacity: 1; }
+[data-talking="true"][data-face="neutral"] .tw-m-smile,
+[data-talking="true"][data-face="happy"] .tw-m-happy,
+[data-talking="true"][data-face="worried"] .tw-m-wavy,
+[data-talking="true"][data-face="think"] .tw-m-flat { opacity: 0; }
+[data-talking="true"]:not([data-face="sleep"]):not([data-face="joy"]) .tw-mb { opacity: 1; }
+.tw-rig[data-blink="true"] .tw-eyes { transform: scaleY(0.08); }
+.tw-eyes { transition: opacity 160ms ease, transform 70ms ease-in; }
+[data-state="idle"],
+[data-state="talk"] { --tail: 0deg; }
+[data-state="talk"] { --uar: -64deg; --far: -46deg; }
+[data-state="walk"] { --walk: 1; --drop: 0px; }
+[data-state="walk"][data-facing="right"] { --turn: 12px; --lean: 3deg; --tail: 20deg; --ex: 8; --ey: 1; }
+[data-state="walk"][data-facing="left"] { --turn: -12px; --lean: -3deg; --tail: -20deg; --ex: -8; --ey: 1; }
+[data-state="wave"] { --uar: -150deg; --far: -20deg; --tilt: -3deg; }
+[data-state="point"][data-point="right"] { --uar: -90deg; --far: 0deg; --turn: 9px; --ex: 8; --ey: -1; --lean: 2deg; }
+[data-state="point"][data-point="left"] { --ual: 90deg; --fal: 0deg; --turn: -9px; --ex: -8; --ey: -1; --lean: -2deg; }
+[data-state="point"][data-point="up"] { --uar: -168deg; --far: -4deg; --ex: 5; --ey: -9; --tilt: -2deg; }
+[data-state="think"] { --uar: -80deg; --far: -118deg; --ex: 7; --ey: -9; --tilt: -4deg; --turn: 3px; }
+[data-state="celebrate"] { --ual: 150deg; --fal: 14deg; --uar: -150deg; --far: -14deg; --ll: 12deg; --lr: -12deg; --tilt: 0deg; }
+[data-state="shrug"] { --ual: 46deg; --fal: 80deg; --uar: -46deg; --far: -80deg; --tilt: 4deg; --drop: 2px; --ex: -3; --ey: 2; }
+[data-state="sleep"] { --ual: 16deg; --fal: 4deg; --uar: -16deg; --far: -4deg; --drop: 8px; --tilt: 5deg; --turn: 2px; }
+[data-state="peek"] { --uar: -118deg; --far: -34deg; --ex: -7; --ey: -2; --tilt: -5deg; }
+[data-state="reach"] { --uar: 18deg; --far: -64deg; --ex: -4; --ey: 8; --tilt: 4deg; --drop: 3px; }
+[data-state="present"] { --uar: -112deg; --far: -38deg; --ex: 6; --ey: -4; --tilt: -3deg; --turn: 4px; }
+[data-state="climb"] { --ual: 165deg; --fal: 10deg; --uar: -165deg; --far: -10deg; --ey: -9; }
+[data-state="perch"] { --ual: 58deg; --fal: -30deg; --uar: -58deg; --far: 30deg; --ey: 4; --tilt: -2deg; }
+[data-state="cover"] { --ual: -140deg; --fal: 0deg; --uar: 140deg; --far: 0deg; --ey: -9; --ex: 2; --drop: 2px; }
+.tw-cover { opacity: 0; translate: 0 70px; transition: opacity 160ms ease, translate 260ms var(--ease); transform-box: view-box; }
+[data-state="cover"] .tw-cover { opacity: 1; translate: 0 0; }
+[data-scrub="true"][data-scrub-dir="down"] { --turn: 8px; --lean: 2deg; }
+[data-scrub="true"][data-scrub-dir="up"] { --turn: -8px; --lean: -2deg; }
+.tw-letter { opacity: 0; transition: opacity 120ms ease; }
+[data-state="present"] .tw-letter,
+.tw-rig[data-letter="true"] .tw-letter { opacity: 1; }
+.tw-rig[data-letter="false"] 
+[data-state="cover"] { --ual: -140deg; --fal: 0deg; --uar: 140deg; --far: 0deg; --ey: -9; --ex: 2; --drop: 2px; }
+.tw-cover { opacity: 0; translate: 0 70px; transition: opacity 160ms ease, translate 260ms var(--ease); transform-box: view-box; }
+[data-state="cover"] .tw-cover { opacity: 1; translate: 0 0; }
+[data-scrub="true"][data-scrub-dir="down"] { --turn: 8px; --lean: 2deg; }
+[data-scrub="true"][data-scrub-dir="up"] { --turn: -8px; --lean: -2deg; }
+.tw-letter { opacity: 0; }
+[data-state="think"] .tw-dots,
+[data-state="sleep"] .tw-zs,
+[data-state="celebrate"] .tw-confetti { opacity: 1; }
+.tw-index { opacity: 0; transition: opacity 160ms ease; }
+[data-state="point"][data-point="right"] .tw-arm-r .tw-index,
+[data-state="point"][data-point="up"] .tw-arm-r .tw-index,
+[data-state="point"][data-point="left"] .tw-arm-l .tw-index { opacity: 1; }
+[data-state="point"][data-point="right"] .tw-arm-r .tw-fingers,
+[data-state="point"][data-point="up"] .tw-arm-r .tw-fingers,
+[data-state="point"][data-point="left"] .tw-arm-l .tw-fingers { opacity: 0; }
+.tw-rig:not([data-still="true"]) .tw-bob { animation: tw-bob 3.6s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-state="sleep"] .tw-bob { animation: tw-breathe 4.6s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-state="celebrate"] .tw-all { animation: tw-hop 560ms cubic-bezier(0.3, 1.5, 0.5, 1) 3; }
+.tw-rig:not([data-still="true"])[data-state="celebrate"] .tw-shadow { animation: tw-hop-shadow 560ms ease-in-out 3; transform-origin: 200px 452px; }
+.tw-rig:not([data-still="true"])[data-state="celebrate"] .tw-arm { animation: tw-cheer 280ms ease-in-out 6; }
+.tw-rig:not([data-still="true"])[data-state="wave"] .tw-arm-r .tw-fore { animation: tw-wave 520ms ease-in-out 4; }
+.tw-rig:not([data-still="true"])[data-state="talk"] .tw-arm-r .tw-fore { animation: tw-gesture 1.3s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-state="think"] .tw-dot1 { animation: tw-dot 1.6s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-state="think"] .tw-dot2 { animation: tw-dot 1.6s ease-in-out 0.25s infinite; }
+.tw-rig:not([data-still="true"])[data-state="think"] .tw-dot3 { animation: tw-dot 1.6s ease-in-out 0.5s infinite; }
+.tw-rig:not([data-still="true"])[data-state="sleep"] .tw-z1 { animation: tw-z 3.2s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-state="sleep"] .tw-z2 { animation: tw-z 3.2s ease-in-out 1.05s infinite; }
+.tw-rig:not([data-still="true"])[data-state="sleep"] .tw-z3 { animation: tw-z 3.2s ease-in-out 2.1s infinite; }
+.tw-rig:not([data-still="true"]) .tw-tail { animation: tw-tail-sway 3.2s ease-in-out infinite; }
+.tw-rig:not([data-still="true"]) .tw-feather { animation: tw-feather 4.2s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-state="reach"] .tw-arm-r .tw-fore { animation: tw-rummage 300ms ease-in-out 3; }
+.tw-rig:not([data-still="true"])[data-state="present"] .tw-all { animation: tw-hop 520ms cubic-bezier(0.3, 1.5, 0.5, 1) 1; }
+.tw-rig:not([data-still="true"])[data-state="climb"] .tw-arm-l { animation: tw-climb-arm 0.5s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-state="climb"] .tw-arm-r { animation: tw-climb-arm 0.5s ease-in-out -0.25s infinite; }
+.tw-rig:not([data-still="true"])[data-state="climb"] .tw-leg-l { animation: tw-climb-leg 0.5s ease-in-out -0.25s infinite; }
+.tw-rig:not([data-still="true"])[data-state="climb"] .tw-leg-r { animation: tw-climb-leg 0.5s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-state="climb"] .tw-bob { animation: tw-step 0.5s ease-in-out infinite; --walk: 1; }
+.tw-rig:not([data-still="true"])[data-state="perch"] .tw-leg-l { animation: tw-dangle 1.4s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-state="perch"] .tw-leg-r { animation: tw-dangle 1.4s ease-in-out -0.7s infinite; }
+.tw-rig:not([data-still="true"])[data-state="cover"] .tw-cover { animation: tw-giggle 900ms ease-in-out 600ms infinite; }
+.tw-rig:not([data-still="true"])[data-scrub="true"] { --walk: 1; }
+.tw-rig:not([data-still="true"])[data-scrub="true"] .tw-bob { animation: tw-step 0.64s linear calc(var(--scrub, 0) * -1s) infinite paused; }
+.tw-rig:not([data-still="true"])[data-scrub="true"] .tw-leg-l { animation: tw-stride 0.64s linear calc(var(--scrub, 0) * -1s) infinite paused; }
+.tw-rig:not([data-still="true"])[data-scrub="true"] .tw-leg-r { animation: tw-stride 0.64s linear calc(var(--scrub, 0) * -1s - 0.32s) infinite paused; }
+.tw-rig:not([data-still="true"])[data-scrub="true"] .tw-arm-l { animation: tw-swing 0.64s linear calc(var(--scrub, 0) * -1s - 0.32s) infinite paused; }
+.tw-rig:not([data-still="true"])[data-scrub="true"] .tw-arm-r { animation: tw-swing 0.64s linear calc(var(--scrub, 0) * -1s) infinite paused; }
+.tw-rig:not([data-still="true"])[data-land="hard"] .tw-all { animation: tw-land 500ms cubic-bezier(0.3, 1.2, 0.5, 1) 1; }
+.tw-rig:not([data-still="true"])[data-land="hard"] .tw-shadow { animation: tw-land-shadow 500ms ease-out 1; transform-origin: 200px 452px; transform-box: view-box; }
+.tw-rig:not([data-still="true"])[data-land="soft"] .tw-all { animation: tw-settle 360ms ease-out 1; }
+.tw-rig:not([data-still="true"])[data-cycle="walk"] .tw-bob { animation: tw-step 0.64s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-cycle="walk"] .tw-leg-l { animation: tw-stride 0.64s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-cycle="walk"] .tw-leg-r { animation: tw-stride 0.64s ease-in-out -0.32s infinite; }
+.tw-rig:not([data-still="true"])[data-cycle="walk"] .tw-arm-l { animation: tw-swing 0.64s ease-in-out -0.32s infinite; }
+.tw-rig:not([data-still="true"])[data-cycle="walk"] .tw-arm-r { animation: tw-swing 0.64s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-cycle="walk"] .tw-tail { animation: tw-flutter 0.32s ease-in-out infinite; }
+.tw-rig:not([data-still="true"])[data-talking="true"] .tw-ma { animation: tw-mouth-a 0.78s steps(1, end) infinite; }
+.tw-rig:not([data-still="true"])[data-talking="true"] .tw-mb { animation: tw-mouth-b 0.78s steps(1, end) infinite; }
+.tw-rig:not([data-still="true"])[data-talking="true"] .tw-mc { animation: tw-mouth-c 0.78s steps(1, end) infinite; }
+@keyframes tw-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+@keyframes tw-breathe { 0%, 100% { translate: 0 0; scale: 1 1; } 50% { translate: 0 -2px; scale: 1.015 1.03; } }
+@keyframes tw-step { 0%, 50%, 100% { translate: 0 0; } 25%, 75% { translate: 0 calc(var(--walk) * -6px); } }
+@keyframes tw-stride { 0%, 100% { rotate: 0deg; } 25% { rotate: calc(var(--walk) * 26deg); } 75% { rotate: calc(var(--walk) * -26deg); } }
+@keyframes tw-swing { 0%, 100% { rotate: 0deg; } 25% { rotate: calc(var(--walk) * 24deg); } 75% { rotate: calc(var(--walk) * -24deg); } }
+@keyframes tw-flutter { 0%, 100% { rotate: calc(var(--walk) * -5deg); } 50% { rotate: calc(var(--walk) * 7deg); } }
+@keyframes tw-hop { 0% { translate: 0 0; scale: 1 1; } 35% { translate: 0 -34px; scale: 0.96 1.05; } 70% { translate: 0 0; scale: 1.05 0.94; } 100% { translate: 0 0; scale: 1 1; } }
+@keyframes tw-hop-shadow { 35% { scale: 0.7 0.7; opacity: 0.06; } }
+@keyframes tw-cheer { 0%, 100% { rotate: 0deg; } 50% { rotate: 10deg; } }
+@keyframes tw-wave { 0%, 100% { rotate: 0deg; } 30% { rotate: -26deg; } 70% { rotate: 22deg; } }
+@keyframes tw-gesture { 0%, 100% { rotate: 0deg; } 50% { rotate: 9deg; } }
+@keyframes tw-dot { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
+@keyframes tw-z { 0% { translate: 0 8px; opacity: 0; } 25% { opacity: 1; } 100% { translate: 8px -16px; opacity: 0; } }
+@keyframes tw-tail-sway { 0%, 100% { rotate: -2deg; } 50% { rotate: 3deg; } }
+@keyframes tw-feather { 0%, 100% { rotate: 0deg; } 50% { rotate: 2.5deg; } }
+@keyframes tw-giggle { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
+@keyframes tw-land { 0% { scale: 1.18 0.8; } 35% { scale: 0.92 1.1; } 65% { scale: 1.04 0.96; } 100% { scale: 1 1; } }
+@keyframes tw-land-shadow { 0% { scale: 1.3 1.3; opacity: 0.18; } 100% { scale: 1 1; } }
+@keyframes tw-settle { 0% { scale: 1.06 0.93; } 60% { scale: 0.98 1.02; } 100% { scale: 1 1; } }
+@keyframes tw-rummage { 0%, 100% { rotate: 0deg; } 50% { rotate: 14deg; } }
+@keyframes tw-climb-arm { 0%, 100% { rotate: 0deg; } 50% { rotate: 18deg; } }
+@keyframes tw-climb-leg { 0%, 100% { rotate: 0deg; translate: 0 0; } 50% { rotate: 14deg; translate: 0 -12px; } }
+@keyframes tw-dangle { 0%, 100% { rotate: -14deg; } 50% { rotate: 14deg; } }
+@keyframes tw-mouth-a { 0%, 100% { opacity: 1; } 34%, 67% { opacity: 0; } }
+@keyframes tw-mouth-b { 0% { opacity: 0; } 34% { opacity: 1; } 67% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes tw-mouth-c { 0%, 67% { opacity: 0; } 67.01% { opacity: 1; } 100% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .tw-rig *,
+  .tw-rig { animation: none !important; transition: none !important; }
+}
+.tw-rig[data-still="true"] *,
+.tw-rig[data-still="true"] { animation: none !important; transition: none !important; }
+]]></style><ellipse class="tw-shadow" cx="200" cy="452" rx="98" ry="12" fill="#0B1C30" opacity="0.1"></ellipse><g class="tw-all"><g class="tw-bob"><g transform="translate(172 340)"><g class="tw-leg tw-leg-l"><path d="M-8.5 0 L8.5 0 L5 86 L-5 86 Z" fill="#0B1C30"></path><ellipse cx="-14" cy="95" rx="29" ry="12.5" fill="#0B1C30"></ellipse></g></g><g transform="translate(228 340)"><g class="tw-leg tw-leg-r"><path d="M-8.5 0 L8.5 0 L5 86 L-5 86 Z" fill="#0B1C30"></path><ellipse cx="14" cy="95" rx="29" ry="12.5" fill="#0B1C30"></ellipse></g></g><g transform="translate(108 256)"><g class="tw-arm tw-arm-l"><path d="M-10 0 L10 0 L7 54 L-7 54 Z" fill="#0B1C30"></path><circle cx="0" cy="0" r="10" fill="#0B1C30"></circle><g transform="translate(0 54)"><g class="tw-fore"><circle cx="0" cy="0" r="7.5" fill="#0B1C30"></circle><path d="M-7.5 0 L7.5 0 L5.5 42 L-5.5 42 Z" fill="#0B1C30"></path><path d="M-6.2 38 H6.2" stroke="#35557A" stroke-width="3.4" stroke-linecap="round"></path><g transform="translate(0 42)"><rect class="tw-index" x="-4.4" y="22" width="8.8" height="26" rx="4.4" fill="#0B1C30"></rect><path d="M-6 0 C-12 8 -14 22 -9 31 C-5 37 5 37 9 31 C14 22 12 8 6 0 Z" fill="#0B1C30"></path><ellipse cx="11" cy="9" rx="5" ry="9.5" fill="#0B1C30" transform="rotate(-28 11 9)"></ellipse><g class="tw-fingers" stroke="#35557A" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M-3.4 22 V30"></path><path d="M3.4 22 V30"></path></g></g></g></g></g></g><g transform="translate(292 256)"><g class="tw-arm tw-arm-r"><path d="M-10 0 L10 0 L7 54 L-7 54 Z" fill="#0B1C30"></path><circle cx="0" cy="0" r="10" fill="#0B1C30"></circle><g transform="translate(0 54)"><g class="tw-fore"><circle cx="0" cy="0" r="7.5" fill="#0B1C30"></circle><path d="M-7.5 0 L7.5 0 L5.5 42 L-5.5 42 Z" fill="#0B1C30"></path><path d="M-6.2 38 H6.2" stroke="#35557A" stroke-width="3.4" stroke-linecap="round"></path><g transform="translate(0 42)"><rect class="tw-index" x="-4.4" y="22" width="8.8" height="26" rx="4.4" fill="#0B1C30"></rect><path d="M-6 0 C-12 8 -14 22 -9 31 C-5 37 5 37 9 31 C14 22 12 8 6 0 Z" fill="#0B1C30"></path><ellipse cx="-11" cy="9" rx="5" ry="9.5" fill="#0B1C30" transform="rotate(28 -11 9)"></ellipse><g class="tw-fingers" stroke="#35557A" stroke-width="2.2" stroke-linecap="round" fill="none"><path d="M-3.4 22 V30"></path><path d="M3.4 22 V30"></path></g><g class="tw-letter"><rect x="-25" y="14" width="50" height="34" rx="4" fill="#FFFFFF" stroke="#0B1C30" stroke-width="3"></rect><path d="M-23 17 L0 34 L23 17" fill="none" stroke="#0B1C30" stroke-width="3" stroke-linejoin="round"></path><circle cx="0" cy="34" r="5" fill="#FF6B4A"></circle></g></g></g></g></g></g><rect x="96" y="88" width="208" height="262" rx="66" fill="#0B1C30"></rect><g class="tw-face"><g class="tw-eyes"><ellipse cx="156" cy="190" rx="33" ry="36" fill="#FFFFFF"></ellipse><ellipse cx="244" cy="190" rx="33" ry="36" fill="#FFFFFF"></ellipse><g class="tw-pupils"><circle cx="163" cy="193" r="17" fill="#0B1C30"></circle><circle cx="251" cy="193" r="17" fill="#0B1C30"></circle><circle cx="168" cy="187" r="5" fill="#FFFFFF"></circle><circle cx="256" cy="187" r="5" fill="#FFFFFF"></circle></g></g><g class="tw-eyes-sleep" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"><path d="M126 188 Q156 216 186 188"></path><path d="M214 188 Q244 216 274 188"></path></g><g class="tw-eyes-joy" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round"><path d="M130 200 Q156 160 182 200"></path><path d="M218 200 Q244 160 270 200"></path></g><path class="tw-brows-think" d="M134 140 L178 133" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"></path><g class="tw-brows-worried" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"><path d="M132 148 L180 134"></path><path d="M268 148 L220 134"></path></g><path class="tw-m tw-m-smile" d="M181 252 Q200 268 219 252" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"></path><path class="tw-m tw-m-happy" d="M172 248 Q200 282 228 248 Z" fill="#FFFFFF"></path><path class="tw-m tw-m-flat" d="M186 258 L214 254" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"></path><path class="tw-m tw-m-wavy" d="M182 264 Q191 254 200 264 Q209 274 218 264" fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"></path><path class="tw-m tw-m-sleep" d="M190 258 Q200 265 210 258" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"></path><g class="tw-m tw-m-joy"><path d="M168 246 Q200 294 232 246 Z" fill="#FFFFFF"></path><path d="M184 270 Q200 282 216 270 Q200 264 184 270 Z" fill="#2B4CFF"></path></g><ellipse class="tw-m tw-ma" cx="200" cy="258" rx="13" ry="10" fill="#FFFFFF"></ellipse><path class="tw-m tw-mb" d="M176 249 Q200 278 224 249 Z" fill="#FFFFFF"></path><ellipse class="tw-m tw-mc" cx="200" cy="259" rx="7" ry="8" fill="#FFFFFF"></ellipse></g><g class="tw-cover" stroke="#35557A" stroke-linecap="round"><rect x="116" y="150" width="80" height="68" rx="26" fill="#0B1C30" stroke-width="3"></rect><path d="M136 152 V176 M156 151 V176 M176 152 V176" stroke-width="3" fill="none"></path><ellipse cx="114" cy="200" rx="9" ry="15" fill="#0B1C30" stroke-width="3" transform="rotate(20 114 200)"></ellipse><rect x="204" y="172" width="80" height="62" rx="26" fill="#0B1C30" stroke-width="3"></rect><path d="M224 174 V196 M244 173 V196 M264 174 V196" stroke-width="3" fill="none"></path><ellipse cx="286" cy="218" rx="9" ry="15" fill="#0B1C30" stroke-width="3" transform="rotate(-20 286 218)"></ellipse></g><g class="tw-feather"><g transform="translate(268 112) rotate(22) scale(0.84)"><path d="M0 6 C-40 -30 -42 -98 0 -152 C42 -98 40 -30 0 6 Z" fill="#119C9A"></path><path d="M0 -2 C-28 -32 -30 -92 0 -138 C30 -92 28 -32 0 -2 Z" fill="#3CC6A8" opacity="0.55"></path><path d="M0 6 L0 -58" stroke="#0B6F73" stroke-width="3.5" stroke-linecap="round"></path><path d="M-9 -20 L-26 -34 M9 -20 L26 -34 M-12 -42 L-30 -58 M12 -42 L30 -58 M-12 -118 L-24 -128 M12 -118 L24 -128" stroke="#0B6F73" stroke-width="2.6" stroke-linecap="round" opacity="0.75"></path><ellipse cx="0" cy="-92" rx="20" ry="26" fill="#F3B63A"></ellipse><ellipse cx="0" cy="-92" rx="14" ry="19" fill="#F26A21"></ellipse><ellipse cx="0" cy="-92" rx="8.6" ry="12.4" fill="#1D5FA8"></ellipse><ellipse cx="0" cy="-92" rx="4.6" ry="7.6" fill="#0B1C30"></ellipse><circle cx="-1.6" cy="-95" r="1.6" fill="#FFFFFF"></circle></g></g><g transform="translate(126 314)"><g class="tw-tail"><path d="M-22 -8 L-30 82 Q-30 94 -18 95 L8 97 Q22 97 22 86 L20 -8 Z" fill="#203CD9"></path><path d="M-3 -4 L-6 90" stroke="#5B78FF" stroke-width="3" stroke-linecap="round" opacity="0.55"></path></g></g><rect x="88" y="284" width="224" height="46" rx="23" fill="#2B4CFF"></rect><path d="M106 297 Q200 308 294 297" fill="none" stroke="#5B78FF" stroke-width="4" stroke-linecap="round" opacity="0.6"></path><path d="M106 318 Q200 330 294 318" fill="none" stroke="#203CD9" stroke-width="4" stroke-linecap="round" opacity="0.5"></path></g><g class="tw-dots" fill="#2B4CFF"><circle class="tw-dot1" cx="88" cy="78" r="6"></circle><circle class="tw-dot2" cx="66" cy="52" r="9"></circle><circle class="tw-dot3" cx="42" cy="22" r="13"></circle></g><g class="tw-zs" fill="none" stroke="#2B4CFF" stroke-linecap="round" stroke-linejoin="round"><path class="tw-z1" d="M70 70 H90 L70 94 H90" stroke-width="6"></path><path class="tw-z2" d="M48 44 H64 L48 64 H64" stroke-width="5"></path><path class="tw-z3" d="M32 22 H44 L32 38 H44" stroke-width="4"></path></g><g class="tw-confetti"><circle cx="58" cy="96" r="7" fill="#2B4CFF"></circle><rect x="332" y="86" width="14" height="14" rx="3" fill="#FF6B4A" transform="rotate(20 339 93)"></rect><rect x="36" y="168" width="12" height="12" rx="3" fill="#FF6B4A" transform="rotate(-18 42 174)"></rect><circle cx="352" cy="160" r="6" fill="#2B4CFF"></circle><path d="M96 40 l6 14 l14 6 l-14 6 l-6 14 l-6 -14 l-14 -6 l14 -6 z" fill="#203CD9"></path></g></g></svg>

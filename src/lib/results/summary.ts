@@ -3,6 +3,8 @@ import { getDb } from "@/lib/db";
 import { fill, s } from "@/lib/i18n/strings";
 import type { CheckinAnswer } from "@/lib/links/ops";
 import { addDaysIso, localDateIn } from "@/lib/occasions/dates";
+import { qrScansByPost } from "@/lib/qr/link";
+import { scanCopy } from "@/lib/qr/copy";
 import { clicksByPost } from "@/lib/shortlinks";
 import { lastWeekStartFor } from "./checkin";
 import { clicksPhrase, monthName, monthStartOf, postsPhrase, timeSavedPhrase, zonedMidnight } from "./format";
@@ -57,6 +59,15 @@ export interface Summary {
     totalThisMonth: number;
     totalLastMonth: number;
     top: PostClicks | null;
+    line: string;
+    footnote: string;
+  };
+  /** QR code scans, counted apart from link clicks (clicks.source = 'qr'). `thisMonth` and `lastMonth` reuse PostClicks: `clicks` is the scan count. */
+  scans: {
+    thisMonth: PostClicks[];
+    lastMonth: PostClicks[];
+    totalThisMonth: number;
+    totalLastMonth: number;
     line: string;
     footnote: string;
   };
@@ -135,6 +146,8 @@ export async function buildSummary(userId: string, brandId: string, now: Date = 
 
   const clicksThis = await clicksByPost(userId, brandId, { from: thisFrom, to: nextFrom });
   const clicksLast = await clicksByPost(userId, brandId, { from: lastFrom, to: thisFrom });
+  const scansThis = await qrScansByPost(userId, brandId, { from: thisFrom, to: nextFrom });
+  const scansLast = await qrScansByPost(userId, brandId, { from: lastFrom, to: thisFrom });
 
   // Check-in weeks, newest first.
   const lastWeek = lastWeekStartFor(now, timezone);
@@ -180,6 +193,10 @@ export async function buildSummary(userId: string, brandId: string, now: Date = 
   const totalThis = clicksThisList.reduce((n, c) => n + c.clicks, 0);
   const totalLast = clicksLastList.reduce((n, c) => n + c.clicks, 0);
   const top = clicksThisList[0] ?? null;
+  const scansThisList = toClicks(scansThis.map((x) => ({ postId: x.postId, clicks: x.scans })));
+  const scansLastList = toClicks(scansLast.map((x) => ({ postId: x.postId, clicks: x.scans })));
+  const scanTotalThis = scansThisList.reduce((n, c) => n + c.clicks, 0);
+  const scanTotalLast = scansLastList.reduce((n, c) => n + c.clicks, 0);
 
   const sharedThis = posts.filter((p) => p.in_this).length;
   const sharedLast = posts.filter((p) => p.in_last).length;
@@ -206,7 +223,7 @@ export async function buildSummary(userId: string, brandId: string, now: Date = 
           .join(" ");
 
   const empty =
-    sharedThis === 0 && sharedLast === 0 && totalThis === 0 && totalLast === 0 && !checkins.some((c) => c.answer !== null);
+    sharedThis === 0 && sharedLast === 0 && totalThis === 0 && totalLast === 0 && scanTotalThis === 0 && scanTotalLast === 0 && !checkins.some((c) => c.answer !== null);
 
   return {
     empty,
@@ -235,6 +252,14 @@ export async function buildSummary(userId: string, brandId: string, now: Date = 
       top,
       line: clicksLine,
       footnote: r.clicksFootnote,
+    },
+    scans: {
+      thisMonth: scansThisList,
+      lastMonth: scansLastList,
+      totalThisMonth: scanTotalThis,
+      totalLastMonth: scanTotalLast,
+      line: scanTotalThis === 0 ? scanCopy.none : scanCopy.total(scanTotalThis),
+      footnote: scanCopy.footnote,
     },
     checkins,
     notMeasured: r.notMeasured,

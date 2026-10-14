@@ -83,9 +83,9 @@ export async function removeOwnerDateAction(brandId: string, id: string): Promis
   });
 }
 
-/** "Use my mascot in posts" (V-25). Turning it on needs an active mascot. */
-export async function setMascotInPostsAction(brandId: string, on: boolean): Promise<Result<{ on: boolean }>> {
-  return run(async (userId) => ({ on: await setMascotInPosts(userId, str(brandId), on === true) }));
+/** "Use the mascot in my posts" (V-25). Turning it on makes the brand's Tween when there is none; a formal brand confirms with `tryAnyway`. */
+export async function setMascotInPostsAction(brandId: string, on: boolean, tryAnyway = false): Promise<Result<{ on: boolean }>> {
+  return run(async (userId) => ({ on: await setMascotInPosts(userId, str(brandId), on === true, { tryAnyway: tryAnyway === true }) }));
 }
 
 export async function saveSettingsAction(brandId: string, values: unknown): Promise<Result> {

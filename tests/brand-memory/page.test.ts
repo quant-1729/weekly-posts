@@ -106,14 +106,14 @@ function find(node: ReactNode, match: (el: ReactElement) => boolean, out: ReactE
 }
 
 describe("bottom nav", () => {
-  it("shows This week, History, Results and Brand, in that order, and no Create or Plan", () => {
+  it("shows Queue, Brand, Results and History, in that order, and no Create or Plan", () => {
     const html = renderToString(createElement(BottomNav));
     const labels = [...html.matchAll(/<a [^>]*href="([^"]+)"[^>]*>.*?<\/svg>([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]);
     expect(labels).toEqual([
-      ["/week", "This week"],
-      ["/history", "History"],
-      ["/results", "Results"],
+      ["/week", "Queue"],
       ["/brand", "Brand"],
+      ["/results", "Results"],
+      ["/history", "History"],
     ]);
     expect(html).not.toContain("/create");
     expect(html).not.toContain("/plan");
@@ -133,7 +133,7 @@ describe("header: one business per account", () => {
     expect(html).toContain("Corner Bakery");
     expect(html).toContain("page body");
     expect(html).not.toMatch(/aria-haspopup|aria-expanded/); // the switcher's menu button
-    expect(html).toContain(s.nav.thisWeek);
+    expect(html).toContain(s.nav.queue);
     expect(html).toContain(s.signOut);
   });
 
@@ -152,6 +152,15 @@ describe("/week page", () => {
     expect(html).toContain("Generate this week"); // the full string has an apostrophe React escapes
   });
 
+  it("has a prominent Create button in the header on phones (the bottom nav keeps four tabs)", async () => {
+    const html = renderToString((await WeekPage()) as ReactElement);
+    const button = /<a [^>]*data-create-button[^>]*>[^<]*<\/a>/.exec(html)?.[0] ?? "";
+    expect(button).toContain('href="/create"');
+    expect(button).toContain("Create a post");
+    expect(button).toContain("bg-[#E4572E]"); // a filled, prominent button
+    expect(button).toContain("md:hidden"); // wider screens list Create in the navigation instead
+  });
+
   it("needs a signed-in owner with a finished setup", async () => {
     jar.store.delete(SESSION_COOKIE);
     await expect(WeekPage()).rejects.toThrow("REDIRECT:/login");
@@ -162,7 +171,11 @@ describe("/brand page", () => {
   it("has eight collapsible sections in order, with the facts open", async () => {
     const page = (await Page()) as ReactElement;
     const sections = find(page, (el) => el.type === BrandSection);
-    expect(sections.map((el) => (el.props as { title: string }).title)).toEqual([
+    const titles = sections.map((el) => (el.props as { title: string }).title);
+    // v3 adds "Your selling points" and "How customers reach you" right after the facts (and a payment card).
+    expect(titles.slice(0, 3)).toEqual(["Your facts", "Your selling points", "How customers reach you"]);
+    const v2Titles = titles.filter((x) => !["Your selling points", "How customers reach you", "Payment QR code"].includes(x));
+    expect(v2Titles).toEqual([
       "Your facts",
       "Your voice",
       "Logo and colours",
@@ -172,7 +185,9 @@ describe("/brand page", () => {
       "Settings",
       "Your data",
     ]);
-    expect(sections.map((el) => Boolean((el.props as { defaultOpen?: boolean }).defaultOpen))).toEqual([true, false, false, false, false, false, false, false]);
+    const open = sections.map((el) => Boolean((el.props as { defaultOpen?: boolean }).defaultOpen));
+    expect(open[0]).toBe(true);
+    expect(open.slice(1).every((o) => !o)).toBe(true);
     // V-5's UploadsSection is mounted (photos and past posts), and the voice card has its own section
     expect(find(page, (el) => el.type === UploadsSection)).toHaveLength(1);
     expect(find(page, (el) => el.type === VoiceSection)).toHaveLength(1);

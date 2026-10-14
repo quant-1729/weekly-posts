@@ -26,8 +26,31 @@ const WEIGHT_FILE: Record<Weight, string> = {
   800: '800ExtraBold',
 };
 
-type Family = 'deva' | 'sans' | 'arab';
+/** 'sans' is the Latin face of the run (the chosen FaceId); 'noto' is always Noto Sans, the fallback for a face that lacks a character. */
+type Family = 'deva' | 'sans' | 'arab' | 'noto';
 export type Dir = 'ltr' | 'rtl';
+
+/** Latin faces a design can use (v3 FONT_CHOICES). Non-Latin scripts always use the matching Noto family. */
+export type FaceId = 'sans' | 'serif' | 'rounded' | 'condensed' | 'display';
+
+/** File base name and the weights that exist as files; other weights use the nearest available one. */
+const FACE_FILES: Record<FaceId, { base: string; weights: Weight[] }> = {
+  sans: { base: 'NotoSans', weights: [400, 500, 700, 800] },
+  serif: { base: 'PlayfairDisplay', weights: [400, 500, 700, 800] },
+  rounded: { base: 'Nunito', weights: [400, 500, 700, 800] },
+  condensed: { base: 'Oswald', weights: [400, 500, 700] },
+  display: { base: 'ArchivoBlack', weights: [400] },
+};
+
+function nearestWeight(weight: Weight, have: Weight[]): Weight {
+  let best = have[0];
+  for (const w of have) {
+    const d = Math.abs(w - weight);
+    const bd = Math.abs(best - weight);
+    if (d < bd || (d === bd && w > best)) best = w;
+  }
+  return best;
+}
 
 interface LoadedFont {
   font: HB.Font;
@@ -64,16 +87,20 @@ export function fontsDir(): string {
   return path.join(/*turbopackIgnore: true*/ process.cwd(), 'assets', 'fonts');
 }
 
-function fontFile(family: Family, weight: Weight): string {
-  const base = family === 'deva' ? 'NotoSansDevanagari' : family === 'arab' ? 'NotoSansArabic' : 'NotoSans';
-  return path.join(fontsDir(), `${base}_${WEIGHT_FILE[weight]}.ttf`);
+function fontFile(family: Family, weight: Weight, face: FaceId): string {
+  if (family === 'deva') return path.join(fontsDir(), `NotoSansDevanagari_${WEIGHT_FILE[weight]}.ttf`);
+  if (family === 'arab') return path.join(fontsDir(), `NotoSansArabic_${WEIGHT_FILE[weight]}.ttf`);
+  if (family === 'noto') return path.join(fontsDir(), `NotoSans_${WEIGHT_FILE[weight]}.ttf`);
+  const f = FACE_FILES[face];
+  return path.join(fontsDir(), `${f.base}_${WEIGHT_FILE[nearestWeight(weight, f.weights)]}.ttf`);
 }
 
-function loadFont(family: Family, weight: Weight): LoadedFont {
-  const key = `${family}-${weight}`;
+function loadFont(family: Family, weight: Weight, faceId: FaceId = 'sans'): LoadedFont {
+  const file = fontFile(family, weight, faceId);
+  const key = file;
   const hit = fontCache.get(key);
   if (hit) return hit;
-  const data = readFileSync(fontFile(family, weight));
+  const data = readFileSync(file);
   const h = hbReady();
   const face = new h.Face(new h.Blob(data));
   const font = new h.Font(face);
@@ -298,7 +325,7 @@ function analyse(text: string, para: Dir): CharInfo[] {
   return infos;
 }
 
-const FALLBACK_ORDER: Family[] = ['sans', 'deva', 'arab'];
+const FALLBACK_ORDER: Family[] = ['sans', 'noto', 'deva', 'arab'];
 
 interface Run {
   family: Family;
@@ -307,10 +334,11 @@ interface Run {
   level: number;
 }
 
-function bidiRuns(text: string, weight: Weight, para: Dir): Run[] {
+function bidiRuns(text: string, weight: Weight, para: Dir, face: FaceId): Run[] {
   const fonts: Record<Family, LoadedFont> = {
     deva: loadFont('deva', weight),
-    sans: loadFont('sans', weight),
+    sans: loadFont('sans', weight, face),
+    noto: loadFont('noto', weight),
     arab: loadFont('arab', weight),
   };
   const runs: Run[] = [];
@@ -359,18 +387,18 @@ const DEVA_TEXT_RE = /[ऀ-ॿ]/;
  * Shape one line of text (no wrapping). Result is in em units, glyphs in visual left-to-right
  * order, and cached. `dir` is the paragraph direction; 'auto' detects it from the text.
  */
-export function shapeText(raw: string, weight: Weight, dir: Dir | 'auto' = 'auto'): Shaped {
+export function shapeText(raw: string, weight: Weight, dir: Dir | 'auto' = 'auto', face: FaceId = 'sans'): Shaped {
   const text = raw.replace(/[\r\n\t]+/g, ' ');
   const para: Dir = dir === 'auto' ? detectDirection(text) : dir;
-  const key = `${weight}|${para}|${text}`;
+  const key = `${face}|${weight}|${para}|${text}`;
   const hit = shapeCache.get(key);
   if (hit) return hit;
 
   const glyphs: PlacedGlyph[] = [];
   let pen = 0; // em
   let missing = 0;
-  for (const run of bidiRuns(text, weight, para)) {
-    const lf = loadFont(run.family, weight);
+  for (const run of bidiRuns(text, weight, para, face)) {
+    const lf = loadFont(run.family, weight, face);
     const h = hbReady();
     const buf = new h.Buffer();
     buf.addText(run.text);
@@ -408,8 +436,8 @@ export function shapeText(raw: string, weight: Weight, dir: Dir | 'auto' = 'auto
   return shaped;
 }
 
-export function measureText(text: string, weight: Weight, size: number, dir: Dir | 'auto' = 'auto'): number {
-  return shapeText(text, weight, dir).widthEm * size;
+export function measureText(text: string, weight: Weight, size: number, dir: Dir | 'auto' = 'auto', face: FaceId = 'sans'): number {
+  return shapeText(text, weight, dir, face).widthEm * size;
 }
 
 const num = (n: number) => Math.round(n * 100) / 100;
@@ -432,6 +460,7 @@ export function textToSvg(
   size: number,
   fill: string,
   dir: Dir | 'auto' = 'auto',
+  face: FaceId = 'sans',
 ): string {
-  return shapedToSvg(shapeText(text, weight, dir), x, baselineY, size, fill);
+  return shapedToSvg(shapeText(text, weight, dir, face), x, baselineY, size, fill);
 }

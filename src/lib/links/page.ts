@@ -20,6 +20,13 @@ export interface LinkPage {
 
 const BRAND = "#E4572E";
 
+/**
+ * Desktop layout for the no-login pages (decision D10): from 768 px the page is a centred card, 640 px wide.
+ * Phones keep the plain 560 px column set inline. A plain style block, so it works without JavaScript
+ * (PAGE_CSP allows inline styles).
+ */
+export const WIDE_PAGE_CSS = `@media (min-width:768px){body{background:#fafaf9 !important}main{max-width:640px !important;margin:48px auto !important;padding:40px 48px 48px !important;background:#ffffff;border:1px solid #e7e5e4;border-radius:16px}}`;
+
 export const PAGE_CSP =
   "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
 
@@ -39,6 +46,7 @@ export function renderPage(page: LinkPage): string {
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <title>${esc(page.title)} - ${esc(APP_NAME)}</title>
+<style>${WIDE_PAGE_CSS}</style>
 </head>
 <body style="margin:0;background:#ffffff;color:#1c1917;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.5;">
 <main style="box-sizing:border-box;max-width:560px;margin:0 auto;padding:28px 20px 48px;">

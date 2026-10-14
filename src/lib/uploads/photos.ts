@@ -29,6 +29,10 @@ export interface PhotoView {
   width: number | null;
   height: number | null;
   createdAt: string;
+  /** 'instagram' for photos the owner picked from their Instagram posts. */
+  source: "upload" | "instagram";
+  /** Link to the original Instagram post, when there is one. */
+  sourceUrl: string | null;
 }
 
 interface PhotoRow {
@@ -40,9 +44,11 @@ interface PhotoRow {
   width: number | null;
   height: number | null;
   created_at: string | Date;
+  source: "upload" | "instagram";
+  source_url: string | null;
 }
 
-const COLUMNS = "id, storage_path, description, has_people, usable, width, height, created_at";
+const COLUMNS = "id, storage_path, description, has_people, usable, width, height, created_at, source, source_url";
 
 function toView(r: PhotoRow): PhotoView {
   return {
@@ -55,6 +61,8 @@ function toView(r: PhotoRow): PhotoView {
     width: r.width,
     height: r.height,
     createdAt: r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at),
+    source: r.source,
+    sourceUrl: r.source_url,
   };
 }
 
@@ -92,6 +100,8 @@ export async function addPhoto(args: {
   storage?: Storage;
   /** Test/dev override for the model's answer in fixture mode. May throw to simulate a failed call. */
   fixture?: PhotoDescription | (() => PhotoDescription);
+  /** Set when the photo comes from the owner's Instagram posts (the import keeps the link back to the post). */
+  source?: { id: string; url: string | null; postedAt: string | null };
 }): Promise<AddPhotoResult> {
   const { userId, brandId } = args;
   const storage = args.storage ?? getStorage();
@@ -114,9 +124,20 @@ export async function addPhoto(args: {
   try {
     await getDb().withUser(userId, (tx) =>
       tx.query(
-        `insert into public.photos (id, brand_id, kind, storage_path, width, height, created_by)
-         values ($1, $2, 'photo', $3, $4, $5, $6)`,
-        [id, brandId, storagePath, img.width, img.height, userId],
+        `insert into public.photos (id, brand_id, kind, storage_path, width, height, created_by, source, source_id, source_url, source_posted_at)
+         values ($1, $2, 'photo', $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [
+          id,
+          brandId,
+          storagePath,
+          img.width,
+          img.height,
+          userId,
+          args.source ? "instagram" : "upload",
+          args.source?.id ?? null,
+          args.source?.url ?? null,
+          args.source?.postedAt ?? null,
+        ],
       ),
     );
   } catch (e) {

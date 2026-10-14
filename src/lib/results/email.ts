@@ -30,7 +30,7 @@ export async function loadEmailSummary(brandId: string, now: Date): Promise<Emai
                                    where a.post_id = p.id and a.brand_id = p.brand_id and a.action = 'share'
                                      and a.created_at >= $2::timestamptz and a.created_at < $3::timestamptz))) as posts,
               (select count(*)::int from public.clicks c
-                where c.brand_id = $1 and c.clicked_at >= $2::timestamptz and c.clicked_at < $3::timestamptz) as clicks,
+                where c.brand_id = $1 and c.source = 'link' and c.clicked_at >= $2::timestamptz and c.clicked_at < $3::timestamptz) as clicks,
               (select minutes_per_post from public.brand_memory where brand_id = $1) as minutes`,
       [brandId, from, to],
     ),

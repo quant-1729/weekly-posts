@@ -31,12 +31,22 @@ brand.json          Your business details (the "brand" and your "brand memory"),
 facts.json          Every fact in your brand memory, including ones you removed (active = false),
                     and where each came from (website, setup, an upload, or you).
 photos.json         Your photo library and past posts: the text we read and the file name in photos/.
+                    Posts and photos from Instagram also carry the link to the original (source_url).
 posts.json          Every post: caption, call to action, hashtags, text on the image, the checks we
                     flagged, status and dates, and the image files it has.
 actions.json        What was done to each post: approved, edited, shared, marked as posted and so on.
 checkins.json       Your weekly check-in answers.
 clicks.json         How many times each post's link was opened. We do not keep who opened it.
 owner-dates.json    The dates you added.
+usps.json           Your selling points (discounts, prices, ratings ...) and where each came from.
+contact-points.json How customers reach you: phone, website, address, hours and social handles.
+post-briefs.json    The details you gave for each post: type, selling points as used, dates, QR choice.
+payment-ids.json    Your payment IDs (like UPI) and their status. The confirmation codes are not included.
+connections.json    The Instagram and Facebook accounts you connected for posting: account name, status and dates.
+                    The saved permissions (tokens) are never included.
+queue.json          Your queue: for each post the channel, the planned time, whether it was published or emailed to you,
+                    its status, the link to the published post and dates.
+queue-settings.json How often, on which days and at what time you chose to post, and your auto-approve and pause choices.
 emails.json         The emails we sent you, including sign-in and delete-confirmation emails: kind, subject,
                     date and status. Not the email text.
 
@@ -157,6 +167,29 @@ async function readRows(userId: string): Promise<{ account: Row | null; blocks: 
           `select to_jsonb(v) as row from public.voice_feedback v where brand_id = $1 order by created_at, id`,
         ),
         mascots: await q(`select to_jsonb(m) as row from public.mascots m where brand_id = $1 order by created_at, id`),
+        // v3 details. The payment ID's confirmation token hash and its expiry are secrets and are left out.
+        usps: await q(`select to_jsonb(u) as row from public.usps u where brand_id = $1 order by sort, created_at, id`),
+        contacts: await q(`select to_jsonb(c) as row from public.contact_points c where brand_id = $1 order by created_at, id`),
+        briefs: await q(`select to_jsonb(b) as row from public.post_briefs b where brand_id = $1 order by created_at, id`),
+        paymentIds: await q(
+          `select to_jsonb(p) - 'confirm_token_hash' - 'confirm_expires_at' as row from public.payment_ids p where brand_id = $1 order by created_at, id`,
+        ),
+        // Connected publishing accounts: name, status and dates only. Never a token (those live in channel_tokens, which is not read here).
+        connections: await q(
+          `select jsonb_build_object('provider', c.provider, 'account_name', c.account_name, 'status', c.status,
+                                     'connected_at', to_char(c.connected_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'expires_at', to_char(c.expires_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'), 'updated_at', to_char(c.updated_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')) as row
+             from public.channel_connections c where brand_id = $1 order by connected_at, id`,
+        ),
+        // The queue (v3): when each post goes out and what happened. No tokens, no platform account ids.
+        queue: await q(
+          `select jsonb_build_object('post_code', p.post_code, 'channel', i.channel, 'slot_at', to_char(i.slot_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+                                     'status', i.status, 'mode', i.mode, 'attempts', i.attempts, 'last_error', i.last_error, 'permalink', i.permalink,
+                                     'done_at', to_char(i.done_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+                                     'created_at', to_char(i.created_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')) as row
+             from public.queue_items i join public.posts p on p.id = i.post_id and p.brand_id = i.brand_id
+            where i.brand_id = $1 order by i.slot_at, i.id`,
+        ),
+        queueSettings: await q(`select to_jsonb(s) as row from public.queue_settings s where brand_id = $1`),
       });
     }
     // The owner's own emails (policy email_log_select_own, including ones with no brand) and their brands' emails.
@@ -245,6 +278,13 @@ function buildPlan(
     plan.json.push({ name: `${prefix}checkins.json`, value: unwrap(d.checkins) });
     plan.json.push({ name: `${prefix}clicks.json`, value: d.clicks });
     plan.json.push({ name: `${prefix}owner-dates.json`, value: unwrap(d.dates) });
+    plan.json.push({ name: `${prefix}usps.json`, value: unwrap(d.usps) });
+    plan.json.push({ name: `${prefix}contact-points.json`, value: unwrap(d.contacts) });
+    plan.json.push({ name: `${prefix}post-briefs.json`, value: unwrap(d.briefs) });
+    plan.json.push({ name: `${prefix}payment-ids.json`, value: unwrap(d.paymentIds) });
+    plan.json.push({ name: `${prefix}connections.json`, value: unwrap(d.connections) });
+    plan.json.push({ name: `${prefix}queue.json`, value: unwrap(d.queue) });
+    plan.json.push({ name: `${prefix}queue-settings.json`, value: unwrap(d.queueSettings)[0] ?? null });
 
     // Files, in the order they are written.
     const logo = memory?.logo_path;

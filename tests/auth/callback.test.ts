@@ -75,7 +75,7 @@ const pathOf = (res: Response) => new URL(res.headers.get("location")!).pathname
 const usedCount = () =>
   db
     .withAdmin((tx) =>
-      tx.query<{ n: number }>("select count(*)::int as n from mock_meta.magic_links where used_at is not null"),
+      tx.query<{ n: number }>("select count(*)::int as n from public.magic_links where used_at is not null"),
     )
     .then((r) => r[0].n);
 
@@ -94,11 +94,11 @@ afterAll(async () => {
   await db.close();
 });
 beforeEach(async () => {
-  resetMockAuthState();
+  await resetMockAuthState();
   jar.store.clear();
   outbox = await mkdtemp(path.join(os.tmpdir(), "outbox-"));
   setOutboxDirForTests(outbox);
-  await db.withAdmin((tx) => tx.query("delete from mock_meta.magic_links"));
+  await db.withAdmin((tx) => tx.query("delete from public.magic_links"));
 });
 afterEach(async () => {
   vi.unstubAllEnvs();

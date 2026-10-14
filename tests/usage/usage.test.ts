@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { MockDb } from "@/lib/db/mock";
-import { DailyCapError, assertUnderDailyCap, countUsageToday, istDayRange, recordUsage } from "@/lib/usage";
+import { DailyCapError, assertUnderDailyCap, countUsageToday, recordUsage } from "@/lib/usage";
 import { closeTestDb, createBrandFor, createUser, openTestDb } from "../brand/helpers";
 
 let db: MockDb;
@@ -14,9 +14,10 @@ afterAll(async () => {
   await closeTestDb(db);
 });
 
-async function newBrand(cap: number): Promise<string> {
+async function newBrand(cap: number, timezone = "UTC"): Promise<string> {
   const id = await createBrandFor(db, userId);
   await db.withAdmin((tx) => tx.query("update public.brands set daily_generation_cap = $2 where id = $1", [id, cap]));
+  await db.withAdmin((tx) => tx.query("update public.brand_memory set timezone = $2 where brand_id = $1", [id, timezone]));
   return id;
 }
 
@@ -31,16 +32,35 @@ function eventAt(brandId: string, iso: string) {
   );
 }
 
-describe("IST day boundary", () => {
-  it("starts at 18:30 UTC the evening before", () => {
-    const { start, end } = istDayRange(new Date("2026-10-12T20:00:00Z")); // 01:30 IST on 13 Oct
-    expect(start.toISOString()).toBe("2026-10-12T18:30:00.000Z");
-    expect(end.toISOString()).toBe("2026-10-13T18:30:00.000Z");
+describe("the brand's own day", () => {
+  it("counts the day in the brand's time zone", async () => {
+    const brand = await newBrand(9, "America/Los_Angeles");
+    const now = new Date("2026-10-13T05:00:00Z"); // 22:00 on 12 Oct in Los Angeles (PDT)
+    await eventAt(brand, "2026-10-12T06:59:59Z"); // 23:59:59 on 11 Oct: yesterday
+    expect(await countUsageToday(brand, now)).toBe(0);
+    await eventAt(brand, "2026-10-12T07:00:00Z"); // 00:00 on 12 Oct: today
+    await eventAt(brand, "2026-10-13T06:59:59Z"); // 23:59:59 on 12 Oct: today
+    await eventAt(brand, "2026-10-13T07:00:00Z"); // 00:00 on 13 Oct: tomorrow
+    expect(await countUsageToday(brand, now)).toBe(2);
   });
 
-  it("an instant just before IST midnight is still the same IST day", () => {
-    const { start } = istDayRange(new Date("2026-10-12T18:29:59Z")); // 23:59:59 IST on 12 Oct
-    expect(start.toISOString()).toBe("2026-10-11T18:30:00.000Z");
+  it("falls back to UTC when the brand has no time zone on file", async () => {
+    const brand = await newBrand(9);
+    await db.withAdmin((tx) => tx.query("delete from public.brand_memory where brand_id = $1", [brand]));
+    const now = new Date("2026-10-12T20:00:00Z");
+    await eventAt(brand, "2026-10-11T23:59:59Z");
+    await eventAt(brand, "2026-10-12T00:00:00Z");
+    expect(await countUsageToday(brand, now)).toBe(1);
+  });
+
+  it("a day with a clock change is 25 hours long", async () => {
+    const brand = await newBrand(9, "Europe/London");
+    const now = new Date("2026-10-25T12:00:00Z"); // clocks go back at 01:00 UTC
+    await eventAt(brand, "2026-10-24T22:59:59Z"); // 23:59:59 BST on 24 Oct
+    await eventAt(brand, "2026-10-24T23:00:00Z"); // 00:00 BST on 25 Oct
+    await eventAt(brand, "2026-10-25T23:59:59Z"); // 23:59:59 GMT on 25 Oct
+    await eventAt(brand, "2026-10-26T00:00:00Z"); // 00:00 GMT on 26 Oct
+    expect(await countUsageToday(brand, now)).toBe(2);
   });
 });
 
@@ -74,8 +94,8 @@ describe("recordUsage and the daily cap", () => {
     await expect(assertUnderDailyCap(brand)).rejects.toBeInstanceOf(DailyCapError);
   });
 
-  it("counts the IST day, not the UTC day", async () => {
-    const brand = await newBrand(2);
+  it("counts the brand's day (India here), not the UTC day", async () => {
+    const brand = await newBrand(2, "Asia/Kolkata");
     // "Now" is 01:30 IST on 13 Oct (20:00 UTC on 12 Oct).
     const now = new Date("2026-10-12T20:00:00Z");
     await eventAt(brand, "2026-10-12T18:00:00Z"); // 23:30 IST on 12 Oct: yesterday in IST, same UTC day as now
@@ -89,8 +109,8 @@ describe("recordUsage and the daily cap", () => {
     await expect(assertUnderDailyCap(brand, now)).rejects.toBeInstanceOf(DailyCapError);
   });
 
-  it("resets after IST midnight", async () => {
-    const brand = await newBrand(1);
+  it("resets at the brand's midnight", async () => {
+    const brand = await newBrand(1, "Asia/Kolkata");
     await eventAt(brand, "2026-10-12T10:00:00Z"); // 15:30 IST on 12 Oct
     await expect(assertUnderDailyCap(brand, new Date("2026-10-12T12:00:00Z"))).rejects.toBeInstanceOf(DailyCapError);
     // Just past IST midnight (18:30 UTC): a new day.

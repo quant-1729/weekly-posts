@@ -64,3 +64,26 @@ export function serveSite(site: string, overrides: Record<string, Handler> = {})
 export function pathsOf(server: TestServer): string[] {
   return server.requests.map((r) => new URL(r, "http://x").pathname);
 }
+
+/**
+ * A single-page app: every path answers 200 with the same empty-root shell (test-data/v2/websites/<site>/index.html),
+ * except the files robots.txt and sitemap.xml, which are served from the folder when they exist ({{origin}} in them becomes this server's origin).
+ */
+export async function serveSpa(site: string, overrides: Record<string, Handler> = {}): Promise<TestServer> {
+  let origin = "";
+  const server = await serve((req, res) => {
+    const pathname = new URL(req.url ?? "/", "http://x").pathname;
+    const override = overrides[pathname];
+    if (override) return override(req, res);
+    const dir = path.join(SITES_DIR, site);
+    const file = pathname === "/robots.txt" || pathname === "/sitemap.xml" ? path.join(dir, pathname.slice(1)) : path.join(dir, "index.html");
+    if (!existsSync(file)) {
+      res.writeHead(404, { "content-type": "text/html" }).end("<h1>Not found</h1>");
+      return;
+    }
+    res.writeHead(200, { "content-type": TYPES[path.extname(file)] ?? "application/xml" });
+    res.end(readFileSync(file, "utf8").replaceAll("{{origin}}", origin)); // robots.txt and sitemap.xml may name this server as {{origin}}
+  });
+  origin = server.origin;
+  return server;
+}

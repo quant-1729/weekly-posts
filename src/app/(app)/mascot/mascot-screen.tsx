@@ -2,35 +2,48 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { hintClass, inputClass, labelClass, primaryButton, secondaryButton, errorClass } from "@/components/ui";
-import { fill, s } from "@/lib/i18n/strings";
-import { drawMascotDocument } from "@/lib/mascot/rig";
+import { setMascotInPostsAction } from "@/app/(app)/brand/actions";
+import { errorClass, hintClass, inputClass, labelClass, primaryButton, secondaryButton } from "@/components/ui";
+import { s } from "@/lib/i18n/strings";
+import { pickScarf, scarfSwatches, tweenColorsFor, type BrandColorsInput } from "@/lib/mascot/colors";
 import { fileUrl, type DownloadFile } from "@/lib/mascot/paths";
 import type { MascotView } from "@/lib/mascot/service";
-import { generateConceptsAction, pickMascotAction } from "./actions";
+import { MAX_NAME_CHARS } from "@/lib/mascot/limits";
+import { renderTween, type TweenPose } from "@/lib/mascot/tween";
+import { saveMascotAction } from "./actions";
 
 /**
- * The mascot screen (R15): why a mascot is or is not offered, an optional hint,
- * 3 concepts to pick from, and the chosen mascot's character sheet with
- * downloads. "Make a new mascot" goes back to concepts; the current mascot stays
- * active until a new one is picked.
+ * The mascot screen (D9): Tween in the brand's colours (a few poses), the scarf colour (the brand's palette and
+ * "Tween blue"), a name, the "Use the mascot in my posts" switch and the downloads. Why a mascot is or is not
+ * offered comes first: regulated brands get none, formal ones confirm with "Try anyway".
  */
 
 interface Props {
+  brandId: string;
   eligibility: { eligible: boolean; reason: "regulated" | "formal" | "ok"; canOverride: boolean };
-  active: MascotView | null;
+  mascot: MascotView | null;
+  inPosts: boolean;
+  brandColors: BrandColorsInput;
   downloads: DownloadFile[];
-  concepts: MascotView[];
 }
 
-function Drawing({ spec }: { spec: MascotView["spec"] }) {
-  // The SVG is drawn by our own code from a validated spec (hex colours and fixed part names only).
+const PREVIEW_POSES: { pose: TweenPose; label: string }[] = [
+  { pose: "wave", label: s.mascot.poseNames.wave },
+  { pose: "point-right", label: s.mascot.poseNames.point },
+  { pose: "celebrate", label: s.mascot.poseNames.celebrate },
+];
+
+function Drawing({ pose, label, colors }: { pose: TweenPose; label: string; colors: ReturnType<typeof tweenColorsFor> }) {
+  // The SVG is drawn by our own code from a fixed rig and validated hex colours (no text, no images).
   return (
-    <div
-      aria-hidden="true"
-      className="mx-auto w-full max-w-[260px] [&_svg]:h-auto [&_svg]:w-full"
-      dangerouslySetInnerHTML={{ __html: drawMascotDocument(spec, "wave") }}
-    />
+    <figure className="space-y-1 text-center">
+      <div
+        aria-hidden="true"
+        className="mx-auto w-full max-w-[180px] lg:max-w-[220px] [&_svg]:h-auto [&_svg]:w-full"
+        dangerouslySetInnerHTML={{ __html: renderTween({ pose, colors, size: 360 }) }}
+      />
+      <figcaption className="text-sm text-stone-600">{label}</figcaption>
+    </figure>
   );
 }
 
@@ -47,75 +60,78 @@ async function downloadAll(files: DownloadFile[]) {
   }
 }
 
-export function MascotScreen({ eligibility, active, downloads, concepts: initialConcepts }: Props) {
+export function MascotScreen({ brandId, eligibility, mascot, inPosts: initialInPosts, brandColors, downloads }: Props) {
   const router = useRouter();
-  const [concepts, setConcepts] = useState<MascotView[]>(initialConcepts);
-  const [fewer, setFewer] = useState(false);
-  const [hint, setHint] = useState("");
+  const [name, setName] = useState(mascot?.name ?? "Tween");
+  // The colour the owner picked this visit; null = nothing picked (keep what is saved).
+  const [picked, setPicked] = useState<string | null>(null);
   const [tryAnyway, setTryAnyway] = useState(false);
-  const [makingNew, setMakingNew] = useState(!!active && initialConcepts.length > 0);
-  const [busy, setBusy] = useState(false);
-  const [picking, setPicking] = useState<string | null>(null);
-  const [downloading, setDownloading] = useState(false);
-  const [problem, setProblem] = useState<string | null>(null);
+  const [inPosts, setInPosts] = useState(initialInPosts);
+  const [busy, setBusy] = useState<"save" | "switch" | "download" | null>(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [, startTransition] = useTransition();
 
-  const regulated = !eligibility.eligible && eligibility.reason === "regulated";
-  const formal = !eligibility.eligible && eligibility.reason !== "regulated";
-  const canMake = eligibility.eligible || (formal && eligibility.canOverride && tryAnyway);
-  // Show the concepts flow when there is no mascot yet, or the owner asked for a new one.
-  const showFlow = !active || makingNew;
+  const regulated = eligibility.reason === "regulated";
+  const formal = !eligibility.eligible && !regulated;
+  // The controls: for a brand that may have one, or one that has one already (it can edit it and download).
+  const canEdit = !regulated && (eligibility.eligible || !!mascot || (formal && eligibility.canOverride && tryAnyway));
 
-  async function makeConcepts() {
-    setBusy(true);
-    setProblem(null);
-    const res = await generateConceptsAction(hint, tryAnyway);
-    setBusy(false);
+  const swatches = scarfSwatches(brandColors);
+  const savedScarf = mascot?.scarf ?? null;
+  const shown = picked ?? savedScarf ?? pickScarf(brandColors);
+  const colors = tweenColorsFor(brandColors, picked ?? savedScarf);
+
+  async function save() {
+    setBusy("save");
+    setMessage(null);
+    const res = await saveMascotAction({ name, scarf: picked ?? undefined, tryAnyway });
+    setBusy(null);
     if (!res.ok) {
-      setProblem(res.message);
+      setMessage({ ok: false, text: res.message });
       return;
     }
-    setConcepts(res.concepts);
-    setFewer(res.fewer);
+    setName(res.mascot.name);
+    setPicked(null);
+    setMessage({ ok: true, text: s.mascot.saved });
+    startTransition(() => router.refresh());
   }
 
-  async function pick(id: string) {
-    setPicking(id);
-    setProblem(null);
-    const res = await pickMascotAction(id);
+  async function toggle(next: boolean) {
+    setBusy("switch");
+    setMessage(null);
+    const res = await setMascotInPostsAction(brandId, next, tryAnyway);
+    setBusy(null);
     if (!res.ok) {
-      setPicking(null);
-      setProblem(res.message);
+      setMessage({ ok: false, text: res.message });
       return;
     }
-    setMakingNew(false);
-    setConcepts([]);
-    setPicking(null);
+    setInPosts(next);
     startTransition(() => router.refresh());
   }
 
   async function onDownloadAll() {
-    setDownloading(true);
+    setBusy("download");
     await downloadAll(downloads);
-    setDownloading(false);
+    setBusy(null);
   }
 
   return (
-    <div className="space-y-5">
+    // Phones: one column. Desktop: the preview and downloads on the left, the controls beside them.
+    <div className="space-y-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10 lg:gap-y-5 lg:space-y-0">
       {regulated && (
-        <div className="space-y-1 rounded-lg border border-stone-300 bg-stone-50 p-4">
+        <div className="space-y-1 rounded-lg border border-stone-300 bg-stone-50 p-4 lg:col-span-2">
           <h2 className="font-semibold">{s.mascot.regulatedTitle}</h2>
           <p className="text-stone-700">{s.mascot.regulatedBody}</p>
         </div>
       )}
 
       {formal && (
-        <div className="space-y-3 rounded-lg border border-stone-300 bg-stone-50 p-4">
+        <div className="space-y-3 rounded-lg border border-stone-300 bg-stone-50 p-4 lg:col-span-2">
           <div className="space-y-1">
             <h2 className="font-semibold">{s.mascot.formalTitle}</h2>
             <p className="text-stone-700">{s.mascot.formalBody}</p>
           </div>
-          {!tryAnyway && showFlow && eligibility.canOverride && (
+          {!tryAnyway && !mascot && eligibility.canOverride && (
             <button type="button" className={secondaryButton} onClick={() => setTryAnyway(true)}>
               {s.mascot.tryAnyway}
             </button>
@@ -123,111 +139,96 @@ export function MascotScreen({ eligibility, active, downloads, concepts: initial
         </div>
       )}
 
-      {active && !makingNew && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">
-            {s.mascot.activeTitle}: {active.name}
-            {active.name_local ? <span> · {active.name_local}</span> : null}
-          </h2>
-          {active.personality && <p className="text-stone-600">{active.personality}</p>}
-          {active.sheet_path && (
+      {canEdit && (
+        <>
+          <div className="lg:col-start-1">
+            <h2 className="mb-2 text-lg font-semibold">{s.mascot.previewTitle}</h2>
+            <div className="grid grid-cols-3 gap-2 rounded-xl border border-stone-200 bg-white p-3">
+              {PREVIEW_POSES.map((p) => (
+                <Drawing key={p.pose} pose={p.pose} label={p.label} colors={colors} />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-5 lg:col-start-2 lg:row-span-2">
+          <div>
+            <label htmlFor="mascot-name" className={labelClass}>
+              {s.mascot.nameLabel}
+            </label>
+            <p className={hintClass}>{s.mascot.nameHelp}</p>
+            <input
+              id="mascot-name"
+              className={inputClass}
+              value={name}
+              maxLength={MAX_NAME_CHARS}
+              onChange={(e) => setName(e.target.value)}
+              disabled={busy !== null}
+            />
+          </div>
+
+          <fieldset>
+            <legend className={labelClass}>{s.mascot.scarfLabel}</legend>
+            <p className={hintClass}>{s.mascot.scarfHelp}</p>
+            <div className="flex flex-wrap gap-3">
+              {swatches.map((sw) => {
+                const on = sw.hex.toLowerCase() === shown.toLowerCase();
+                return (
+                  <button
+                    key={sw.hex}
+                    type="button"
+                    aria-pressed={on}
+                    aria-label={`${s.mascot.swatch[sw.kind]} ${sw.hex.toUpperCase()}`}
+                    onClick={() => setPicked(sw.hex)}
+                    disabled={busy !== null}
+                    className={`flex min-h-12 items-center gap-2 rounded-lg border px-3 py-2 text-base ${on ? "border-[#E4572E] ring-2 ring-[#E4572E]/30" : "border-stone-300"}`}
+                  >
+                    <span className="size-7 rounded-full border border-stone-300" style={{ backgroundColor: sw.hex }} />
+                    <span>{s.mascot.swatch[sw.kind]}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </fieldset>
+
+          <button type="button" className={primaryButton} onClick={save} disabled={busy !== null}>
+            {busy === "save" ? s.mascot.saving : s.mascot.save}
+          </button>
+
+          <div className="space-y-1">
+            <label className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                className="mt-1 size-6"
+                checked={inPosts}
+                disabled={busy !== null}
+                onChange={(e) => void toggle(e.target.checked)}
+              />
+              <span className="font-medium">{s.mascot.useInPosts}</span>
+            </label>
+            <p className={hintClass}>{s.mascot.useInPostsHelp}</p>
+          </div>
+          </div>
+        </>
+      )}
+
+      {mascot ? (
+        <div className="space-y-3 lg:col-start-1">
+          {mascot.sheet_path && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={fileUrl(active.sheet_path)} alt={s.mascot.sheetAlt} className="w-full rounded-xl bg-stone-50" />
+            <img src={fileUrl(mascot.sheet_path)} alt={s.mascot.sheetAlt} className="w-full rounded-xl bg-stone-50" />
           )}
           <p className={hintClass}>{s.mascot.downloadHelp}</p>
-          <button type="button" className={primaryButton} onClick={onDownloadAll} disabled={downloading}>
-            {downloading ? s.mascot.downloadingAll : s.mascot.downloadAll}
+          <button type="button" className={primaryButton} onClick={onDownloadAll} disabled={busy !== null}>
+            {busy === "download" ? s.mascot.downloadingAll : s.mascot.downloadAll}
           </button>
-          {!regulated && (
-            <div className="space-y-1">
-              <button type="button" className={secondaryButton} onClick={() => setMakingNew(true)}>
-                {s.mascot.makeNew}
-              </button>
-              <p className={hintClass}>{s.mascot.makeNewHelp}</p>
-            </div>
-          )}
         </div>
+      ) : (
+        canEdit && <p className={hintClass}>{s.mascot.downloadAfterSave}</p>
       )}
 
-      {showFlow && canMake && (
-        <div className="space-y-4">
-          {concepts.length === 0 && (
-            <div>
-              <label htmlFor="mascot-hint" className={labelClass}>
-                {s.mascot.hintLabel}
-              </label>
-              <p className={hintClass}>{s.mascot.hintHelp}</p>
-              <input
-                id="mascot-hint"
-                className={inputClass}
-                value={hint}
-                maxLength={300}
-                placeholder={s.mascot.hintPlaceholder}
-                onChange={(e) => setHint(e.target.value)}
-                disabled={busy}
-              />
-            </div>
-          )}
-
-          {concepts.length === 0 ? (
-            <button type="button" className={primaryButton} onClick={makeConcepts} disabled={busy}>
-              {busy ? s.mascot.makingConcepts : s.mascot.makeConcepts}
-            </button>
-          ) : (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold">{s.mascot.conceptsTitle}</h2>
-              {fewer && <p className={hintClass}>{fill(s.mascot.conceptsFew, { n: concepts.length })}</p>}
-              <ul className="space-y-4">
-                {concepts.map((c) => (
-                  <li key={c.id} className="space-y-2 rounded-xl border border-stone-200 bg-white p-4">
-                    <Drawing spec={c.spec} />
-                    <div className="text-center">
-                      <p className="text-lg font-bold">
-                        {c.name}
-                        {c.name_local ? <span> · {c.name_local}</span> : null}
-                      </p>
-                      <p className="text-stone-600">{c.personality}</p>
-                    </div>
-                    <button type="button" className={primaryButton} onClick={() => pick(c.id)} disabled={picking !== null}>
-                      {picking === c.id ? s.mascot.picking : s.mascot.pick}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                className={secondaryButton}
-                onClick={() => {
-                  setConcepts([]);
-                  setFewer(false);
-                }}
-                disabled={picking !== null}
-              >
-                {s.mascot.tryAgain}
-              </button>
-            </div>
-          )}
-
-          {makingNew && (
-            <button
-              type="button"
-              className="py-2 text-sm text-stone-600 underline"
-              onClick={() => {
-                setMakingNew(false);
-                setConcepts([]);
-                setProblem(null);
-              }}
-              disabled={busy || picking !== null}
-            >
-              {s.mascot.keepCurrent}
-            </button>
-          )}
-        </div>
-      )}
-
-      {problem && (
-        <p role="alert" className={errorClass}>
-          {problem}
+      {message && (
+        <p role={message.ok ? "status" : "alert"} className={`${message.ok ? "text-sm text-green-700" : errorClass} lg:col-span-2`}>
+          {message.text}
         </p>
       )}
     </div>

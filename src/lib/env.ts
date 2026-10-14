@@ -8,6 +8,7 @@ const optional = z.preprocess(blankToUndefined, z.string().optional());
 
 const schema = z.object({
   DATA_BACKEND: z.preprocess(blankToUndefined, z.enum(["mock", "supabase"]).optional()),
+  STORAGE_BACKEND: z.preprocess(blankToUndefined, z.enum(["mock", "supabase", "gcs"]).optional()),
   AUTH_SECRET: optional,
   NEXT_PUBLIC_SUPABASE_URL: optional,
   NEXT_PUBLIC_SUPABASE_ANON_KEY: optional,
@@ -15,20 +16,28 @@ const schema = z.object({
   SUPABASE_DB_URL: optional,
   NODE_ENV: optional,
   VERCEL_ENV: optional,
+  K_SERVICE: optional, // set by Cloud Run itself
   NEXT_PUBLIC_APP_URL: optional,
   RESEND_API_KEY: optional,
   EMAIL_FROM: optional,
   EMAIL_REPLY_TO: optional,
   CRON_SECRET: optional,
   EMAIL_LINK_SECRET: optional,
+  ADMIN_EMAILS: optional,
 });
 
 export type Env = {
   dataBackend: "mock" | "supabase";
+  /** Where files go (C-32): STORAGE_BACKEND, or the same as dataBackend when unset. */
+  storageBackend: "mock" | "supabase" | "gcs";
   authSecret: string;
   isProduction: boolean;
-  /** True on Vercel production. Mock auth refuses to run there. */
-  isVercelProduction: boolean;
+  /** True on Vercel production or on Cloud Run (K_SERVICE is set there). Mock auth refuses to run on either. */
+  isHostedProduction: boolean;
+  /** Supabase project URL, service role key and pooled database URL (server only). Undefined until set. */
+  supabaseUrl: string | undefined;
+  supabaseServiceRoleKey: string | undefined;
+  supabaseDbUrl: string | undefined;
   /** Public base URL used in emailed links, no trailing slash. Empty in production if unset. */
   appUrl: string;
   /** Resend is used only when both the key and the from address are set. */
@@ -39,6 +48,8 @@ export type Env = {
   cronSecret: string | undefined;
   /** Signs emailed action links. Optional here: src/lib/links/tokens.ts derives a dev value in mock mode and throws in production. */
   emailLinkSecret: string | undefined;
+  /** Emails allowed to open /admin (ADMIN_EMAILS, comma-separated): trimmed, lower-case, no blanks. Empty = nobody. */
+  adminEmails: string[];
 };
 
 /**
@@ -92,14 +103,22 @@ export function getEnv(): Env {
 
   return {
     dataBackend,
+    storageBackend: raw.STORAGE_BACKEND ?? dataBackend,
     authSecret,
     isProduction,
-    isVercelProduction: raw.VERCEL_ENV === "production",
+    isHostedProduction: raw.VERCEL_ENV === "production" || Boolean(raw.K_SERVICE),
+    supabaseUrl: raw.NEXT_PUBLIC_SUPABASE_URL,
+    supabaseServiceRoleKey: raw.SUPABASE_SERVICE_ROLE_KEY,
+    supabaseDbUrl: raw.SUPABASE_DB_URL,
     appUrl: (raw.NEXT_PUBLIC_APP_URL ?? (isProduction ? "" : "http://localhost:3000")).trim().replace(/\/+$/, ""),
     resendApiKey: raw.RESEND_API_KEY,
     emailFrom: raw.EMAIL_FROM,
     emailReplyTo: raw.EMAIL_REPLY_TO,
     cronSecret: raw.CRON_SECRET,
     emailLinkSecret: raw.EMAIL_LINK_SECRET,
+    adminEmails: (raw.ADMIN_EMAILS ?? "")
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter((e) => e !== ""),
   };
 }

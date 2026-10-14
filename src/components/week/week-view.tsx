@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { errorClass, hintClass, primaryButton, secondaryButton } from "@/components/ui";
 import { fill, s } from "@/lib/i18n/strings";
+import { tweenSignal } from "@/lib/tween/events";
 import type { WeekView as WeekData } from "@/lib/weekly/view";
 import { generateNowAction, getWeekViewAction } from "./actions";
 import { PostCard } from "./post-card";
@@ -35,6 +36,19 @@ export function WeekView({ initial }: { initial: WeekData }) {
 
   const generating = starting || view.batch?.status === "generating";
 
+  // Tween (M-1) reacts to the batch: thinking while posts are written, then celebrating or shrugging.
+  // The failure of the start call itself is signalled in onGenerate; `wasGenerating` is cleared there so it is not repeated.
+  const wasGenerating = useRef(false);
+  const batchStatus = view.batch?.status;
+  useEffect(() => {
+    if (generating && !wasGenerating.current) tweenSignal("generating");
+    else if (!generating && wasGenerating.current) {
+      if (batchStatus === "ready") tweenSignal("posts_ready");
+      else if (batchStatus === "failed") tweenSignal("generate_failed");
+    }
+    wasGenerating.current = generating;
+  }, [generating, batchStatus]);
+
   useEffect(() => {
     if (!generating) return;
     const id = setInterval(async () => {
@@ -53,6 +67,8 @@ export function WeekView({ initial }: { initial: WeekData }) {
     if (!alive.current) return;
     if (!r.ok) {
       setError(r.message);
+      wasGenerating.current = false;
+      tweenSignal("generate_failed");
       setStarting(false);
       return;
     }
@@ -89,7 +105,7 @@ export function WeekView({ initial }: { initial: WeekData }) {
 
       {!generating && view.canGenerate ? (
         <div className="space-y-1">
-          <button type="button" onClick={onGenerate} className={batch?.status === "ready" ? secondaryButton : primaryButton}>
+          <button type="button" data-tween-target="generate" onClick={onGenerate} className={batch?.status === "ready" ? secondaryButton : primaryButton}>
             {batch?.status === "ready" ? t.regenerate : t.generate}
           </button>
           {batch?.status === "ready" ? <p className={hintClass}>{fill(t.regenerateHelp, { n: view.regenerationsLeft })}</p> : null}
@@ -103,7 +119,7 @@ export function WeekView({ initial }: { initial: WeekData }) {
       ) : null}
 
       {view.posts.length > 0 ? (
-        <ul className="space-y-3">
+        <ul className="grid gap-3 md:gap-4 lg:grid-cols-2" data-tween-target="posts">
           {view.posts.map((p) => (
             <PostCard key={p.id} post={p} photos={view.photos} weekStart={view.weekStart} onView={setView} />
           ))}

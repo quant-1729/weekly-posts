@@ -43,7 +43,7 @@ export function CheckinCard({
   };
 
   return (
-    <section aria-labelledby="checkin-title" className="space-y-3 rounded-lg border border-stone-200 bg-stone-50 p-4">
+    <section aria-labelledby="checkin-title" className="space-y-3 rounded-lg border border-stone-200 bg-stone-50 p-4 md:max-w-2xl">
       <div>
         <h2 id="checkin-title" className="font-semibold">
           {title}

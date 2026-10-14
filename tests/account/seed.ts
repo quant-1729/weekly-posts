@@ -111,6 +111,25 @@ export async function seedAccount(
     await tx.query("insert into public.owner_dates (brand_id, date, name, yearly) values ($1, '2026-12-01', 'Shop birthday', true)", [brandId]);
     await tx.query("insert into public.voice_feedback (brand_id, instruction) values ($1, 'shorter please')", [brandId]);
 
+    // v3 details: selling points, contact set, a brief that uses one of them and the photo.
+    const [usp] = await tx.query<{ id: string }>(
+      `insert into public.usps (brand_id, kind, title, details, source, created_by)
+       values ($1, 'discount', '20% off cakes', '{"percent":20,"on":"cakes","upTo":false}', 'owner', $2) returning id`,
+      [brandId, userId],
+    );
+    await tx.query("insert into public.usps (brand_id, kind, title, source, source_ref, sort) values ($1, 'custom', 'Family run', 'website', 'https://bakery.example.com/about', 1)", [brandId]);
+    await tx.query(
+      `insert into public.contact_points (brand_id, kind, value, display, details, created_by) values
+         ($1, 'phone', '+442079460958', '020 7946 0958', '{}', $2),
+         ($1, 'website', 'https://bakery.example.com', 'bakery.example.com', '{}', $2)`,
+      [brandId, userId],
+    );
+    await tx.query(
+      `insert into public.post_briefs (brand_id, post_type, primary_usp_id, usp_snapshot, cta, photo_id, ends_on, timezone, created_by)
+       values ($1, 'offer', $2, '[{"title":"20% off cakes"}]', 'visit', $3, '2026-10-31', 'Europe/London', $4)`,
+      [brandId, usp.id, photoId, userId],
+    );
+
     const [plan] = await tx.query<{ id: string }>(
       "insert into public.weekly_plans (brand_id, week_start, created_by) values ($1, '2026-10-12', $2) returning id",
       [brandId, userId],
@@ -185,6 +204,14 @@ export async function seedAccount(
          (null, null, 'magic_link', $3, 'Sign in', 'sent'),
          ($1, null, 'reminder', $3, 'Reminder', 'sent')`,
       [brandId, userId, email],
+    );
+
+    // Sign-in links (single-use ids) hold the address: one used, one still open.
+    await tx.query(
+      `insert into public.magic_links (jti, email, ip, expires_at, used_at) values
+         ($1, $3, '203.0.113.9', now() + interval '15 minutes', now()),
+         ($2, $3, null, now() + interval '15 minutes', null)`,
+      [randomUUID(), randomUUID(), email],
     );
   });
 

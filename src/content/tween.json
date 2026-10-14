@@ -1,0 +1,175 @@
+{
+  "enabled": true,
+  "name": "Tween",
+  "greeting": "Hi, I'm Tween. Tap me if you would like a hand.",
+  "start": "root",
+  "nodes": {
+    "root": {
+      "say": [
+        "Hi, I'm Tween. I can show you around. What would you like to know?",
+        "{tip}"
+      ],
+      "pose": "wave",
+      "choices": [
+        { "label": "How does this work?", "next": "how" },
+        { "label": "Make this week's posts", "next": "make" },
+        { "label": "What does 'Please check' mean?", "next": "check" },
+        { "label": "More", "next": "more" }
+      ]
+    },
+    "more": {
+      "say": [
+        "A few more ways in. Pick one."
+      ],
+      "pose": "talk",
+      "choices": [
+        { "label": "How do I post them?", "next": "post" },
+        { "label": "Edit my brand details", "next": "brand" },
+        { "label": "Just looking", "next": "browse" },
+        { "label": "Back to the start", "next": "root" }
+      ]
+    },
+    "how": {
+      "say": [
+        "Every week you get an email with three to five ready posts.",
+        "Approve, edit or skip each one with a tap. No login needed from the email.",
+        "Nothing is posted without you."
+      ],
+      "pose": "talk",
+      "choices": [
+        { "label": "Make this week's posts", "next": "make" },
+        { "label": "How do I post them?", "next": "post" },
+        { "label": "Back to the start", "next": "root" }
+      ]
+    },
+    "make": {
+      "say": [
+        "This button writes this week's posts.",
+        "It takes about a minute. You can leave the page open."
+      ],
+      "pose": "point",
+      "do": [
+        { "goto": "/week" },
+        { "point": "generate" }
+      ],
+      "choices": [
+        { "label": "What does 'Please check' mean?", "next": "check" },
+        { "label": "How do I post them?", "next": "post" },
+        { "label": "Back to the start", "next": "root" }
+      ]
+    },
+    "check": {
+      "say": [
+        "Sometimes a post mentions something we could not find in your brand details.",
+        "We mark it 'Please check'. Keep only what is true for your business."
+      ],
+      "pose": "point",
+      "do": [
+        { "goto": "/week" },
+        { "point": "posts" }
+      ],
+      "choices": [
+        { "label": "How do I post them?", "next": "post" },
+        { "label": "Edit my brand details", "next": "brand" },
+        { "label": "Back to the start", "next": "root" }
+      ]
+    },
+    "post": {
+      "say": [
+        "When a post looks right, tap Approve.",
+        "Then open its ready page and tap Share or Download."
+      ],
+      "pose": "talk",
+      "choices": [
+        { "label": "What does 'Please check' mean?", "next": "check" },
+        { "label": "Back to the start", "next": "root" }
+      ]
+    },
+    "brand": {
+      "say": [
+        "Your brand details live here. Posts only use facts from this list."
+      ],
+      "pose": "point",
+      "do": [
+        { "goto": "/brand" },
+        { "point": "facts" }
+      ],
+      "choices": [
+        { "label": "How does this work?", "next": "how" },
+        { "label": "Back to the start", "next": "root" }
+      ]
+    },
+    "browse": {
+      "say": [
+        "No problem. I will stay quiet. Tap me if you want a hand."
+      ],
+      "pose": "wave",
+      "do": [
+        { "quiet": true }
+      ],
+      "choices": [
+        { "label": "Show me around", "next": "root" }
+      ]
+    }
+  },
+  "tips": {
+    "default": [
+      "Tap me any time if you would like a hand."
+    ],
+    "/week": [
+      "Approve what you like, edit what you want to change and skip the rest."
+    ],
+    "/setup": [
+      "Short answers are fine. You can change them later under Brand."
+    ],
+    "/brand": [
+      "Posts only use facts from your list. Add or fix them here."
+    ],
+    "/results": [
+      "A quick check-in each week tells us how your posts went."
+    ],
+    "/history": [
+      "Your earlier posts are here. You can use one again."
+    ]
+  },
+  "nudges": {
+    "/week": "Not sure where to start? Ask me about this week's posts.",
+    "/brand": "Wondering what goes in here? Ask me."
+  },
+  "events": {
+    "generating": { "pose": "think", "say": "Writing your posts. This takes about a minute." },
+    "posts_ready": { "pose": "celebrate", "say": "Your posts are ready. Look for anything marked 'Please check'." },
+    "generate_failed": { "pose": "shrug", "say": "That did not work this time. You can try again." },
+    "approved": { "pose": "celebrate" },
+    "all_approved": { "pose": "celebrate", "say": "That's the week done." },
+    "setup_started": { "pose": "wave", "say": "Hi, I'm Tween. A few short questions and you're set up." },
+    "setup_done": { "pose": "celebrate" }
+  },
+  "ui": {
+    "openLabel": "Open Tween, your guide",
+    "closeLabel": "Close Tween's panel",
+    "panelLabel": "Tween, your guide",
+    "hide": "Hide Tween",
+    "show": "Bring Tween back",
+    "pause": "Pause Tween",
+    "resume": "Resume Tween",
+    "voiceOn": "Turn on Tween's voice",
+    "voiceOff": "Turn off Tween's voice",
+    "restart": "Start over",
+    "noRoam": "Don't roam",
+    "roam": "Let Tween roam",
+    "settings": "Settings",
+    "settingsLabel": "Tween settings",
+    "quickLabel": "Quick controls",
+    "transcriptShow": "Show conversation",
+    "transcriptHide": "Hide conversation",
+    "transcriptLabel": "Conversation so far",
+    "speakerTween": "Tween",
+    "speakerYou": "You",
+    "skip": "Skip typing",
+    "dismiss": "Dismiss",
+    "choicesLabel": "Choose a reply",
+    "thinking": "Tween is thinking",
+    "closeButton": "Close"
+  }
+}

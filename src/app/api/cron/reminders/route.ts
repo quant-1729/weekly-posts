@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const maxDuration = 120;
 export const dynamic = "force-dynamic";
 
-// Intended schedule (added to vercel.json at deployment, not now): hourly, so a reminder goes out
+// Schedule (in vercel.json): hourly, so a reminder goes out
 // within an hour of the 3-day mark, and a failed send is retried the next hour (up to 3 times).
 //
 //   { "crons": [{ "path": "/api/cron/reminders", "schedule": "30 * * * *" }] }

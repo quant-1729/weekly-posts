@@ -1,0 +1,122 @@
+/*
+ * Tween's panel, bubbles, chips and controls. Colours are the site's tokens written out (they are only emitted as CSS
+ * variables when a utility uses them, so they are literal here). Pairs are in lib/contrast.ts and unit-tested.
+ * ink #0b1c30, muted #444656, raised #fff, sunk #eff4ff, line #d9e1f2, brand #002fdf, brand-soft #dee0ff, accent #2b4cff.
+ */
+.tw-root { position: fixed; left: 0; z-index: 20; pointer-events: none; will-change: transform; }
+.tw-root[data-blocked="true"] { visibility: hidden; }
+.tw-anchor { position: relative; }
+.tw-toggle { position: absolute; inset: 0; pointer-events: auto; background: none; border: 0; padding: 0; margin: 0; border-radius: 18px; cursor: pointer; }
+.tw-toggle:focus-visible, .tw-peek:focus-visible { outline: 2px solid #2b4cff; outline-offset: 2px; }
+.tw-toggle .tw-rig { width: 100%; height: 100%; }
+
+/* quick controls: pause and hide, tucked beside Tween until it has focus or the pointer */
+.tw-quick { position: absolute; bottom: 8px; right: calc(100% + 4px); display: flex; gap: 4px; opacity: 0; pointer-events: none; }
+.tw-root[data-align="left"] .tw-quick { transform: translateX(calc(100% + var(--aw, 84px) + 8px)); }
+.tw-root:focus-within .tw-quick, .tw-root:hover .tw-quick { opacity: 1; pointer-events: auto; }
+.tw-root[data-open="true"] .tw-quick { display: none; }
+.tw-icon-btn { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 22px; background: #fff; color: #0b1c30; border: 1px solid #d9e1f2; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12); }
+.tw-icon-btn:hover { background: #eff4ff; }
+.tw-icon-btn:focus-visible, .tw-chip:focus-visible, .tw-link:focus-visible, .tw-primary:focus-visible, .tw-input:focus-visible, .tw-menu button:focus-visible { outline: 2px solid #2b4cff; outline-offset: 2px; }
+
+/* the panel and the unprompted greeting share the card look */
+/* anchored by the top edge and lifted with a transform, so a panel that changes height never moves its own start point (a layout shift) */
+.tw-panel, .tw-greet { position: absolute; top: -10px; transform: translateY(-100%); pointer-events: auto; background: #fff; color: #0b1c30; border: 1px solid #d9e1f2; border-radius: 12px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 20px 48px -12px rgba(15, 23, 42, 0.18); font-size: 0.9375rem; line-height: 1.45; }
+.tw-panel { left: 0; }
+.tw-greet { right: 0; }
+.tw-root[data-align="left"] .tw-greet { right: auto; left: 0; }
+.tw-panel { width: min(22rem, calc(100vw - 24px)); max-height: min(34rem, calc(100vh - 150px)); overflow-y: auto; padding: 14px; }
+.tw-greet { width: max-content; max-width: min(15rem, calc(100vw - 24px)); padding: 10px 44px 10px 12px; }
+/* the tail points down at Tween */
+.tw-panel::after, .tw-greet::after { content: ""; position: absolute; bottom: -7px; left: 0; width: 12px; height: 12px; background: #fff; border-right: 1px solid #d9e1f2; border-bottom: 1px solid #d9e1f2; transform: translateX(var(--tail-x, 40px)) rotate(45deg); }
+.tw-greet::after { left: auto; right: 38px; transform: rotate(45deg); }
+.tw-root[data-align="left"] .tw-greet::after { right: auto; left: 38px; }
+.tw-greet p { margin: 0; }
+.tw-greet .tw-icon-btn { position: absolute; top: 0; right: 0; border: 0; background: transparent; box-shadow: none; }
+
+.tw-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: -4px -4px 8px 0; }
+.tw-title { font-weight: 700; font-size: 0.9375rem; margin: 0; }
+.tw-head-btns { display: flex; gap: 2px; }
+.tw-head .tw-icon-btn { border: 0; box-shadow: none; background: transparent; }
+.tw-head .tw-icon-btn:hover { background: #eff4ff; }
+
+.tw-bubbles { position: relative; display: flex; flex-direction: column; gap: 6px; }
+.tw-ghost { visibility: hidden; }
+.tw-bubble { margin: 0; padding: 9px 12px; background: #eff4ff; color: #0b1c30; border-radius: 12px 12px 12px 4px; max-width: 100%; overflow-wrap: anywhere; }
+.tw-think { position: absolute; left: 8px; top: 6px; display: inline-flex; gap: 4px; padding: 10px; }
+.tw-think i { width: 7px; height: 7px; border-radius: 50%; background: #2b4cff; opacity: 0.6; }
+
+.tw-chips { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.tw-chip { min-height: 44px; padding: 8px 14px; border-radius: 22px; border: 1px solid #2b4cff; background: #fff; color: #002fdf; font: inherit; font-weight: 600; font-size: 0.875rem; text-align: left; }
+.tw-chip:hover { background: #dee0ff; }
+.tw-primary { min-height: 44px; margin-top: 10px; padding: 8px 18px; border-radius: 4px; border: 0; background: #2b4cff; color: #fff; font: inherit; font-weight: 600; }
+.tw-primary:hover { background: #203cd9; }
+.tw-primary:disabled { opacity: 0.7; }
+.tw-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 4px; background: none; border: 0; color: #002fdf; font: inherit; font-size: 0.875rem; text-decoration: underline; text-underline-offset: 3px; }
+.tw-input { display: block; width: 100%; min-height: 44px; margin-top: 4px; padding: 0 10px; border: 1px solid #6b6f80; border-radius: 4px; background: #fff; color: #0b1c30; font: inherit; }
+.tw-label { display: block; font-size: 0.8125rem; font-weight: 600; color: #444656; }
+.tw-error { margin: 6px 0 0; color: #ba1a1a; font-weight: 600; font-size: 0.875rem; }
+.tw-lead { position: relative; margin-top: 10px; }
+.tw-lead p { margin: 0 0 6px; }
+.tw-lead-step { font-size: 0.75rem; color: #444656; }
+.tw-lead-prompt { font-weight: 600; }
+.tw-lead-foot { display: flex; justify-content: space-between; margin-top: 8px; }
+.tw-consent { display: flex; gap: 10px; align-items: flex-start; font-size: 0.875rem; min-height: 44px; }
+.tw-consent input { width: 22px; height: 22px; margin-top: 2px; flex: none; accent-color: #2b4cff; }
+
+.tw-skip { margin-left: auto; }
+.tw-transcript { margin-top: 8px; border-top: 1px solid #d9e1f2; padding-top: 4px; }
+.tw-transcript ol { margin: 4px 0 0; padding-left: 0; list-style: none; max-height: 10rem; overflow-y: auto; font-size: 0.8125rem; }
+.tw-transcript li { padding: 2px 0; }
+.tw-who { font-weight: 700; }
+.tw-menu { list-style: none; margin: 0 0 8px; padding: 4px; border: 1px solid #d9e1f2; border-radius: 8px; background: #fff; }
+.tw-menu button { display: flex; width: 100%; min-height: 44px; align-items: center; padding: 0 10px; background: none; border: 0; border-radius: 4px; color: #0b1c30; font: inherit; font-size: 0.875rem; text-align: left; }
+.tw-menu button:hover { background: #eff4ff; }
+
+/* hidden state: Tween peeks in from the right edge */
+.tw-peek { position: fixed; right: 0; z-index: 20; width: 56px; height: 112px; overflow: hidden; padding: 0; border: 0; background: none; border-radius: 16px 0 0 16px; cursor: pointer; }
+.tw-peek .tw-rig { position: absolute; left: 0; top: 0; width: 92px; height: 112px; }
+
+.tw-spotlight { position: fixed; left: 0; top: 0; z-index: 15; width: 0; height: 0; pointer-events: none; border-radius: 12px; opacity: 0; box-shadow: 0 0 0 3px #2b4cff, 0 0 0 9px rgba(43, 76, 255, 0.22), 0 0 36px 6px rgba(43, 76, 255, 0.28); transition: opacity 250ms ease; }
+
+/* first-visit intro: its own rig above the sticky header (z 40) while it climbs and sits on the wordmark */
+.tw-intro { position: fixed; left: 0; top: 0; z-index: 45; transform-origin: 50% 100%; will-change: transform; pointer-events: none; }
+.tw-intro .tw-toggle { pointer-events: auto; }
+.tw-intro .tw-rig { width: 100%; height: 100%; }
+.tw-fly { position: fixed; left: 0; top: 0; z-index: 44; pointer-events: none; filter: drop-shadow(0 6px 10px rgba(11, 28, 48, 0.25)); }
+.tw-letter-spot { position: absolute; z-index: 5; width: 56px; }
+.tw-letter-btn { display: block; padding: 4px; margin: -4px; border: 0; background: none; cursor: pointer; border-radius: 8px; transform: rotate(-6deg); filter: drop-shadow(0 4px 8px rgba(11, 28, 48, 0.22)); transition: transform 200ms ease; }
+.tw-letter-btn:hover { transform: rotate(0deg) translateY(-3px) scale(1.06); }
+.tw-letter-btn:focus-visible { outline: 2px solid #2b4cff; outline-offset: 2px; }
+.tw-letter-btn[aria-expanded="false"] { animation: tw-letter-nudge 3.2s ease-in-out 1.2s infinite; }
+@keyframes tw-letter-nudge { 0%, 86%, 100% { rotate: 0deg; } 90% { rotate: -7deg; } 95% { rotate: 6deg; } }
+.tw-note { position: absolute; top: calc(100% + 10px); left: 0; width: min(18rem, calc(100vw - 32px)); padding: 12px 14px; background: #fff; color: #0b1c30; border: 1px solid #d9e1f2; border-radius: 12px; box-shadow: 0 20px 48px -12px rgba(15, 23, 42, 0.25); font-size: 0.9375rem; line-height: 1.45; animation: tw-note-in 220ms cubic-bezier(0.3, 1.3, 0.5, 1); transform-origin: top left; }
+.tw-note[data-align="right"] { left: auto; right: 0; transform-origin: top right; }
+.tw-note p { margin: 0 0 8px; }
+.tw-note-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tw-note-cta { display: inline-flex; align-items: center; margin-top: 0; text-decoration: none; }
+@keyframes tw-note-in { from { opacity: 0; scale: 0.9; } to { opacity: 1; scale: 1; } }
+
+/* section peek: a cropped Tween rises from behind a section's top edge, waves, and ducks back down */
+.tw-sect-peek { position: absolute; top: -50px; height: 50px; width: 64px; overflow: hidden; z-index: 4; pointer-events: none; }
+.tw-sect-peek[data-side="r"] { right: max(16px, 9%); }
+.tw-sect-peek[data-side="l"] { left: max(16px, 7%); }
+.tw-sect-peek-body { position: absolute; left: 0; top: 0; width: 64px; height: 78px; translate: 0 100%; animation: tw-sect-peek 2800ms cubic-bezier(0.3, 1.3, 0.5, 1) both; }
+.tw-sect-peek .tw-rig { width: 100%; height: 100%; }
+@keyframes tw-sect-peek {
+  0% { translate: 0 100%; scale: 1 1; }
+  14% { translate: 0 2px; scale: 0.94 1.08; }
+  22% { translate: 0 6px; scale: 1.03 0.97; }
+  28%, 78% { translate: 0 6px; scale: 1 1; }
+  84% { translate: 0 -2px; scale: 0.96 1.05; }
+  100% { translate: 0 100%; scale: 1 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tw-sect-peek { display: none !important; }
+  .tw-letter-btn, .tw-note { animation: none !important; transition: none !important; }
+  .tw-spotlight, .tw-root, .tw-quick { transition: none !important; }
+}
+@media print {
+  .tw-root, .tw-peek, .tw-spotlight, .tw-intro, .tw-fly, .tw-letter-spot, .tw-sect-peek { display: none !important; }
+}

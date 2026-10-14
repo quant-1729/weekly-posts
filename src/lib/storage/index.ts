@@ -1,4 +1,5 @@
 import { getEnv } from "@/lib/env";
+import { createGcsStorage } from "./gcs";
 import { createMockStorage } from "./mock";
 import { createSupabaseStorage } from "./supabase";
 import type { Storage } from "./types";
@@ -14,8 +15,15 @@ export function setStorageForTests(storage: Storage | null): void {
   testStorage = storage;
 }
 
-/** Selected by DATA_BACKEND. */
+/** Selected by STORAGE_BACKEND (mock | supabase | gcs); when unset, follows DATA_BACKEND. */
 export function getStorage(): Storage {
   if (testStorage) return testStorage;
-  return getEnv().dataBackend === "supabase" ? createSupabaseStorage() : createMockStorage();
+  switch (getEnv().storageBackend) {
+    case "gcs":
+      return createGcsStorage();
+    case "supabase":
+      return createSupabaseStorage();
+    default:
+      return createMockStorage();
+  }
 }

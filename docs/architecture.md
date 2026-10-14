@@ -9,10 +9,13 @@ Owner: orchestrator (T-1). Spec: [6-prd.md](6-prd.md). Tasks: [8-build-plan.md](
 | D1 | **Mock backend first.** `DATA_BACKEND=mock` runs the real Postgres schema on PGlite (Postgres in WASM, on disk under `.data/`), with stub phone OTP and local file storage. `DATA_BACKEND=supabase` swaps in Supabase later with no app code changes. | No Supabase project yet. Running the real schema and RLS locally means the mock enforces the same brand separation as production. |
 | D2 | **LLM is Google Gemini** (`@google/genai`) **via Vertex AI** (project credentials by file path in `.env.local`), with JSON output against a schema. Default model `gemini-3.8-flash`, thinking level LOW; overridable in env. All calls go through `src/lib/ai/client.ts`, which logs tokens and estimated cost. | Owner's choice. The AI Studio key was blocked (403). |
 | D3 | **Voice notes are transcribed by Gemini** (audio input), not a separate speech-to-text API. Browser records WAV (16 kHz mono); WhatsApp sends OGG. | One credential. Hindi voice note transcribed word-for-word in testing (2026-10-12). |
-| D4 | **Mascot is a parametric SVG character** (Duolingo-style), not an AI image. Gemini picks the concept and its parameters; code draws every pose from one saved spec. | Owner's choice. Guarantees the same character in every pose (R15 AC), is transparent by nature, drops the image-model key. |
+| D4 | *(Replaced by D9, 2026-10-13.)* **Mascot is a parametric SVG character** (Duolingo-style), not an AI image. Gemini picks the concept and its parameters; code draws every pose from one saved spec. | Owner's choice. Guarantees the same character in every pose (R15 AC), is transparent by nature, drops the image-model key. |
 | D5 | **Images are SVG templates rendered to PNG by code** (`@resvg/resvg-js`) with Noto fonts. No text in any AI image. | R6, CLAUDE.md. Mascot SVG composes into the same templates. T-7 must first prove Devanagari shaping (conjuncts, matras) on the T-8 strings; fallback is `@napi-rs/canvas`. |
 | D7 | **AI cost control:** tests always use fixtures (`AI_MODE=fixture` under vitest). Any live run estimated over $0.50 needs the owner's approval first. | Owner's rule. |
 | D6 | WhatsApp, Vercel and background removal come later. Each sits behind an interface with a mock until then. | Accounts not ready. Web flow is complete without WhatsApp (PRD §8). |
+| D8 | **Sign-in on Supabase uses the app's own magic links, not Supabase Auth emails** (2026-10-13). Links, the scanner-safe Continue step, rate limits and the signed session cookie (`AUTH_SECRET`) work as in the mock; links are tracked in `public.magic_links` (server only). Users are created and deleted with the Supabase Auth admin API; `public.auth_user_id_by_email()` finds an existing one. The database is reached over the transaction pooler with `pg`, and storage with `@supabase/supabase-js` (service role, private buckets). | One tested flow on both backends; sign-in email goes through the same sender as the weekly email (Resend, mock outbox until then). Supabase's built-in sender only reaches the project team, a few an hour. Rate limits counted from the table also work on serverless, unlike the in-memory mock ones. |
+| D9 | **Tween is the only mascot** (owner decision 2026-10-13; replaces D4's per-brand generator). (1) **App guide:** the live Tween from `vendor/tween-mascot-kit` (rig, state machine, movement, bubbles) runs inside the app, with scripted copy in `src/content/tween.json` and no AI. (2) **Brand mascot in posts:** each business gets Tween in its own scarf colour, drawn on the server by a pure SVG renderer (no CSS variables, so resvg can draw it) built from the same rig geometry and pose angles, and tested against the kit's reference PNGs. Gemini no longer designs mascots; it only writes the bubble line and picks a pose. | One consistent, high-quality character everywhere. The live rig is CSS-driven and can't run in resvg, hence the static renderer; the reference-image test keeps the two in step. |
+| D10 | **Desktop-first web app, mobile-compatible** (owner decision 2026-10-14). Signed-in pages use a full-width shell: left sidebar navigation from 1024 px, a top bar from 768 px, and the existing bottom-nav phone layout below 768 px. Pages use the width (post grid, side-by-side panels). Phone-specific features stay: the Share button and story formats on phones, Download and Copy on desktop (Req 17). | Owners will mainly work at a computer; phones must still work for approving from the email and sharing. |
 
 ## Overview
 
@@ -36,8 +39,8 @@ All app code goes through four interfaces in `src/lib/`. Nothing outside these f
 
 | Interface | Mock (now) | Real (later) |
 |---|---|---|
-| `db` | PGlite, persisted in `.data/pglite`, migrations from `supabase/migrations/` plus `supabase/mock/auth_stub.sql` applied on start | Supabase Postgres over the pooler (`postgres` driver) |
-| `auth` | Any Indian mobile number; OTP is `123456`; session is a signed cookie (`AUTH_SECRET`) valid 30 days | Supabase phone OTP; session via `@supabase/ssr` cookies |
+| `db` | PGlite, persisted in `.data/pglite`, migrations from `supabase/migrations/` plus `supabase/mock/auth_stub.sql` applied on start | Supabase Postgres over the transaction pooler (`pg` driver), same `set local role` per transaction (D8) |
+| `auth` | Email magic link (v2); links in `public.magic_links`; session is a signed cookie (`AUTH_SECRET`) | Same flow, same table and cookie; users created and deleted via the Supabase Auth admin API (D8) |
 | `storage` | `.data/storage/{bucket}/{brand_id}/...`, served by an API route that checks brand membership | Supabase Storage, private buckets, signed URLs |
 | `ai` | Gemini (Vertex) when credentials are set; fixture responses otherwise (tests always use fixtures) | Same |
 
@@ -127,3 +130,9 @@ Post/
 ## Environment
 
 See [.env.example](../.env.example). Missing keys select the mock: no Supabase keys → `DATA_BACKEND=mock`, no Gemini credentials → fixture AI responses.
+
+## Running against Supabase (H-7)
+
+- `npm run db:migrate` applies unapplied files from `supabase/migrations/` and makes sure the five private buckets exist, in one transaction. It is a trial run (rolled back) unless you add `-- --commit`. Applied files are recorded in `supabase_migrations.schema_migrations`, as the Supabase CLI does.
+- `npm run test:supabase` runs `tests/supabase/*` against the real project (RLS, storage, sign-in, account delete). It loads `.env.local`, then sets `DATA_BACKEND=supabase`, a random `AUTH_SECRET`, no Resend key and fixture AI inside the test process only. Test data is named `it-<random>@example.com` / `it-...` brands / brand ids starting `17e57007-`; each file removes what it made, and a sweep before and after the run fails the run if anything is left. A plain `npm test` skips them.
+- Each Supabase query is a network round trip, so `withUser` / `withService` send begin, role, claims and timeout as one message, then the work, then commit.

@@ -366,7 +366,7 @@ async function runClaimed(args: GenerateArgs, claim: Claimed, deps: GenerateDeps
           brand: { name: inputs.brand.name, colors, logo },
           photo,
           text: { headline: p.imageText.headline, subline: p.imageText.subline, cta: p.cta, bubble: p.bubble },
-          mascot: mascot ? mascotForRender(mascot.spec, p.pose) : null,
+          mascot: mascot ? mascotForRender(mascot.colors, p.pose) : null,
           seed: index,
           onWrite: (rel) => written.push(rel),
         });

@@ -1,68 +1,46 @@
-// Server side of the mascot flow (R15): eligibility, 3 concepts, pick + character
-// sheet, regenerate. Everything runs as the signed-in user (row-level security),
-// except usage counting. See docs/mascot.md.
+// Server side of the mascot (D9): the brand's Tween (its name and scarf colour), the character sheet and
+// the "use in posts" switch. There is no AI call: Tween is drawn by code. Everything runs as the signed-in
+// user (row-level security). See docs/architecture.md D9.
 
-import { generateJson } from '@/lib/ai/client';
+import { randomUUID } from 'node:crypto';
 import { findBlockedTerm } from '@/lib/ai/mascot-blocklist';
-import { buildMascotPrompt } from '@/lib/ai/prompts/mascot';
-import {
-  mascotConceptsJsonSchema,
-  mascotConceptsSchema,
-  mascotSpecSchema,
-  type MascotConcepts,
-  type MascotSpec,
-} from '@/lib/ai/schemas';
 import { BrandAccessError, requireBrandMember } from '@/lib/brand/current';
 import { getDb } from '@/lib/db';
 import { getStorage, type Storage } from '@/lib/storage';
-import { assertUnderDailyCap, failedCallUsd, recordUsage } from '@/lib/usage';
-import { assertUnderWeeklyCap } from '@/lib/usage/caps';
-import { keepGoodConcepts, type Concept } from './concepts';
+import { cleanHex, tweenColorsFor, type BrandColorsInput, type TweenColors } from './colors';
 import { computeEligibility, storeEligibility, type EligibilityInput, type StoredEligibility } from './eligibility';
 import { MascotError } from './errors';
-import { FIXTURE_CONCEPTS } from './fixtures';
+import { MAX_NAME_CHARS } from './limits';
 import { sheetStoredPath } from './paths';
 import { exportCharacterSheet } from './sheet';
+import { parseTweenSpec, TWEEN_NAME, type TweenSpec } from './spec';
 
-const WANTED = 3;
-const MAX_HINT = 300;
+const NAME_RE = /^[\p{L}\p{N}][\p{L}\p{M}\p{N} '’.-]*$/u;
 
 export interface MascotView {
   id: string;
-  status: 'concept' | 'active';
   name: string;
-  name_local: string;
-  personality: string;
-  why_it_fits: string;
-  spec: MascotSpec;
+  /** The scarf colour the owner chose, or null: the brand's colours decide. */
+  scarf: string | null;
   sheet_path: string | null;
 }
 
 interface MascotDbRow {
   id: string;
-  status: 'concept' | 'active' | 'discarded' | 'archived';
   name: string;
-  concept: { name_local?: string; personality?: string; why_it_fits?: string } | null;
+  concept: { sheet_colors?: string } | null;
   spec: unknown;
   sheet_path: string | null;
 }
 
-function toView(r: MascotDbRow): MascotView | null {
-  const spec = mascotSpecSchema.safeParse(r.spec);
-  if (!spec.success || (r.status !== 'concept' && r.status !== 'active')) return null;
-  return {
-    id: r.id,
-    status: r.status,
-    name: r.name,
-    name_local: r.concept?.name_local ?? '',
-    personality: r.concept?.personality ?? '',
-    why_it_fits: r.concept?.why_it_fits ?? '',
-    spec: spec.data,
-    sheet_path: r.sheet_path,
-  };
+const COLUMNS = 'id::text as id, name, concept, spec, sheet_path';
+
+function toView(r: MascotDbRow): MascotView {
+  return { id: r.id, name: r.name.trim() || TWEEN_NAME, scarf: parseTweenSpec(r.spec).scarf, sheet_path: r.sheet_path };
 }
 
-const COLUMNS = 'id, status::text as status, name, concept, spec, sheet_path';
+/** What the sheet files were drawn with, to tell when the brand's colours have changed since. */
+const sheetKey = (c: TweenColors) => `${c.scarf}|${c.coral}`.toLowerCase();
 
 // ---------------------------------------------------------------------------
 // Eligibility (R15a)
@@ -88,249 +66,159 @@ export async function getMascotEligibility(userId: string, brandId: string): Pro
   });
 }
 
+/** A regulated brand never gets a mascot; a formal one needs to confirm "Try anyway" before it first gets one. */
+function assertMayHave(e: StoredEligibility, hasMascot: boolean, tryAnyway: boolean | undefined): void {
+  if (e.reason === 'regulated') throw new MascotError('not_eligible');
+  if (!e.eligible && !hasMascot) {
+    if (!e.canOverride) throw new MascotError('not_eligible');
+    if (tryAnyway !== true) throw new MascotError('formal_needs_confirm');
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Reading
 // ---------------------------------------------------------------------------
 
-/** The active mascot (or null) and the open concepts, for the mascot screen. */
-export async function getMascotScreen(userId: string, brandId: string): Promise<{ active: MascotView | null; concepts: MascotView[] }> {
-  const rows = await getDb().withUser(userId, (tx) =>
-    tx.query<MascotDbRow>(
-      `select ${COLUMNS} from public.mascots
-        where brand_id = $1 and status in ('active', 'concept') order by created_at asc, id asc`,
-      [brandId],
-    ),
-  );
-  const views = rows.map(toView).filter((v): v is MascotView => v !== null);
-  return { active: views.find((v) => v.status === 'active') ?? null, concepts: views.filter((v) => v.status === 'concept') };
-}
-
-/** The brand's active mascot, or null. For templates and the generate pipeline (part B). */
-export async function getActiveMascot(userId: string, brandId: string): Promise<MascotView | null> {
-  return (await getMascotScreen(userId, brandId)).active;
-}
-
-
-// ---------------------------------------------------------------------------
-// Concepts (R15b, R15g)
-// ---------------------------------------------------------------------------
-
-export interface ConceptsResult {
-  concepts: MascotView[];
-  /** True when fewer than 3 concepts survived the checks. */
-  fewer: boolean;
-  /** How long the whole thing took, in ms (the AC is under 60 000). */
-  ms: number;
-}
-
-/** Test and dev hooks. Production code passes none. */
-export interface ConceptsDeps {
-  /** Replaces the fixture-mode answer (used only when the model is not live). May throw to simulate a failed call. */
-  fixture?: () => MascotConcepts;
-  now?: Date;
-}
-
-// One idea run is at most two calls (the second only when some ideas were rejected). With these
-// limits both fit inside the 60 seconds the owner is promised.
-const CALL = { temperature: 0.9, timeoutMs: 20_000, budgetMs: 25_000 } as const;
-const TOTAL_BUDGET_MS = 55_000;
-
 interface BrandInfo {
   business_name: string | null;
-  category: string | null;
-  city: string | null;
-  audience: string | null;
-  tone: string | null;
-  post_language: string;
-  colors: { primary?: string; secondary?: string; accent?: string } | null;
+  colors: BrandColorsInput | null;
+  mascot_in_posts: boolean;
 }
 
-/** Product names only (never prices) from the brand's facts. */
-async function loadBrandInfo(userId: string, brandId: string): Promise<{ info: BrandInfo; products: string[] }> {
+async function loadBrand(userId: string, brandId: string): Promise<{ info: BrandInfo; row: MascotDbRow | null }> {
   return getDb().withUser(userId, async (tx) => {
-    const [info] = await tx.query<BrandInfo>(
-      'select business_name, category, city, audience, tone, post_language, colors from public.brand_memory where brand_id = $1',
-      [brandId],
-    );
+    const [info] = await tx.query<BrandInfo>('select business_name, colors, mascot_in_posts from public.brand_memory where brand_id = $1', [brandId]);
     if (!info) throw new BrandAccessError();
-    const facts = await tx.query<{ label: string | null }>(
-      "select label from public.brand_facts where brand_id = $1 and active and kind = 'product' and label is not null order by created_at, id limit 8",
-      [brandId],
-    );
-    return { info, products: facts.map((f) => (f.label ?? '').trim()).filter(Boolean) };
+    const [row] = await tx.query<MascotDbRow>(`select ${COLUMNS} from public.mascots where brand_id = $1 and status = 'active'`, [brandId]);
+    return { info, row: row ?? null };
   });
 }
 
-/**
- * Makes up to 3 mascot concepts and saves them as `concept` rows (older open
- * concepts are discarded). Refuses before any AI call when the brand is not
- * eligible or the hint names something blocked. Throws MascotError,
- * BrandAccessError, DailyCapError, WeeklyCapError or AiError.
- */
-export async function generateMascotConcepts(
-  args: { userId: string; brandId: string; hint?: string; tryAnyway?: boolean },
-  deps: ConceptsDeps = {},
-): Promise<ConceptsResult> {
-  const t0 = Date.now();
-  const { userId, brandId } = args;
-  const now = deps.now ?? new Date();
-  await requireBrandMember(userId, brandId);
-  const { info, products } = await loadBrandInfo(userId, brandId);
-  const businessName = (info.business_name ?? '').trim();
+export interface MascotScreenData {
+  eligibility: StoredEligibility;
+  /** The brand's Tween, or null until the owner turns it on or saves a choice. */
+  mascot: MascotView | null;
+  /** brand_memory.mascot_in_posts: weekly posts use the mascot. */
+  inPosts: boolean;
+  /** The brand's palette, for the swatches. */
+  brandColors: BrandColorsInput;
+  /** The colours Tween is drawn in now (the mascot's, or the brand's before one is saved). */
+  colors: TweenColors;
+}
 
-  const elig = await getMascotEligibility(userId, brandId);
-  if (!elig.eligible) {
-    if (elig.reason === 'regulated' || !elig.canOverride) throw new MascotError('not_eligible');
-    if (!args.tryAnyway) throw new MascotError('formal_needs_confirm');
-  }
-
-  const hint = (args.hint ?? '').trim().slice(0, MAX_HINT);
-  // Checked in code first: a blocked hint costs no AI call. The business name is
-  // ignored so "Shri Ram Sweets" in a hint is not a hit.
-  if (findBlockedTerm(hint, [businessName])) throw new MascotError('blocked_hint');
-
-  // Both limits are checked once per run, before the first call. A run is one usage event.
-  await assertUnderDailyCap(brandId, now);
-  await assertUnderWeeklyCap(brandId, 'mascot', { now });
-
-  const prompt = buildMascotPrompt({
-    postLanguage: info.post_language || 'en',
-    businessName,
-    category: info.category ?? '',
-    city: info.city ?? '',
-    audience: info.audience ?? '',
-    tone: info.tone ?? '',
-    productNames: products,
-    colors: info.colors ?? {},
-    hint,
-  });
-
-  let usd = 0;
-  const callOnce = async (budgetMs: number) => {
-    try {
-      const { data, stats } = await generateJson({
-        system: prompt.system,
-        user: prompt.user,
-        zodSchema: mascotConceptsSchema,
-        jsonSchema: mascotConceptsJsonSchema,
-        temperature: CALL.temperature,
-        timeoutMs: Math.min(CALL.timeoutMs, budgetMs),
-        budgetMs,
-        logContext: { brandId },
-        fixture: deps.fixture ?? FIXTURE_CONCEPTS,
-      });
-      usd += stats?.usd ?? 0;
-      return data;
-    } catch (e) {
-      usd += failedCallUsd(e); // an answer that did not validate still cost money (H-2)
-      throw e;
-    }
+/** What the mascot screen shows. Before a mascot is saved, it previews Tween in the brand's colours. */
+export async function getMascotScreen(userId: string, brandId: string): Promise<MascotScreenData> {
+  const eligibility = await getMascotEligibility(userId, brandId);
+  const { info, row } = await loadBrand(userId, brandId);
+  const mascot = row ? toView(row) : null;
+  const colors = tweenColorsFor(info.colors, mascot?.scarf ?? null);
+  return {
+    eligibility,
+    mascot,
+    // A regulated brand never uses one, whatever an older setting says.
+    inPosts: info.mascot_in_posts && mascot !== null && eligibility.reason !== 'regulated',
+    brandColors: info.colors ?? {},
+    colors,
   };
+}
 
-  let good: Concept[];
-  try {
-    const first = await callOnce(CALL.budgetMs);
-    if (first.refused) throw new MascotError('refused', first.refusal_reason.trim());
-    good = keepGoodConcepts(first.concepts, businessName);
-
-    // Some ideas were rejected (a blocked name, a copied look): ask once more, if there is time.
-    const timeLeft = TOTAL_BUDGET_MS - (Date.now() - t0);
-    if (good.length < WANTED && timeLeft >= 10_000) {
-      try {
-        const second = await callOnce(Math.min(CALL.budgetMs, timeLeft));
-        if (!second.refused) good = keepGoodConcepts([...good, ...second.concepts], businessName);
-      } catch (e) {
-        // Show what we have; only fail when there is nothing to show.
-        if (good.length === 0) throw e;
-      }
-    }
-  } finally {
-    // The run was attempted, so it counts against the limits even if it failed.
-    await recordUsage(brandId, userId, 'mascot', usd);
-  }
-  good = good.slice(0, WANTED);
-  if (good.length === 0) throw new MascotError('none');
-
-  const rows = await getDb().withUser(userId, async (tx) => {
-    // New ideas replace any earlier open ones. The active mascot is not touched.
-    await tx.query("update public.mascots set status = 'discarded' where brand_id = $1 and status = 'concept'", [brandId]);
-    const out: MascotDbRow[] = [];
-    for (const c of good) {
-      const [row] = await tx.query<MascotDbRow>(
-        `insert into public.mascots (brand_id, status, name, concept, spec, created_by)
-         values ($1, 'concept', $2, $3::jsonb, $4::jsonb, $5)
-         returning ${COLUMNS}`,
-        [
-          brandId,
-          c.name.trim(),
-          JSON.stringify({ name: c.name.trim(), name_local: c.name_local, personality: c.personality, why_it_fits: c.why_it_fits }),
-          JSON.stringify(c.spec),
-          userId,
-        ],
-      );
-      out.push(row);
-    }
-    return out;
-  });
-  const concepts = rows.map(toView).filter((v): v is MascotView => v !== null);
-  return { concepts, fewer: concepts.length < WANTED, ms: Date.now() - t0 };
+/** The brand's active mascot (or null). */
+export async function getActiveMascot(userId: string, brandId: string): Promise<MascotView | null> {
+  const { row } = await loadBrand(userId, brandId);
+  return row ? toView(row) : null;
 }
 
 // ---------------------------------------------------------------------------
-// Pick + character sheet (R15c) and regenerate (R15e)
+// Saving
 // ---------------------------------------------------------------------------
 
+/** The owner's name for the character: short, plain letters, not on the blocklist. Empty means "Tween". */
+export function cleanMascotName(raw: unknown, businessName: string): string {
+  const name = typeof raw === 'string' ? raw.replace(/\s+/g, ' ').trim() : '';
+  if (!name) return TWEEN_NAME;
+  if ([...name].length > MAX_NAME_CHARS || !NAME_RE.test(name)) throw new MascotError('bad_name');
+  if (findBlockedTerm(name, [businessName])) throw new MascotError('blocked_name');
+  return name;
+}
+
 /**
- * Makes the chosen concept the active mascot: draws its 8 poses and the sheet
- * into storage, then in one transaction archives the previous active mascot,
- * activates this one and discards the other open concepts. If anything fails,
- * nothing changes (the old mascot stays active). Old posts keep their mascot_id.
+ * Saves the brand's Tween: its name and scarf colour (`undefined` keeps what it has; `null` for the scarf goes back
+ * to the brand's colours). Creates the mascot when there is none. Draws the character sheet and the pose files into
+ * storage first, so if that fails nothing changes. Old posts keep the images they were made with.
+ * Throws MascotError (not_eligible, formal_needs_confirm, bad_name, blocked_name, bad_color) or BrandAccessError.
  */
-export async function pickMascot(args: {
+export async function saveMascot(args: {
   userId: string;
   brandId: string;
-  mascotId: string;
+  name?: string;
+  scarf?: string | null;
+  tryAnyway?: boolean;
   storage?: Storage;
 }): Promise<MascotView> {
-  const { userId, brandId, mascotId } = args;
+  const { userId, brandId } = args;
   await requireBrandMember(userId, brandId);
+  const eligibility = await getMascotEligibility(userId, brandId);
+  const { info, row } = await loadBrand(userId, brandId);
+  assertMayHave(eligibility, row !== null, args.tryAnyway);
 
-  const [row] = await getDb().withUser(userId, (tx) =>
-    tx.query<MascotDbRow>(`select ${COLUMNS} from public.mascots where id = $1 and brand_id = $2`, [mascotId, brandId]),
-  );
-  if (!row) throw new MascotError('not_found');
-  if (row.status === 'active') {
-    const v = toView(row);
-    if (v) return v;
+  const businessName = (info.business_name ?? '').trim();
+  const name = args.name === undefined ? (row ? toView(row).name : TWEEN_NAME) : cleanMascotName(args.name, businessName);
+  let scarf: string | null;
+  if (args.scarf === undefined) scarf = row ? parseTweenSpec(row.spec).scarf : null;
+  else if (args.scarf === null) scarf = null;
+  else {
+    scarf = cleanHex(args.scarf);
+    if (!scarf) throw new MascotError('bad_color');
   }
-  if (row.status !== 'concept') throw new MascotError('not_found');
-  const spec = mascotSpecSchema.safeParse(row.spec);
-  if (!spec.success) throw new MascotError('bad_spec');
 
-  await exportCharacterSheet({
-    brandId,
-    mascotId,
-    spec: spec.data,
-    names: { name: row.name, name_local: row.concept?.name_local },
-    storage: args.storage ?? getStorage(),
-  });
+  const id = row?.id ?? randomUUID();
+  const colors = tweenColorsFor(info.colors, scarf);
+  await exportCharacterSheet({ brandId, mascotId: id, colors, name, storage: args.storage ?? getStorage() });
 
-  const picked = await getDb().withUser(userId, async (tx) => {
-    // Order matters: the unique index allows one active mascot per brand.
-    await tx.query("update public.mascots set status = 'archived' where brand_id = $1 and status = 'active'", [brandId]);
-    const [done] = await tx.query<MascotDbRow>(
-      `update public.mascots set status = 'active', sheet_path = $3
-        where id = $2 and brand_id = $1 and status = 'concept'
-        returning ${COLUMNS}`,
-      [brandId, mascotId, sheetStoredPath(brandId, mascotId)],
+  const spec: TweenSpec = { v: 2, base: 'tween', scarf };
+  const concept = { sheet_colors: sheetKey(colors) };
+  const saved = await getDb().withUser(userId, async (tx) => {
+    if (row) {
+      const [done] = await tx.query<MascotDbRow>(
+        `update public.mascots set name = $3, spec = $4::jsonb, concept = $5::jsonb, sheet_path = $6
+          where id = $2 and brand_id = $1 and status = 'active' returning ${COLUMNS}`,
+        [brandId, id, name, JSON.stringify(spec), JSON.stringify(concept), sheetStoredPath(brandId, id)],
+      );
+      if (!done) throw new MascotError('not_found');
+      return done;
+    }
+    const [made] = await tx.query<MascotDbRow>(
+      `insert into public.mascots (id, brand_id, status, name, concept, spec, sheet_path, created_by)
+       values ($1, $2, 'active', $3, $4::jsonb, $5::jsonb, $6, $7) returning ${COLUMNS}`,
+      [id, brandId, name, JSON.stringify(concept), JSON.stringify(spec), sheetStoredPath(brandId, id), userId],
     );
-    if (!done) throw new MascotError('not_found'); // rolls the archive back
-    await tx.query("update public.mascots set status = 'discarded' where brand_id = $1 and status = 'concept' and id <> $2", [brandId, mascotId]);
-    return done;
+    return made;
   });
-  const view = toView(picked);
-  if (!view) throw new MascotError('bad_spec');
-  return view;
+  return toView(saved);
+}
+
+/**
+ * Draws the sheet and pose files again when the brand's colours have changed since they were made (or an older
+ * mascot has none in the new style). Cheap when nothing changed. Returns true when it redrew.
+ */
+export async function refreshSheetIfStale(userId: string, brandId: string, storage: Storage = getStorage()): Promise<boolean> {
+  const { info, row } = await loadBrand(userId, brandId);
+  if (!row) return false;
+  const colors = tweenColorsFor(info.colors, parseTweenSpec(row.spec).scarf);
+  if (row.sheet_path && row.concept?.sheet_colors === sheetKey(colors) && parseTweenSpec(row.spec).v === 2) return false;
+  const view = toView(row);
+  await exportCharacterSheet({ brandId, mascotId: row.id, colors, name: view.name, storage });
+  const spec: TweenSpec = { v: 2, base: 'tween', scarf: view.scarf };
+  await getDb().withUser(userId, (tx) =>
+    tx.query("update public.mascots set spec = $3::jsonb, concept = $4::jsonb, sheet_path = $5 where id = $2 and brand_id = $1 and status = 'active'", [
+      brandId,
+      row.id,
+      JSON.stringify(spec),
+      JSON.stringify({ sheet_colors: sheetKey(colors) }),
+      sheetStoredPath(brandId, row.id),
+    ]),
+  );
+  return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -339,33 +227,35 @@ export async function pickMascot(args: {
 
 export interface MascotCard {
   eligibility: StoredEligibility;
-  /** The active mascot, or null. */
+  /** The brand's Tween, or null until it is first turned on. */
   active: { id: string; name: string } | null;
   /** brand_memory.mascot_in_posts: weekly posts use the mascot. */
   inPosts: boolean;
+  /** The colours Tween is drawn in now. */
+  colors: TweenColors;
 }
 
 export async function getMascotCard(userId: string, brandId: string): Promise<MascotCard> {
-  const eligibility = await getMascotEligibility(userId, brandId);
-  const [active, mem] = await getDb().withUser(userId, async (tx) => [
-    (await tx.query<{ id: string; name: string }>("select id::text as id, name from public.mascots where brand_id = $1 and status = 'active'", [brandId]))[0] ?? null,
-    (await tx.query<{ mascot_in_posts: boolean }>('select mascot_in_posts from public.brand_memory where brand_id = $1', [brandId]))[0],
-  ] as const);
-  if (!mem) throw new BrandAccessError();
-  // A regulated brand never uses one, whatever an older setting says.
-  return { eligibility, active, inPosts: mem.mascot_in_posts && active !== null && eligibility.reason !== 'regulated' };
+  const s = await getMascotScreen(userId, brandId);
+  return { eligibility: s.eligibility, active: s.mascot ? { id: s.mascot.id, name: s.mascot.name } : null, inPosts: s.inPosts, colors: s.colors };
 }
 
 /**
- * Switches "Use my mascot in posts". Turning it on needs an active mascot and a brand that may have
- * one. Turning it off always works. Posts already made are not changed.
+ * Switches "Use the mascot in my posts". Turning it on creates the brand's Tween when there is none (no AI call)
+ * and needs a brand that may have one (a formal brand must have confirmed "Try anyway"). Turning it off always
+ * works. Posts already made are not changed.
  */
-export async function setMascotInPosts(userId: string, brandId: string, on: boolean): Promise<boolean> {
+export async function setMascotInPosts(
+  userId: string,
+  brandId: string,
+  on: boolean,
+  opts: { tryAnyway?: boolean; storage?: Storage } = {},
+): Promise<boolean> {
   await requireBrandMember(userId, brandId);
   if (on) {
-    const card = await getMascotCard(userId, brandId);
-    if (card.eligibility.reason === 'regulated') throw new MascotError('not_eligible');
-    if (!card.active) throw new MascotError('none');
+    const { row } = await loadBrand(userId, brandId);
+    assertMayHave(await getMascotEligibility(userId, brandId), row !== null, opts.tryAnyway);
+    if (!row) await saveMascot({ userId, brandId, tryAnyway: opts.tryAnyway, storage: opts.storage });
   }
   const done = await getDb().withUser(userId, (tx) =>
     tx.query('update public.brand_memory set mascot_in_posts = $2 where brand_id = $1 returning brand_id', [brandId, on]),

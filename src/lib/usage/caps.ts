@@ -5,6 +5,7 @@
 // drawn by code). The "image generation per week" limit is therefore met trivially: there is no
 // image call to count or cap.
 
+import { ESTIMATED_BACKGROUND_USD } from "@/lib/ai/imagen-price";
 import { s } from "@/lib/i18n/strings";
 import { addDaysIso, weekStartFor } from "@/lib/occasions/dates";
 import { brandTimezone, weekCost, weekCounts } from "./weekly";
@@ -22,8 +23,14 @@ export const WEEKLY_UPLOAD_EXTRACTS = 40;
 export const WEEKLY_FACT_CHECKS = 30;
 /** Review replies (Req 26, stretch). */
 export const WEEKLY_REVIEW_REPLIES = 20;
-/** Mascot idea runs (V-25): one run is up to two model calls and counts as one. */
-export const WEEKLY_MASCOT_RUNS = 3;
+/** "Describe your post" runs (C-08): typed or spoken words turned into a brief. */
+export const WEEKLY_BRIEF_FROM_TEXT = 30;
+/** Post copy runs (C-16): the headline, captions and mascot line for one brief. The words are written once per brief. */
+export const WEEKLY_POST_COPY = 40;
+/** "Keep my look" style reads (C-17). */
+export const WEEKLY_STYLE_READS = 3;
+/** New Imagen backgrounds (C-18): each is generated once and then reused, so this only limits new ones. */
+export const WEEKLY_NEW_BACKGROUNDS = 6;
 
 /**
  * The call kinds a weekly limit applies to. They are `usage_kind` values.
@@ -33,7 +40,7 @@ export const WEEKLY_MASCOT_RUNS = 3;
  * does not use up the owner's WEEKLY_REWRITES. Its cost is still in the week's USD total
  * (`weekCost` sums every usage event).
  */
-export type WeeklyCapKind = "weekly_batch" | "rewrite" | "website_read" | "upload_extract" | "fact_check" | "mascot" | "review_reply";
+export type WeeklyCapKind = "weekly_batch" | "rewrite" | "website_read" | "upload_extract" | "fact_check" | "review_reply" | "brief_from_text" | "post_copy" | "style_read" | "image";
 
 export const WEEKLY_COUNT_CAPS: Record<WeeklyCapKind, number> = {
   weekly_batch: WEEKLY_BATCH_RUNS,
@@ -41,8 +48,11 @@ export const WEEKLY_COUNT_CAPS: Record<WeeklyCapKind, number> = {
   website_read: WEEKLY_WEBSITE_READS,
   upload_extract: WEEKLY_UPLOAD_EXTRACTS,
   fact_check: WEEKLY_FACT_CHECKS,
-  mascot: WEEKLY_MASCOT_RUNS,
   review_reply: WEEKLY_REVIEW_REPLIES,
+  brief_from_text: WEEKLY_BRIEF_FROM_TEXT,
+  post_copy: WEEKLY_POST_COPY,
+  style_read: WEEKLY_STYLE_READS,
+  image: WEEKLY_NEW_BACKGROUNDS,
 };
 
 /**
@@ -56,9 +66,11 @@ export const ESTIMATED_CALL_USD: Record<Exclude<WeeklyCapKind, "weekly_batch" | 
   rewrite: 0.005,
   website_read: 0.015,
   upload_extract: 0.005,
-  // A mascot run is one or two calls at about 0.004 each.
-  mascot: 0.015,
   review_reply: 0.005,
+  brief_from_text: 0.005, // one short Gemini call, about 0.002 expected
+  post_copy: 0.01, // one Gemini call with captions for up to 6 channels
+  style_read: 0.02, // 12 shrunk images in one call, about 0.01 measured
+  image: ESTIMATED_BACKGROUND_USD, // one Imagen image (price in imagen-price.ts) plus the text check
 };
 
 /** Thrown when a weekly limit is reached. `message` is plain words for the owner and says when it resets. */

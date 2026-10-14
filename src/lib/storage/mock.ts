@@ -47,6 +47,12 @@ export function createMockStorage(root: string = path.join(process.cwd(), ".data
       await rm(metaFile(bucket, p), { force: true });
     },
 
+    async signedUrl(bucket, p) {
+      resolveInBucket(root, bucket, p);
+      const base = (process.env.NEXT_PUBLIC_APP_URL?.trim() || "http://localhost:3000").replace(/\/+$/, "");
+      return `${base}/api/files/${bucket}/${p.split("/").map(encodeURIComponent).join("/")}`;
+    },
+
     async list(bucket, prefix) {
       return listFiles(path.resolve(root, bucket), resolvePrefixInBucket(root, bucket, prefix));
     },

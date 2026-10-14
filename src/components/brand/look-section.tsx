@@ -3,11 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveColorsAction, applyWebsiteLogoAction } from "@/app/(app)/brand/actions";
-import { LogoUploader, PalettePicker } from "@/components/brand-pickers";
-import { errorClass, hintClass, primaryButton, secondaryButton } from "@/components/ui";
+import { LogoUploader } from "@/components/brand-pickers";
+import { errorClass, primaryButton, secondaryButton } from "@/components/ui";
 import type { Palette } from "@/lib/brand/colors";
-import { isHexColor, samePalette } from "@/lib/brand/colors";
+import type { BrandKit, ThemeId } from "@/lib/design/types";
+import type { FontFace } from "@/lib/kit/font-css";
+import type { LogoInfo, LogoReport } from "@/lib/logo/store";
 import { s } from "@/lib/i18n/strings";
+import { KitEditor, LogoExtras } from "./look-kit";
 
 const t = s.brandV2.look;
 
@@ -21,76 +24,80 @@ function Swatch({ palette }: { palette: Palette }) {
   );
 }
 
-function asPalette(c: Partial<Palette>): Palette | null {
-  return isHexColor(c.primary) && isHexColor(c.secondary) && isHexColor(c.accent) ? { primary: c.primary, secondary: c.secondary, accent: c.accent } : null;
-}
-
-/** Logo (upload, replace, remove: the v1 uploader) and brand colours (the v1 palette picker). */
+/**
+ * The Look section: logo (the v1 uploader, plus the size warning and the white-background choice), then the
+ * brand kit editor (colours, fonts, style, default theme, text logo).
+ * `children` is shown between the logo and the kit editor: the "Keep my look" card mounts there.
+ */
 export function LookPanel({
   brandId,
   logoPath,
-  colors,
   logoPalette,
+  kit,
+  logo,
+  businessName,
+  fontFaces,
+  textLogoSvg,
+  themePreviews,
+  children,
 }: {
   brandId: string;
   logoPath: string | null;
-  colors: Partial<Palette>;
   /** A palette taken from the saved logo. */
   logoPalette: Palette | null;
+  kit: BrandKit;
+  logo: LogoInfo;
+  businessName: string;
+  fontFaces: FontFace[];
+  textLogoSvg: string | null;
+  themePreviews?: Partial<Record<ThemeId, string>>;
+  children?: React.ReactNode;
 }) {
   const router = useRouter();
   const [path, setPath] = useState(logoPath);
-  const [palette, setPalette] = useState<Partial<Palette>>(colors);
   const [fromLogo, setFromLogo] = useState<Palette | null>(logoPalette);
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-  const [pending, startTransition] = useTransition();
+  const [report, setReport] = useState<LogoReport | null>(null);
+  const [version, setVersion] = useState(0);
 
   // What the server holds changed (an offer was accepted, or a refresh): take it in.
-  const [seen, setSeen] = useState({ logoPath, colors, logoPalette });
-  if (seen.logoPath !== logoPath || seen.colors !== colors || seen.logoPalette !== logoPalette) {
-    setSeen({ logoPath, colors, logoPalette });
+  const [seen, setSeen] = useState({ logoPath, logoPalette });
+  if (seen.logoPath !== logoPath || seen.logoPalette !== logoPalette) {
+    setSeen({ logoPath, logoPalette });
     setPath(logoPath);
-    setPalette(colors);
     setFromLogo(logoPalette);
   }
-
-  function saveColors() {
-    const full = asPalette(palette);
-    if (!full) return;
-    setMessage(null);
-    startTransition(async () => {
-      const r = await saveColorsAction(brandId, full);
-      setMessage(r.ok ? { ok: true, text: t.colorsSaved } : { ok: false, text: r.message });
-    });
-  }
-
-  const full = asPalette(palette);
-  const saved = asPalette(colors);
 
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <h3 className="text-lg font-semibold">{t.logoTitle}</h3>
         <LogoUploader
+          key={version}
+          version={version || undefined}
           brandId={brandId}
           logoPath={path}
+          onUploaded={setReport}
           onChange={(next, suggested) => {
             setPath(next);
             setFromLogo(suggested);
+            if (!next) setReport(null);
             router.refresh();
           }}
         />
+        <LogoExtras brandId={brandId} logo={{ ...logo, logoPath: path }} report={report} onChosen={() => setVersion(Date.now())} />
       </div>
+      {children}
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold">{t.colorsTitle}</h3>
-        <p className={hintClass}>{t.colorsHint}</p>
-        <PalettePicker value={palette} onChange={(p) => setPalette(p)} logoPalette={fromLogo} />
-        <button type="button" className={secondaryButton} disabled={pending || !full || (saved !== null && samePalette(full, saved))} onClick={saveColors}>
-          {t.colorsSave}
-        </button>
-        <div role="status" aria-live="polite">
-          {message && <p className={message.ok ? "text-sm text-emerald-800" : errorClass}>{message.text}</p>}
-        </div>
+        <KitEditor
+          brandId={brandId}
+          kit={kit}
+          logoPalette={fromLogo}
+          hasLogo={path !== null}
+          businessName={businessName}
+          fontFaces={fontFaces}
+          textLogoSvg={textLogoSvg}
+          themePreviews={themePreviews}
+        />
       </div>
     </div>
   );

@@ -1,5 +1,9 @@
 import { Suspense } from "react";
 import { samePalette } from "@/lib/brand/colors";
+import { getDb } from "@/lib/db";
+import { availableFontFaces } from "@/lib/kit/fonts";
+import { getBrandKit } from "@/lib/kit/service";
+import { getLogoInfo, textLogoSvg } from "@/lib/logo";
 import { listFacts } from "@/lib/memory/facts";
 import { listOwnerDates } from "@/lib/occasions/owner-dates";
 import { getMascotCard } from "@/lib/mascot/service";
@@ -13,6 +17,7 @@ import { languageOptions } from "@/lib/setup/languages";
 import { regionsByCountry, timezonesByCountry } from "@/lib/setup/regions";
 import { DatesPanel } from "./dates-section";
 import { FactsSection } from "./facts-section";
+import { KeepMyLookCard } from "./keep-look-card";
 import { LookPanel, ThemeColorOffer, WebsiteLogoOffer } from "./look-section";
 import { MascotCard } from "./mascot-card";
 import { SettingsPanel } from "./settings-section";
@@ -42,14 +47,39 @@ export async function WebsiteLookExtras({ userId, brandId, hasLogo, colors }: { 
   );
 }
 
+/** The business name as posts show it, and its text logo drawn from the saved kit (null if it cannot be drawn). */
+async function nameAndTextLogo(userId: string, brandId: string, kit: Awaited<ReturnType<typeof getBrandKit>>) {
+  const [row] = await getDb().withUser(userId, (tx) => tx.query<{ name: string }>("select name from public.brands where id = $1", [brandId]));
+  const name = row?.name ?? "";
+  try {
+    return { name, svg: await textLogoSvg(name, kit) };
+  } catch (e) {
+    console.warn("[brand] could not draw the text logo", e instanceof Error ? e.message : e);
+    return { name, svg: null };
+  }
+}
+
 export async function LookBlock({ userId, brandId }: { userId: string; brandId: string }) {
   const look = await getLookBase(userId, brandId);
+  const kit = await getBrandKit(userId, brandId);
+  const [logo, text] = await Promise.all([getLogoInfo(userId, brandId, look.logoPath), nameAndTextLogo(userId, brandId, kit)]);
   return (
     <div className="space-y-5">
+      {/* "Keep my look / Try a fresh look" (C-17): reads only when the owner taps the button. */}
+      <KeepMyLookCard brandId={brandId} />
       <Suspense fallback={null}>
         <WebsiteLookExtras userId={userId} brandId={brandId} hasLogo={look.logoPath !== null} colors={look.colors} />
       </Suspense>
-      <LookPanel brandId={brandId} logoPath={look.logoPath} colors={look.colors} logoPalette={look.logoPalette} />
+      <LookPanel
+        brandId={brandId}
+        logoPath={look.logoPath}
+        logoPalette={look.logoPalette}
+        kit={kit}
+        logo={logo}
+        businessName={text.name}
+        fontFaces={availableFontFaces()}
+        textLogoSvg={text.svg}
+      />
     </div>
   );
 }
@@ -67,7 +97,7 @@ export async function DatesBlock({ userId, brandId }: { userId: string; brandId:
 /** The "Your mascot" card (V-25): status, link to /mascot, and the "use in posts" switch. */
 export async function MascotBlock({ userId, brandId }: { userId: string; brandId: string }) {
   const card = await getMascotCard(userId, brandId);
-  return <MascotCard brandId={brandId} reason={card.eligibility.reason} active={card.active} inPosts={card.inPosts} />;
+  return <MascotCard brandId={brandId} reason={card.eligibility.reason} active={card.active} inPosts={card.inPosts} colors={card.colors} />;
 }
 
 export async function SettingsBlock({ userId, brandId }: { userId: string; brandId: string }) {

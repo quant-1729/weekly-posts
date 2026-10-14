@@ -16,6 +16,7 @@ import { checkPostsAi, type AiStatement } from './ai';
 import { checkPostDeterministic } from './deterministic';
 import { flagId, mergeFlags } from './merge';
 import { findRepeats, HISTORY_DAYS, type HistoryCaption } from './repetition';
+import { checkUspRules, type UspRuleContext } from './usp-rules';
 import {
   AI_UNCHECKED_TEXT,
   REGULATED_REMINDER_TEXT,
@@ -31,6 +32,8 @@ export { findRepeats } from './repetition';
 export { checkPostDeterministic } from './deterministic';
 export { checkPostsAi } from './ai';
 export { withNumberDigits, normalizeNumberWords } from './number-words';
+export { checkUspRules, SUPERLATIVE_TERMS } from './usp-rules';
+export type { UspRuleContext, UspRulePost, UspRuleQr, UspRuleUsp } from './usp-rules';
 
 export interface GuardrailContext {
   /** Active facts with short ids f1, f2, ... in a stable order (created_at, id). */
@@ -134,8 +137,17 @@ export async function runGuardrail(args: {
   weekStart?: string;
   /** Add `repeat` flags for repeated phrases. Pass false on the first pass if you regenerate on a repeat. Default true. */
   flagRepeats?: boolean;
+  /** Compare the posts of this call with each other (a weekly batch). False for one brief's channels, which share wording on purpose. Default true. */
+  compareWithinCall?: boolean;
+  /** A brief whose own posts are not history (its channels and earlier drafts). */
+  excludeBriefId?: string;
   /** The exact facts the posts were generated from (same ids as the prompt). Default: reload them in the same order. */
   facts?: WeeklyFact[];
+  /**
+   * Per post (same order): the brief's USPs and QR, to run the per-USP rules (C-12). Posts without a
+   * brief pass undefined. The brand's active payment addresses are loaded here when not given.
+   */
+  uspRules?: Array<UspRuleContext | undefined>;
   /** Fixture mode only (tests and offline dev). */
   aiFixture?: V2FactCheck | (() => V2FactCheck);
   /** Time limit for one attempt of the AI check, in ms. Default 25 000. If it runs out, the posts get the "facts not checked" flag. */
@@ -149,20 +161,33 @@ export async function runGuardrail(args: {
   if (args.posts.length === 0) return [];
   const ref = args.weekStart ?? isoDate(now);
 
-  const { ctx, history } = await getDb().withUser(args.userId, async (tx) => {
+  const { ctx, history, paymentAddresses } = await getDb().withUser(args.userId, async (tx) => {
     const ctx = await loadContext(tx, args.brandId);
+    const paymentAddresses = args.uspRules?.some(Boolean)
+      ? (await tx.query<{ address: string }>("select address from public.payment_ids where brand_id = $1 and status = 'active'", [args.brandId])).map((r) => r.address)
+      : [];
     if (args.facts) ctx.facts = args.facts;
     const own = new Set(args.posts.map((p) => p.id).filter((x): x is string => Boolean(x)));
+    // History: weekly posts (by their week) and posts made from a brief on /create (by the day they
+    // were made), from the last 28 days. A brief's own posts (its other channels, earlier drafts) are
+    // never history for that brief.
     const rows = await tx.query<{ id: string; caption: string; week_start: string }>(
       `select p.id::text as id, p.caption, b.week_start::text as week_start
          from public.posts p
          join public.weekly_batches b on b.id = p.batch_id and b.brand_id = p.brand_id
         where p.brand_id = $1 and p.caption is not null and p.status <> 'skipped'
-          and b.week_start >= $2::date and b.week_start <= $3::date`,
-      [args.brandId, addDays(ref, -HISTORY_DAYS), ref],
+          and b.week_start >= $2::date and b.week_start <= $3::date
+       union all
+       select p.id::text, p.caption, p.created_at::date::text
+         from public.posts p
+        where p.brand_id = $1 and p.batch_id is null and p.brief_id is not null
+          and p.caption is not null and p.status <> 'skipped' and p.slide_index is null
+          and ($4::uuid is null or p.brief_id <> $4::uuid)
+          and p.created_at::date >= $2::date and p.created_at::date <= $3::date`,
+      [args.brandId, addDays(ref, -HISTORY_DAYS), ref, args.excludeBriefId ?? null],
     );
     const history: HistoryCaption[] = rows.filter((r) => !own.has(r.id)).map((r) => ({ caption: r.caption, weekStart: r.week_start }));
-    return { ctx, history };
+    return { ctx, history, paymentAddresses };
   });
 
   const regulated = ctx.regulated !== 'none';
@@ -176,7 +201,7 @@ export async function runGuardrail(args: {
     findRepeats({
       candidate: post.caption,
       history,
-      batchOthers: args.posts.filter((_, k) => k !== i).map((p) => p.caption),
+      batchOthers: args.compareWithinCall === false ? [] : args.posts.filter((_, k) => k !== i).map((p) => p.caption),
       facts: ctx.facts,
       weekStart: ref,
     }),
@@ -213,6 +238,18 @@ export async function runGuardrail(args: {
       confirmed: confirmedFor(i),
       now,
     });
+    const rules = args.uspRules?.[i];
+    if (rules) {
+      const have = new Set(flags.map((f) => f.id));
+      const extra = checkUspRules({
+        ...rules,
+        activePaymentAddresses: rules.activePaymentAddresses ?? paymentAddresses,
+        post,
+        regulated: ctx.regulated,
+        now,
+      });
+      for (const f of extra) if (!have.has(f.id)) flags.push(f);
+    }
     if (args.flagRepeats !== false) {
       for (const phrase of repeats[i]) {
         flags.push({ id: flagId('caption', 'repeat', phrase), text: phrase, kind: 'repeat', field: 'caption', layer: 'code', regulated: false, highlight: post.caption.includes(phrase), status: 'open', decided_at: null });

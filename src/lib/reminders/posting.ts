@@ -149,6 +149,7 @@ export async function dueReminders(now: Date = new Date()): Promise<DueReminder[
         where b.reminder_sent_at is null and b.status = 'ready'
           and p.status = 'approved' and p.posted_at is null and p.approved_at is not null
           and m.email_unsubscribed_at is null
+          and not exists (select 1 from public.queue_settings qs where qs.brand_id = b.brand_id and qs.paused) -- S-6: the queue's pause switch stops reminders too
         group by b.id, b.brand_id, b.week_start, m.timezone, m.email_paused_until
        having min(p.approved_at) <= $1::timestamptz and min(p.approved_at) > $2::timestamptz
         order by min(p.approved_at), b.id`,

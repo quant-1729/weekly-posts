@@ -18,6 +18,7 @@ import { confirmationNameFor, namesMatch } from "@/lib/account/request-delete";
 import { signOut } from "@/lib/auth";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
 import { s } from "@/lib/i18n/strings";
+import { publicUrl } from "@/lib/links/public-url";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
   const session = await verifySession(request.cookies.get(SESSION_COOKIE)?.value);
   if (session?.sub === payload.uid) await signOut();
 
-  const url = request.nextUrl.clone();
+  const url = publicUrl(request); // behind Cloud Run's proxy the request's own host is internal (0.0.0.0:8080)
   url.pathname = "/account/deleted";
   url.search = "";
   const res = harden(NextResponse.redirect(url, 303));

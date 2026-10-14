@@ -26,6 +26,8 @@ export interface RobotsRules {
   source: RobotsSource;
   /** True when the URL (path plus query) may be fetched. */
   isAllowed(url: URL | string): boolean;
+  /** Absolute URLs from "Sitemap:" lines (any group), as written in the file. */
+  sitemaps: string[];
 }
 
 function toRegex(pattern: string): RegExp {
@@ -47,9 +49,10 @@ function normalisePattern(p: string): string {
   return p.replace(/[^\x00-\x7f]+/g, (m) => encodeURIComponent(m));
 }
 
-function makeRules(rules: Rule[], source: RobotsSource): RobotsRules {
+function makeRules(rules: Rule[], source: RobotsSource, sitemaps: string[] = []): RobotsRules {
   return {
     source,
+    sitemaps,
     isAllowed(input) {
       const url = typeof input === "string" ? new URL(input) : input;
       const path = (url.pathname || "/") + url.search;
@@ -85,6 +88,7 @@ export function parseRobots(text: string, token: string = ROBOTS_TOKEN): RobotsR
   const groups: Group[] = [];
   let current: Group | null = null;
   let lastWasAgent = false;
+  const sitemaps: string[] = [];
   const body = text.replace(/^﻿/, "").slice(0, MAX_ROBOTS_BYTES);
 
   for (const rawLine of body.split(/\r\n|\r|\n/)) {
@@ -95,6 +99,10 @@ export function parseRobots(text: string, token: string = ROBOTS_TOKEN): RobotsR
     const field = line.slice(0, colon).trim().toLowerCase();
     const value = line.slice(colon + 1).trim();
 
+    if (field === "sitemap") {
+      if (/^https?:\/\//i.test(value) && sitemaps.length < 10) sitemaps.push(value);
+      continue; // does not end a user-agent group
+    }
     if (field === "user-agent") {
       if (!current || !lastWasAgent) {
         current = { agents: [], rules: [] };
@@ -110,7 +118,7 @@ export function parseRobots(text: string, token: string = ROBOTS_TOKEN): RobotsR
       const pattern = normalisePattern(value);
       current.rules.push({ allow: field === "allow", pattern, regex: toRegex(pattern) });
     }
-    // sitemap, crawl-delay and unknown fields are ignored
+    // crawl-delay and unknown fields are ignored
   }
 
   const mine = token.toLowerCase();
@@ -119,6 +127,7 @@ export function parseRobots(text: string, token: string = ROBOTS_TOKEN): RobotsR
   return makeRules(
     chosen.flatMap((g) => g.rules),
     "rules",
+    sitemaps,
   );
 }
 

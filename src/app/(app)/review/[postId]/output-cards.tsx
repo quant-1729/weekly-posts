@@ -43,7 +43,7 @@ export function OutputCards({ initial }: { initial: ReviewOutput[] }) {
   }
 
   return (
-    <>
+    <div className="space-y-4 md:grid md:grid-cols-2 md:items-start md:gap-4 md:space-y-0">
       {outputs.map((o) => {
         const open = o.flags.filter((f) => f.status === "open");
         const label = s.review.channels[o.channel];
@@ -131,6 +131,6 @@ export function OutputCards({ initial }: { initial: ReviewOutput[] }) {
           </article>
         );
       })}
-    </>
+    </div>
   );
 }

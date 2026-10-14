@@ -57,7 +57,7 @@ export async function applyWebsiteUrl(tx: Tx, brandId: string, url: string): Pro
   if ((prev.website_url ?? "") === url) return false;
   await tx.query(
     `update public.brand_memory
-        set website_url = $2, website_status = 'none', website_read_at = null
+        set website_url = $2, website_status = 'none', website_read_at = null, website_read_reason = null
       where brand_id = $1`,
     [brandId, url === "" ? null : url],
   );
@@ -100,7 +100,7 @@ export async function completeSetupV2(userId: string, raw: unknown): Promise<Com
          country = $5, region = $6, city = $7, timezone = $8,
          goal = $9::public.goal_v2, tone = $10, post_language = $11, minutes_per_post = $12,
          schedule_weekday = $13, schedule_time = $14::time, link_destination = $15,
-         setup_completed_at = now()
+         setup_completed_at = now(), setup_transcript = null -- the resume draft (draft.ts) is no longer needed
        where brand_id = $1
        returning brand_id`,
       [

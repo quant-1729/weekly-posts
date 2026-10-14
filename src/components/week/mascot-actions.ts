@@ -11,11 +11,11 @@ import type { PostActionResult } from "./actions";
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Per-post mascot choice from the dashboard editor (V-25, old R15e): show or hide the brand's
- * mascot on this post, and what it says. The same edit operation as the emailed edit page.
+ * Per-post mascot choice from the dashboard editor (V-25, D9): show or hide the brand's
+ * mascot on this post, how it stands (one of the 7 post poses) and what it says. The same edit operation as the emailed edit page.
  * Hiding sets the post's mascot_id to null and redraws the pictures without it.
  */
-export async function savePostMascotAction(weekStart: string, postId: string, show: boolean, bubble: string): Promise<PostActionResult> {
+export async function savePostMascotAction(weekStart: string, postId: string, show: boolean, bubble: string, pose?: string): Promise<PostActionResult> {
   try {
     const user = await getCurrentUser();
     if (!user) return { ok: false, message: s.approvals.errors.signedOut };
@@ -28,7 +28,7 @@ export async function savePostMascotAction(weekStart: string, postId: string, sh
       brandId: brand.id,
       postId,
       actor: { via: "dashboard", userId: user.id },
-      input: { image_text: { bubble: typeof bubble === "string" ? bubble : "" }, showMascot: show === true },
+      input: { image_text: { bubble: typeof bubble === "string" ? bubble : "", ...(typeof pose === "string" ? { pose } : {}) }, showMascot: show === true },
     });
     const view = await loadWeekView(user.id, brand.id, weekStart);
     if (!r.ok) return { ok: false, message: r.message, errors: r.errors, view };

@@ -5,7 +5,7 @@ import { handleLinkGet, handleLinkPost } from "@/lib/links/dispatch";
 import { registerLinkHandler } from "@/lib/links/handlers";
 import { postForm } from "@/lib/links/page";
 import { registerApprovalLinkHandlers } from "@/lib/approvals/link-handlers";
-import { jtiHash, signLink, verifyLink } from "@/lib/links/tokens";
+import { appBase, jtiHash, signLink, verifyLink } from "@/lib/links/tokens";
 import { GET as oneClickGet, POST as oneClickPost } from "@/app/api/email/unsubscribe/route";
 import { isPublicPath } from "@/lib/auth/public-paths";
 import { cookieOf, nonceOf, openLink, openThenPress, pressLink, seedReadyWeek, type SeededWeek } from "./helpers";
@@ -383,7 +383,8 @@ describe("one-click unsubscribe (RFC 8058)", () => {
     const token = await sign("unsubscribe");
     const res = await oneClickGet(new NextRequest(url(token)));
     expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toBe(`http://localhost:3100/e/${token}`);
+    // Redirects start from the public app address, not the request's own host (Cloud Run serves on 0.0.0.0:8080).
+    expect(res.headers.get("location")).toBe(new URL(`/e/${token}`, appBase()).toString());
     expect((await memory(week.brandId)).unsub).toBeNull();
     const page = await (await openLink(token)).text();
     expect(page).toContain("Stop weekly emails?");

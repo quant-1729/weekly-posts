@@ -1,24 +1,26 @@
 # Weekly Posts (working name; was PostMitra)
 
-Weekly brand-memory content assistant for small businesses worldwide: every week the owner gets an email with 3-5 ready, on-brand posts to approve, edit or skip through no-login links. Spec: `docs/6-prd-v2.md` (Req 1-26). Task list: `docs/8-build-plan-v2.md`. The v1 (India/WhatsApp) docs `docs/6-prd.md` and `docs/8-build-plan.md` are kept as history.
+Design and posting assistant for small businesses worldwide: **details first, then design**. The owner (with or without a website, Instagram or YouTube) fills a short brief (USPs, contact blocks, QR, dates), gets on-brand post designs drawn by code, and the posts are scheduled and published one at a time after approval. Spec: `docs/6-prd-v3.md`. Approved change list: `docs/9-changes-v3.md`. Task list: `docs/8-build-plan-v3.md`. Earlier specs (`docs/6-prd-v2.md`, `docs/6-prd.md`) and plans are kept as history; v3 wins where they differ.
 
 ## Stack
 
-Next.js (App Router, TypeScript) on Vercel; Supabase (auth by email magic link, Postgres with RLS, storage), with a local mock backend until Supabase is connected; Gemini via Vertex AI; Resend for email (mock outbox until a sending domain exists); Vercel Cron for weekly generation.
+Next.js (App Router, TypeScript), desktop-first and responsive; Google Cloud: Gemini, Imagen and Veo on Vertex AI, Speech-to-Text, Text-to-Speech, Cloud Translation, BigQuery, Cloud Storage, Cloud Run + Cloud Scheduler (moving from Vercel); Supabase Postgres with row-level security and app-managed magic-link sign-in (local mock backend for development and tests); Resend for email (mock outbox until a sending domain exists); Meta and YouTube APIs for import and publishing.
 
 ## How work is split
 
-- The main session (Opus) is the orchestrator. It plans, owns the schema and AI prompts, and reviews.
+- The main session (Opus) is the orchestrator. It plans, owns the schema (migrations), the shared domain types (`src/lib/usps/types.ts`, `src/lib/briefs/types.ts`) and the AI prompts, and reviews.
 - Delegate implementation of a task to the `builder` subagent (Sonnet), one task ID at a time.
 - Delegate data files, test sets, test runs, docs and lint fixes to the `helper` subagent (Haiku).
 - Run independent tasks in parallel only when they touch different files.
-- After each builder task, the orchestrator checks the result against that requirement's acceptance criteria in the PRD before marking it done in `docs/8-build-plan-v2.md`.
+- After each builder task, the orchestrator checks the result against the acceptance criteria in the PRD before marking it done in `docs/8-build-plan-v3.md`.
 
 ## Rules
 
-- AI images only as abstract backgrounds, never depicting the owner's products, premises or people. Never generate text inside AI images; render all text on images with code and Noto fonts.
-- Posts may only state prices, offers, hours, claims and contact details found in brand memory; anything else is flagged "please check" (Req 11).
+- AI images only as abstract backgrounds, never depicting the owner's products, premises or people. Never generate text inside AI images; render all text, logos and QR codes with code and Noto (or shipped open-licence) fonts.
+- Posts may only state prices, offers, dates, ratings, claims and contact details that come from the owner's brief or brand profile; anything else is flagged "please check".
+- Payment IDs (e.g. UPI) are typed by the owner only, confirmed by email before use, and never sent to, written, edited or suggested by AI. A rendered payment QR must decode to exactly the confirmed ID.
+- Nothing is published or delivered without the owner's approval (unless they turned on auto-approve for posts with no flags).
 - Every table has row-level security; data is scoped by brand.
-- Secrets live in `.env.local` only.
-- Any AI run estimated over $0.50 needs the owner's approval first; tests use fixtures.
-- Keep scope to the PRD (plus the owner-approved mascot extra); anything new goes to the orchestrator first.
+- Secrets live in `.env.local` only (Secret Manager in the cloud); publishing tokens are encrypted at rest.
+- Any AI run estimated over $0.50 needs the owner's approval first (Imagen and Veo included); tests use fixtures.
+- Keep scope to PRD v3 and the approved change list; anything new goes to the orchestrator first.

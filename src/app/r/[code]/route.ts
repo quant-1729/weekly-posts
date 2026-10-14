@@ -2,6 +2,7 @@ import { after } from "next/server";
 import { isBotUserAgent, isPrefetch, firstClickInWindow } from "@/lib/shortlinks/bots";
 import { pickDestination } from "@/lib/shortlinks/destination";
 import { findShortLink, recordClick } from "@/lib/shortlinks/resolve";
+import { isQrScanRequest } from "@/lib/qr/link";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,8 +29,13 @@ async function handle(req: Request, ctx: { params: Promise<{ code: string }> }):
   const target = await findShortLink(code);
   if (!target) return notFound();
 
+  // A QR scan (`?q=1`) goes to the URL chosen for the QR in the post's brief, when there is one.
+  const viaQr = isQrScanRequest(req.url);
+  const qrDestination = viaQr && target.qrUrl ? pickDestination({ linkDestination: target.qrUrl, websiteUrl: null, channel: "qr", postCode: target.postCode }) : null;
+
   // No destination at all: the public card (relative Location, so it is right behind any proxy).
   const location =
+    qrDestination ??
     pickDestination({
       linkDestination: target.linkDestination,
       websiteUrl: target.websiteUrl,
@@ -44,7 +50,7 @@ async function handle(req: Request, ctx: { params: Promise<{ code: string }> }):
     req.method !== "HEAD" && !isPrefetch(req.headers) && !isBotUserAgent(ua) && firstClickInWindow(ua, target.postId);
   if (countable) {
     const work = () =>
-      recordClick({ postId: target.postId, brandId: target.brandId, userAgent: ua }).catch((e) =>
+      recordClick({ postId: target.postId, brandId: target.brandId, userAgent: ua, viaQr }).catch((e) =>
         console.error("[shortlinks] click not saved", e instanceof Error ? e.message : e),
       );
     try {

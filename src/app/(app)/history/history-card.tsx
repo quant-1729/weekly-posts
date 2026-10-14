@@ -14,7 +14,7 @@ const STATUS_STYLE: Record<HistoryPost["status"], string> = {
 const actionClass =
   "flex min-h-11 flex-1 items-center justify-center rounded-lg border border-stone-300 bg-white px-3 text-sm font-medium text-stone-800";
 
-/** One past post: opens its review page; "Use again" and "Download" sit underneath. */
+/** One past post: opens its review page; "Download" sits underneath. */
 export function HistoryCard({ post, brandName }: { post: HistoryPost; brandName: string }) {
   const createdAt = new Date(post.createdAt);
   const downloads = postDownloads({
@@ -22,7 +22,6 @@ export function HistoryCard({ post, brandName }: { post: HistoryPost; brandName:
     createdAt,
     outputs: post.outputs.map((o) => ({ channel: o.channel, imagePath: o.imagePath })),
   });
-  const failed = post.status === "failed";
 
   return (
     <li className="rounded-xl border border-stone-200 bg-white">
@@ -57,9 +56,6 @@ export function HistoryCard({ post, brandName }: { post: HistoryPost; brandName:
       </Link>
 
       <div className="flex gap-2 border-t border-stone-200 p-2">
-        <Link href={`/create?from=${post.id}`} className={actionClass}>
-          {failed ? s.history.tryAgain : s.history.useAgain}
-        </Link>
         {downloads.length > 0 ? (
           <details className="relative flex-1">
             <summary className={`${actionClass} cursor-pointer list-none`}>{s.history.download}</summary>

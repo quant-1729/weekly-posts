@@ -1,4 +1,6 @@
-import { PGlite } from "@electric-sql/pglite";
+// Type-only at load: PGlite (about 21 MB) is imported when a mock database is first created, so a
+// production server (DATA_BACKEND=supabase) never loads it.
+import type { PGlite } from "@electric-sql/pglite";
 import { readdir, readFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { Db, Tx } from "./types";
@@ -47,23 +49,11 @@ function wrap(t: PgTx): Tx {
 /**
  * Mock-only SQL, applied once each and recorded in mock_meta.applied.
  * - auth_users_email: an older .data/pglite applied a stub without auth.users.email.
- * - magic_links: single-use ids of emailed sign-in links (mock sign-in only; real
- *   Supabase Auth tracks this itself). Lives in mock_meta, NOT public.
  */
 const MOCK_STEPS: { name: string; sql: string }[] = [
   {
     name: "mock/auth_users_email",
     sql: "alter table auth.users add column if not exists email text unique;",
-  },
-  {
-    name: "mock/magic_links",
-    sql: `create table if not exists mock_meta.magic_links (
-      jti         text primary key,
-      email       text not null,
-      expires_at  timestamptz not null,
-      used_at     timestamptz,
-      created_at  timestamptz not null default now()
-    );`,
   },
 ];
 
@@ -105,6 +95,7 @@ async function applyAll(pg: PGlite, supabaseDir: string): Promise<void> {
 
 export async function createMockDb(opts: MockDbOptions = {}): Promise<MockDb> {
   const supabaseDir = opts.supabaseDir ?? path.join(process.cwd(), "supabase");
+  const { PGlite } = await import("@electric-sql/pglite");
   let pg: PGlite;
   if (opts.dataDir) {
     await mkdir(path.dirname(opts.dataDir), { recursive: true });

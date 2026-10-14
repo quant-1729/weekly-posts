@@ -31,6 +31,8 @@ const photo = (id: string, hasPeople: boolean | null, usable: boolean | null = t
   width: 100,
   height: 100,
   createdAt: "2026-10-13T00:00:00.000Z",
+  source: "upload" as const,
+  sourceUrl: null,
 });
 
 describe("upload components", () => {
@@ -49,7 +51,7 @@ describe("upload components", () => {
     const html = renderToString(
       createElement(PastPosts, {
         brandId: BRAND,
-        initialPosts: [{ id: "p1", text: "Fresh bread today", storagePath: null, imageUrl: null, createdAt: "2026-10-13T00:00:00.000Z" }],
+        initialPosts: [{ id: "p1", text: "Fresh bread today", storagePath: null, imageUrl: null, createdAt: "2026-10-13T00:00:00.000Z", source: "upload", sourceUrl: null }],
       }),
     );
     expect(html).toContain(s.uploads.pastPosts.pasteText);

@@ -20,7 +20,7 @@ export const EMAIL_IMAGE_QUALITY = 82;
 
 const NOT_FOUND = () => new Response("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
 
-export const EMAIL_IMAGE_FORMATS = ["square", "vertical", "landscape"] as const;
+export const EMAIL_IMAGE_FORMATS = ["square", "vertical", "landscape", "portrait", "thumbnail", "banner"] as const;
 export type EmailImageFormat = (typeof EMAIL_IMAGE_FORMATS)[number];
 export const PHOTO_THUMB_PX = 240;
 

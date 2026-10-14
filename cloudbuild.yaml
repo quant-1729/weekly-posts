@@ -1,0 +1,105 @@
+# Cloud Build: build the image, push it to Artifact Registry, deploy it to Cloud Run (C-31).
+# Run from the project folder:
+#   gcloud builds submit --config cloudbuild.yaml \
+#     --substitutions=_NEXT_PUBLIC_APP_URL=https://app.example.com,_NEXT_PUBLIC_SUPABASE_URL=...,_NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+# docs/deploy.md has the one-time setup (service accounts, secrets, repository) and the full command.
+#
+# Substitutions (all start with an underscore). The first three are baked into the browser code at build time.
+substitutions:
+  _REGION: australia-southeast1        # next to the Supabase database in Sydney; Cloud Run and Artifact Registry use it too
+  _SERVICE: weekly-posts               # Cloud Run service name
+  _REPO: weekly-posts                  # Artifact Registry repository (created once, see docs/deploy.md)
+  _RUNTIME_SA: weekly-posts-run        # service account the app runs as (name only; the domain is added below)
+  _NEXT_PUBLIC_APP_URL: ""             # the public address, no trailing slash
+  _NEXT_PUBLIC_SUPABASE_URL: ""
+  _NEXT_PUBLIC_SUPABASE_ANON_KEY: ""   # the anon key is public by design
+  _GCS_BUCKET_PREFIX: ""               # e.g. weeklyposts-prod -> buckets weeklyposts-prod-renders ...
+  _EMAIL_FROM: ""                      # e.g. Weekly Posts <hello@your-domain.com>
+  _EMAIL_REPLY_TO: ""
+  _ADMIN_EMAILS: ""                    # comma-separated sign-in emails allowed to open /admin; blank = nobody
+  _GOOGLE_CLOUD_LOCATION: global
+  _INSTAGRAM_LOOKUP_USER_ID: ""
+  _META_GRAPH_VERSION: ""
+  _META_APP_ID: ""                     # Meta app id (public); the secret goes in Secret Manager as META_APP_SECRET
+  _INSTAGRAM_APP_ID: ""                # blank = use the Meta app id
+  _IMAGEN_MODEL: ""                    # blank = the default Imagen model
+  # Secret Manager secrets that are optional or depend on your choices, as ENV=SECRET:VERSION pairs separated by commas.
+  # Default: the Google key file (C-33). Make it empty for keyless Cloud Run (docs/deploy.md section 4).
+  # Add READER_API_KEY=READER_API_KEY:latest,INSTAGRAM_LOOKUP_TOKEN=INSTAGRAM_LOOKUP_TOKEN:latest when you have them,
+  # and META_APP_SECRET=META_APP_SECRET:latest (+ INSTAGRAM_APP_SECRET=INSTAGRAM_APP_SECRET:latest) for connecting accounts.
+  _EXTRA_SECRETS: GOOGLE_SERVICE_ACCOUNT_JSON=GOOGLE_SERVICE_ACCOUNT_JSON:latest
+
+options:
+  machineType: E2_HIGHCPU_8            # next build needs the memory
+  logging: CLOUD_LOGGING_ONLY
+
+timeout: 1800s
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - --build-arg=NEXT_PUBLIC_APP_URL=${_NEXT_PUBLIC_APP_URL}
+      - --build-arg=NEXT_PUBLIC_SUPABASE_URL=${_NEXT_PUBLIC_SUPABASE_URL}
+      - --build-arg=NEXT_PUBLIC_SUPABASE_ANON_KEY=${_NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${BUILD_ID}
+      - --tag=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest
+      - .
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args: [push, --all-tags, "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}"]
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        # Plain settings. "^|^" makes | the separator, so values may contain commas, spaces and @ (email addresses).
+        ENVS="^|^NEXT_PUBLIC_APP_URL=${_NEXT_PUBLIC_APP_URL}|DATA_BACKEND=supabase|STORAGE_BACKEND=gcs"
+        ENVS="$$ENVS|GCS_BUCKET_PREFIX=${_GCS_BUCKET_PREFIX}|GOOGLE_GENAI_USE_VERTEXAI=true"
+        ENVS="$$ENVS|GOOGLE_CLOUD_PROJECT=${PROJECT_ID}|GOOGLE_CLOUD_LOCATION=${_GOOGLE_CLOUD_LOCATION}"
+        ENVS="$$ENVS|NEXT_PUBLIC_SUPABASE_URL=${_NEXT_PUBLIC_SUPABASE_URL}|NEXT_PUBLIC_SUPABASE_ANON_KEY=${_NEXT_PUBLIC_SUPABASE_ANON_KEY}"
+        # Optional plain settings: only set when given (a blank value is the same as unset in this app).
+        if [ -n "${_EMAIL_FROM}" ]; then ENVS="$$ENVS|EMAIL_FROM=${_EMAIL_FROM}"; fi
+        if [ -n "${_EMAIL_REPLY_TO}" ]; then ENVS="$$ENVS|EMAIL_REPLY_TO=${_EMAIL_REPLY_TO}"; fi
+        if [ -n "${_ADMIN_EMAILS}" ]; then ENVS="$$ENVS|ADMIN_EMAILS=${_ADMIN_EMAILS}"; fi
+        if [ -n "${_INSTAGRAM_LOOKUP_USER_ID}" ]; then ENVS="$$ENVS|INSTAGRAM_LOOKUP_USER_ID=${_INSTAGRAM_LOOKUP_USER_ID}"; fi
+        if [ -n "${_META_GRAPH_VERSION}" ]; then ENVS="$$ENVS|META_GRAPH_VERSION=${_META_GRAPH_VERSION}"; fi
+        if [ -n "${_META_APP_ID}" ]; then ENVS="$$ENVS|META_APP_ID=${_META_APP_ID}"; fi
+        if [ -n "${_INSTAGRAM_APP_ID}" ]; then ENVS="$$ENVS|INSTAGRAM_APP_ID=${_INSTAGRAM_APP_ID}"; fi
+        if [ -n "${_IMAGEN_MODEL}" ]; then ENVS="$$ENVS|IMAGEN_MODEL=${_IMAGEN_MODEL}"; fi
+
+        # Secrets, read from Secret Manager when an instance starts (never written into the image or the build log).
+        SECRETS="SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest"
+        SECRETS="$$SECRETS,SUPABASE_DB_URL=SUPABASE_DB_URL:latest"
+        SECRETS="$$SECRETS,AUTH_SECRET=AUTH_SECRET:latest"
+        SECRETS="$$SECRETS,EMAIL_LINK_SECRET=EMAIL_LINK_SECRET:latest"
+        SECRETS="$$SECRETS,CRON_SECRET=CRON_SECRET:latest"
+        SECRETS="$$SECRETS,RESEND_API_KEY=RESEND_API_KEY:latest"
+        SECRETS="$$SECRETS,TOKEN_ENCRYPTION_KEY=TOKEN_ENCRYPTION_KEY:latest"   # connected-account tokens (C-25)
+        if [ -n "${_EXTRA_SECRETS}" ]; then SECRETS="$$SECRETS,${_EXTRA_SECRETS}"; fi
+
+        gcloud run deploy "${_SERVICE}" \
+          --image="${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${BUILD_ID}" \
+          --region="${_REGION}" \
+          --service-account="${_RUNTIME_SA}@${PROJECT_ID}.iam.gserviceaccount.com" \
+          --allow-unauthenticated \
+          --port=8080 \
+          --min-instances=0 \
+          --max-instances=5 \
+          --concurrency=10 \
+          --cpu=2 \
+          --memory=2Gi \
+          --cpu-boost \
+          --timeout=300 \
+          --set-env-vars="$$ENVS" \
+          --set-secrets="$$SECRETS"
+
+# The pushed images are also listed here so Cloud Build records them with the build.
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${BUILD_ID}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest

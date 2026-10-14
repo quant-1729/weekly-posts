@@ -5,6 +5,7 @@ import { ReviewReplyCard } from "@/components/results/review-reply-card";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurrentBrand } from "@/lib/brand/current";
 import { fill, s } from "@/lib/i18n/strings";
+import { scanCopy } from "@/lib/qr/copy";
 import { formatDayMonth } from "@/lib/links/format";
 import { loadCheckinCard } from "@/lib/results/checkin";
 import { clicksPhrase, postsPhrase } from "@/lib/results/format";
@@ -17,7 +18,7 @@ export const maxDuration = 30;
 const r = s.results;
 const channelName = (c: string | null) => (s.week.channels as Record<string, string>)[c ?? ""] ?? "";
 
-function ClickList({ heading, rows }: { heading: string; rows: PostClicks[] }) {
+function ClickList({ heading, rows, phrase = clicksPhrase }: { heading: string; rows: PostClicks[]; phrase?: (n: number) => string }) {
   return (
     <div>
       <h3 className="text-sm font-semibold text-stone-700">{heading}</h3>
@@ -33,7 +34,7 @@ function ClickList({ heading, rows }: { heading: string; rows: PostClicks[] }) {
                   {[channelName(c.channel), c.day ? formatDayMonth(c.day) : ""].filter(Boolean).join(" · ")}
                 </span>
               </span>
-              <span className="shrink-0 font-medium">{clicksPhrase(c.clicks)}</span>
+              <span className="shrink-0 font-medium">{phrase(c.clicks)}</span>
             </li>
           ))}
         </ul>
@@ -55,15 +56,15 @@ export default async function Page() {
 
   return (
     <section className="space-y-5">
-      <h1 className="text-xl font-bold">{r.title}</h1>
+      <h1 className="text-xl font-bold md:text-2xl">{r.title}</h1>
 
       {showCard && <CheckinCard weekStart={card.weekStart} initial={card.answer} />}
 
       {summary.empty ? (
         <p className="rounded-lg border border-stone-200 p-4 text-stone-700">{r.empty}</p>
       ) : (
-        <>
-          <section aria-labelledby="res-shared" className="space-y-2">
+        <div className="space-y-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-5 lg:space-y-0">
+          <section aria-labelledby="res-shared" className="space-y-2 md:rounded-xl md:border md:border-stone-200 md:bg-white md:p-5">
             <h2 id="res-shared" className="font-semibold">
               {r.sharedTitle}
             </h2>
@@ -80,7 +81,7 @@ export default async function Page() {
             </dl>
           </section>
 
-          <section aria-labelledby="res-time" className="space-y-1">
+          <section aria-labelledby="res-time" className="space-y-1 md:rounded-xl md:border md:border-stone-200 md:bg-white md:p-5">
             <h2 id="res-time" className="font-semibold">
               {r.timeTitle}
             </h2>
@@ -100,7 +101,7 @@ export default async function Page() {
             )}
           </section>
 
-          <section aria-labelledby="res-clicks" className="space-y-3">
+          <section aria-labelledby="res-clicks" className="space-y-3 md:rounded-xl md:border md:border-stone-200 md:bg-white md:p-5">
             <h2 id="res-clicks" className="font-semibold">
               {r.clicksTitle}
             </h2>
@@ -115,7 +116,22 @@ export default async function Page() {
             </p>
           </section>
 
-          <section aria-labelledby="res-checkins" className="space-y-2">
+          <section aria-labelledby="res-scans" className="space-y-3 md:rounded-xl md:border md:border-stone-200 md:bg-white md:p-5">
+            <h2 id="res-scans" className="font-semibold">
+              {scanCopy.title}
+            </h2>
+            <p>{summary.scans.line}</p>
+            {summary.scans.totalLastMonth > 0 && <p className="text-sm text-stone-600">{scanCopy.totalLast(summary.scans.totalLastMonth)}</p>}
+            {(summary.scans.totalThisMonth > 0 || summary.scans.totalLastMonth > 0) && (
+              <>
+                <ClickList heading={`${scanCopy.perPost}: ${summary.thisMonth.name}`} rows={summary.scans.thisMonth} phrase={scanCopy.phrase} />
+                <ClickList heading={`${scanCopy.perPost}: ${summary.lastMonth.name}`} rows={summary.scans.lastMonth} phrase={scanCopy.phrase} />
+              </>
+            )}
+            <p className="text-sm text-stone-600">{summary.scans.footnote}</p>
+          </section>
+
+          <section aria-labelledby="res-checkins" className="space-y-2 md:rounded-xl md:border md:border-stone-200 md:bg-white md:p-5">
             <h2 id="res-checkins" className="font-semibold">
               {r.checkinsTitle}
             </h2>
@@ -128,7 +144,7 @@ export default async function Page() {
               ))}
             </ul>
           </section>
-        </>
+        </div>
       )}
 
       <p className="rounded-lg bg-stone-100 p-3 text-sm text-stone-700">{summary.notMeasured}</p>

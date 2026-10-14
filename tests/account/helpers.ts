@@ -8,7 +8,7 @@ import type { SeededAccount } from "./seed";
  *   - any column named brand_id
  *   - brands.id
  *   - any column that references auth.users (profiles.id, brand_members.user_id, created_by ...)
- *   - email_log.to_email (sign-in emails carry only the address)
+ *   - email_log.to_email and magic_links.email (sign-in emails and links carry only the address)
  */
 export async function accountRules(db: MockDb): Promise<{ rules: Map<string, string[]>; allTables: string[] }> {
   return db.withAdmin(async (tx) => {
@@ -37,6 +37,7 @@ export async function accountRules(db: MockDb): Promise<{ rules: Map<string, str
     );
     for (const r of userCols) add(r.tbl, `"${r.col}" = $2`);
     add("email_log", "lower(to_email) = lower($3)");
+    add("magic_links", "lower(email) = lower($3)");
     return { rules, allTables: tables };
   });
 }

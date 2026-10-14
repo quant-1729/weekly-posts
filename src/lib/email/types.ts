@@ -6,7 +6,10 @@ export type EmailKind =
   | "late_notice"
   | "paused_notice"
   | "missed_weeks"
-  | "account_delete";
+  | "account_delete"
+  | "payment_confirm"
+  | "post_delivery"
+  | "connection_problem";
 
 export interface SendEmailInput {
   to: string;

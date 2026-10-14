@@ -5,6 +5,7 @@ import { CONTENT_LANGUAGES, type ContentLanguage } from "@/lib/ai/schemas";
 import { PRESET_PALETTES, paletteFromPrimary, samePalette, type Palette } from "@/lib/brand/colors";
 import { LOGO_ACCEPT, logoUrl } from "@/lib/brand/logo-url";
 import { TONE_OPTIONS } from "@/lib/brand/schema";
+import type { LogoReport } from "@/lib/logo/store";
 import { s } from "@/lib/i18n/strings";
 import { chipClass, errorClass, secondaryButton } from "./ui";
 
@@ -181,16 +182,22 @@ export function LogoUploader({
   brandId,
   logoPath,
   onChange,
+  onUploaded,
+  version: initialVersion,
 }: {
   brandId: string;
   logoPath: string | null;
   /** New logo path (or null after removing), plus a palette suggested from the logo. */
   onChange: (logoPath: string | null, palette: Palette | null) => void;
+  /** After an upload: the size check and white-background result (null if the check could not run). */
+  onUploaded?: (report: LogoReport | null) => void;
+  /** Cache-buster for the picture shown (changes when the stored file is swapped without an upload). */
+  version?: string | number;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const [version, setVersion] = useState(0);
+  const [version, setVersion] = useState<string | number>(initialVersion ?? 0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function upload(file: File) {
@@ -203,7 +210,7 @@ export function LogoUploader({
       form.set("file", file);
       const res = await fetch("/api/brand/logo", { method: "POST", body: form });
       const data = (await res.json().catch(() => null)) as
-        | { ok: true; logoPath: string; palette: Palette | null }
+        | { ok: true; logoPath: string; palette: Palette | null; report?: LogoReport | null }
         | { ok: false; message?: string }
         | null;
       if (!data) setError(s.errors.signedOut);
@@ -211,6 +218,7 @@ export function LogoUploader({
       else {
         setVersion(Date.now());
         setSaved(true);
+        onUploaded?.(data.report ?? null);
         onChange(data.logoPath, data.palette);
       }
     } catch {
