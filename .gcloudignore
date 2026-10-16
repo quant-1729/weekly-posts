@@ -1,0 +1,5 @@
+# Files "gcloud builds submit" does not upload. Keeps the .gitignore rules (no .gcloudignore means gcloud uses .gitignore).
+#!include:.gitignore
+
+# Separate Vercel project (its own package.json); the Cloud Run build must not upload it.
+admin-dashboard/

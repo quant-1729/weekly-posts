@@ -20,7 +20,8 @@ vi.mock("next/navigation", () => ({
 
 import Home from "@/app/page";
 import { homePathFor } from "@/lib/auth/home";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import type { MockDb } from "@/lib/db/mock";
 import { s } from "@/lib/i18n/strings";
 import { addFact, editFact, listFacts } from "@/lib/memory/facts";
@@ -251,7 +252,7 @@ describe("landing page", () => {
     jar.store.set(SESSION_COOKIE, await signSession({ id, email: `${id.slice(0, 6)}@example.com` }));
   }
 
-  it("homePathFor: /setup with no brand or an unfinished one, /week once set up", async () => {
+  it("homePathFor: /setup with no brand or an unfinished one, /home once set up", async () => {
     const fresh = (await createUser(db)).id;
     expect(await homePathFor(fresh)).toBe("/setup");
     await createBrandFor(db, fresh, "Half done");
@@ -259,13 +260,13 @@ describe("landing page", () => {
     await db.withAdmin((tx) =>
       tx.query("update public.brand_memory set setup_completed_at = now() where brand_id in (select brand_id from public.brand_members where user_id = $1)", [fresh]),
     );
-    expect(await homePathFor(fresh)).toBe("/week");
+    expect(await homePathFor(fresh)).toBe("/home");
   });
 
-  it("/ sends an owner with a finished brand to /week, a new one to /setup, and a visitor to /login", async () => {
+  it("/ sends an owner with a finished brand to /home, a new one to /setup, and a visitor to /login", async () => {
     await db.withAdmin((tx) => tx.query("update public.brand_memory set setup_completed_at = now() where brand_id = $1", [brand]));
     await signIn(owner);
-    await expect(Home()).rejects.toThrow("REDIRECT:/week");
+    await expect(Home()).rejects.toThrow("REDIRECT:/home");
     await signIn((await createUser(db)).id);
     await expect(Home()).rejects.toThrow("REDIRECT:/setup");
     jar.store.delete(SESSION_COOKIE);

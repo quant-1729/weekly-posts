@@ -22,7 +22,7 @@ import { getDb } from "@/lib/db";
 import { fill, s } from "@/lib/i18n/strings";
 import { renderPostDetailed, type RenderResult } from "@/lib/render";
 import { getStorage, type Storage } from "@/lib/storage";
-import { DailyCapError, assertUnderDailyCap, failedCallUsd, recordUsage } from "@/lib/usage";
+import { DailyCapError, assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage, type UsageMeta } from "@/lib/usage";
 import { POST_TRANSCRIPT_FIXTURE, generateFixture } from "./fixtures";
 
 /**
@@ -304,6 +304,7 @@ export async function generatePost(opts: GeneratePostOptions): Promise<GenerateO
       const t = Date.now();
       let text: string;
       let usd = 0;
+      let meta: UsageMeta = { ok: false };
       try {
         const res = await generateText({
           budgetMs: 20_000,
@@ -315,10 +316,11 @@ export async function generatePost(opts: GeneratePostOptions): Promise<GenerateO
         });
         text = res.text;
         usd = res.stats?.usd ?? 0;
+        meta = { model: res.stats?.model };
       } finally {
         timings.transcribeMs = Date.now() - t;
         // The call was attempted, so it counts against the cap even if it failed.
-        await recordUsage(brandId, userId, "transcribe", usd);
+        await recordUsage(brandId, userId, "transcribe", usd, meta);
       }
       inputText = text.trim();
     }
@@ -360,6 +362,7 @@ export async function generatePost(opts: GeneratePostOptions): Promise<GenerateO
         typeof fixtureSource === "function" ? fixtureSource(attempt) : (fixtureSource ?? generateFixture(language));
       const t = Date.now();
       let usd = 0;
+      let meta: UsageMeta = { ok: false };
       try {
         const { data, stats } = await generateJson({
           budgetMs: 35_000,
@@ -373,13 +376,15 @@ export async function generatePost(opts: GeneratePostOptions): Promise<GenerateO
           fixture,
         });
         usd = stats?.usd ?? 0;
+        meta = { model: stats?.model };
         return data;
       } catch (e) {
         usd = failedCallUsd(e); // an answer that did not validate still cost money (H-2)
+        meta = { ok: false, model: failedCallModel(e) };
         throw e;
       } finally {
         timings.generateMs += Date.now() - t;
-        await recordUsage(brandId, userId, attempt === 0 ? "generate" : "regenerate", usd);
+        await recordUsage(brandId, userId, attempt === 0 ? "generate" : "regenerate", usd, meta);
       }
     };
 

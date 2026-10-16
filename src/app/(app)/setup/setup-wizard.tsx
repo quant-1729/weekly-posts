@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LogoUploader } from "@/components/brand-pickers";
 import { instagramStatusLine } from "@/components/instagram/instagram-card";
-import { chipClass, errorClass, hintClass, inputClass, labelClass, primaryButton, secondaryButton } from "@/components/ui";
+import { alertClass, cardClass, chipClass, errorClass, ghostButton, hintClass, inputClass, labelClass, linkButton, outlineButton, pickCardClass, primaryButton } from "@/components/ui";
 import { fill, s } from "@/lib/i18n/strings";
 import { normalizeInstagramHandle } from "@/lib/instagram/handle";
 import { tweenSignal } from "@/lib/tween/events";
@@ -301,12 +301,12 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
 
   // ---- screens -----------------------------------------------------------------------------
 
-  const shell = (title: string, body: React.ReactNode, footer: React.ReactNode, stack = false) => (
+  const shell = (title: string, body: React.ReactNode, footer: React.ReactNode) => (
     // A centred card on desktop (about 640 px wide); the plain phone page below 768 px.
     <section
       data-setup-step={step}
       data-setup-path={path}
-      className="mx-auto w-full max-w-[640px] space-y-5 md:mt-4 md:rounded-2xl md:border md:border-stone-200 md:bg-white md:p-8 md:shadow-sm"
+      className={`mx-auto w-full max-w-page-sm space-y-5 md:mt-2 md:p-8 ${cardClass}`}
     >
       <div
         role="progressbar"
@@ -315,15 +315,15 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
         aria-valuemax={total}
         aria-valuenow={stepIndex + 1}
         aria-valuetext={fill(t.progress, { n: stepIndex + 1, total })}
-        className="h-2 w-full rounded-full bg-stone-200"
+        className="h-2 w-full overflow-hidden rounded-full bg-well"
       >
         <div
-          className="h-2 rounded-full bg-[#E4572E] transition-all"
+          className="h-2 rounded-full bg-coral transition-all"
           style={{ width: `${((stepIndex + 1) / total) * 100}%` }}
         />
       </div>
-      <p className="text-sm text-stone-500">{fill(t.progress, { n: stepIndex + 1, total })}</p>
-      <h1 ref={headingRef} tabIndex={-1} className="text-xl font-bold outline-none">
+      <p className="text-[13px] leading-[18px] text-desc">{fill(t.progress, { n: stepIndex + 1, total })}</p>
+      <h1 ref={headingRef} tabIndex={-1} data-own-ring className="text-dialog text-title outline-none">
         {title}
       </h1>
       {body}
@@ -332,12 +332,12 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
           {saveError}
         </p>
       )}
-      <div className={stack ? "flex flex-col gap-3" : "flex gap-3 md:justify-end"}>{footer}</div>
+      <div className="flex flex-wrap items-center justify-end gap-2 pt-3">{footer}</div>
     </section>
   );
 
   const backButton = (
-    <button type="button" className={secondaryButton} onClick={back} disabled={saving}>
+    <button type="button" className={`${outlineButton} mr-auto`} onClick={back} disabled={saving}>
       {t.back}
     </button>
   );
@@ -347,7 +347,7 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
     </button>
   );
   const skipButton = (label: string, change: Partial<DraftAnswers>) => (
-    <button type="button" className={secondaryButton} disabled={saving} onClick={() => void advance(change)}>
+    <button type="button" className={ghostButton} disabled={saving} onClick={() => void advance(change)}>
       {label}
     </button>
   );
@@ -519,7 +519,7 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
             )}
           </div>
         )}
-        <p role="status" className="rounded-lg bg-stone-50 p-3 text-stone-700">
+        <p role="status" className={alertClass("grey")}>
           {t.addresses.reading}
         </p>
       </div>,
@@ -589,7 +589,7 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
         </div>
         <div>
           {a.timezone && (
-            <p className="text-stone-700">{fill(t.location.timezoneIs, { zone: describeTimezone(a.timezone) })}</p>
+            <p className="text-[14px] leading-5">{fill(t.location.timezoneIs, { zone: describeTimezone(a.timezone) })}</p>
           )}
           {showZones ? (
             <div className="mt-2">
@@ -613,7 +613,7 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
               </select>
             </div>
           ) : (
-            <button type="button" className="py-2 text-sm text-stone-600 underline" onClick={() => setShowZones(true)}>
+            <button type="button" className={linkButton} onClick={() => setShowZones(true)}>
               {t.location.timezoneChange}
             </button>
           )}
@@ -683,7 +683,7 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
           />
           {suggested.phone && a.phone !== "" && <p className="mt-1 text-sm text-stone-600">{t.reach.fromWebsite}</p>}
           {showError(errors.phone)}
-          <label className="mt-2 flex min-h-11 items-center gap-2">
+          <label className="mt-2 flex min-h-11 items-center gap-2.5 text-[14px]">
             <input
               type="checkbox"
               className="h-5 w-5"
@@ -744,7 +744,6 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
         {skipButton(t.reach.skip, { phone: "", whatsapp: "", sameWhatsapp: false, email: "" })}
         {nextButton(true)}
       </>,
-      true,
     );
   }
 
@@ -762,9 +761,7 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
               role="radio"
               aria-checked={a.hoursMode === m}
               onClick={() => patch({ hoursMode: m })}
-              className={`block w-full rounded-lg border px-4 py-3 text-left text-lg font-semibold ${
-                a.hoursMode === m ? "border-[#E4572E] bg-[#E4572E]/10" : "border-stone-300 bg-white"
-              }`}
+              className={`${pickCardClass(a.hoursMode === m)} w-full text-left text-ui text-title`}
             >
               {t.hours.modes[m]}
             </button>
@@ -778,7 +775,6 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
         {skipButton(t.hours.skip, { hoursMode: "" })}
         {nextButton(a.hoursMode !== "")}
       </>,
-      true,
     );
   }
 
@@ -795,7 +791,6 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
         {backButton}
         {logoPath ? nextButton(true, t.logo.next) : skipButton(t.logo.skip, {})}
       </>,
-      true,
     );
   }
 
@@ -858,7 +853,6 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
         {skipButton(t.likes.skip, { likes: [] })}
         {nextButton(true)}
       </>,
-      true,
     );
   }
 
@@ -900,7 +894,7 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
             ))}
           </div>
           {a.tone === "like_past_posts" && (
-            <p role="status" className="rounded-lg bg-stone-50 p-3 text-stone-700">
+            <p role="status" className={alertClass("grey")}>
               {t.tone.pastPostsNote}
             </p>
           )}
@@ -1034,11 +1028,11 @@ export function SetupWizard({ countries, regions, zonesByCountry, languages, ini
   return shell(
     t.done.title,
     <div className="space-y-4">
-      <p className="text-stone-700">{fill(t.done.body, { day: t.schedule.weekdays[a.weekday - 1], time: a.time })}</p>
-      <p className="text-stone-700">{t.done.queueNote}</p>
+      <p className="text-[14px] leading-5">{fill(t.done.body, { day: t.schedule.weekdays[a.weekday - 1], time: a.time })}</p>
+      <p className="text-[14px] leading-5">{t.done.queueNote}</p>
       {path === "A" && <Findings findings={findings} gaveUp={pollGaveUp} online={a.online} />}
     </div>,
-    <Link href="/brand" className={`${primaryButton} inline-block text-center`}>
+    <Link href="/brand" className={primaryButton}>
       {t.done.goToBrand}
     </Link>,
   );
@@ -1048,9 +1042,7 @@ function Status({ text, warn = false }: { text: string; warn?: boolean }) {
   return (
     <p
       role="status"
-      className={`rounded-lg border p-3 ${
-        warn ? "border-amber-300 bg-amber-50 text-amber-900" : "border-stone-200 bg-stone-50 text-stone-700"
-      }`}
+      className={alertClass(warn ? "warn" : "grey")}
     >
       {text}
     </p>
@@ -1077,18 +1069,18 @@ function Findings({ findings, gaveUp, online }: { findings: SetupFindings | null
   if (ig && ig.importedPosts > 0) links.push(["/brand#uploads", d.reviewInstagram]);
   return (
     <div className="space-y-3" data-testid="setup-findings">
-      <h2 className="text-lg font-semibold">{d.findingsTitle}</h2>
+      <h2 className="text-card-title text-title">{d.findingsTitle}</h2>
       {site && <Status text={site.text} warn={site.tone === "warn"} />}
       {igLine && <Status text={igLine} />}
       {findings.contactsFound > 0 && <Status text={plural(findings.contactsFound, d.contactsFound)} />}
       {findings.uspsSuggested > 0 && <Status text={plural(findings.uspsSuggested, d.uspsSuggested)} />}
       {links.length > 0 && (
-        <p className="text-stone-700">
+        <p className="text-[14px] leading-5">
           {d.review}:{" "}
           {links.map(([href, label], i) => (
             <span key={href}>
               {i > 0 && " · "}
-              <Link href={href} className="underline">
+              <Link href={href} className="underline underline-offset-2">
                 {label}
               </Link>
             </span>

@@ -1,7 +1,9 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getDb } from "@/lib/db";
 import { getEnv } from "@/lib/env";
 import { sendEmail, EmailSendError } from "@/lib/email";
+import { logEvent } from "@/lib/events/log";
+import { TOUCH_AFTER_MS, createSession, revokeSession, type HeaderReader } from "@/lib/sessions";
 import { magicLinkEmail } from "@/lib/email/magic-link";
 import { normalizeEmail } from "./email";
 import { signMagicToken, verifyMagicToken } from "./magic-link";
@@ -28,6 +30,15 @@ export interface AuthUsers {
   assertAllowed?(): void;
   /** The id of the auth user with this (normalised) address, created if it does not exist. */
   findOrCreateUser(email: string): Promise<string>;
+}
+
+/** The current request's headers, or null outside a request (a script, a test that does not mock them). */
+async function requestHeaders(): Promise<HeaderReader | null> {
+  try {
+    return await headers();
+  } catch {
+    return null;
+  }
 }
 
 function requireAppUrl(): string {
@@ -75,15 +86,20 @@ export function createLinkAuth(users: AuthUsers): Auth {
         );
         // Housekeeping: links expire after 15 minutes, limits look back one hour.
         await tx.query("delete from public.magic_links where created_at < $1", [new Date(now - DAY_MS).toISOString()]);
+      }).catch((e: unknown) => {
+        if (e instanceof AuthError) void logEvent({ kind: "auth.link_requested", ok: false, detail: { reason: e.code } });
+        throw e;
       });
 
       const message = magicLinkEmail(`${appUrl}/auth/callback?token=${encodeURIComponent(token)}`);
       try {
         await sendEmail({ to: email, kind: "magic_link", ...message });
       } catch (e) {
+        void logEvent({ kind: "auth.link_requested", ok: false, detail: { reason: "email_failed" } });
         if (e instanceof EmailSendError) throw new AuthError("email_failed", e.message);
         throw e;
       }
+      void logEvent({ kind: "auth.link_requested" }); // no address in the log
     },
 
     async checkMagicLink(token) {
@@ -120,6 +136,7 @@ export function createLinkAuth(users: AuthUsers): Auth {
 
       let userId: string;
       let phone: string | null;
+      let sessionId: string;
       try {
         userId = await users.findOrCreateUser(payload.email);
         // Consent time is set on first sign-in only; a returning owner keeps the first one.
@@ -132,6 +149,7 @@ export function createLinkAuth(users: AuthUsers): Auth {
           return tx.query<{ phone: string | null }>("select phone from public.profiles where id = $1", [userId]);
         });
         phone = profile?.phone ?? null;
+        sessionId = await createSession(userId, await requestHeaders());
       } catch (e) {
         // The owner never got in: give the link back so the same email can be tried again.
         await db
@@ -140,9 +158,10 @@ export function createLinkAuth(users: AuthUsers): Auth {
         throw e;
       }
 
-      const result: AuthUser = { id: userId, email: payload.email, phone };
+      const result: AuthUser = { id: userId, email: payload.email, phone, sessionId };
       const store = await cookies();
-      store.set(SESSION_COOKIE, await signSession({ id: result.id, email: payload.email }), sessionCookieOptions());
+      store.set(SESSION_COOKIE, await signSession({ id: result.id, email: payload.email, sid: sessionId }), sessionCookieOptions());
+      void logEvent({ kind: "auth.sign_in", userId, sessionId });
       return result;
     },
 
@@ -151,19 +170,40 @@ export function createLinkAuth(users: AuthUsers): Auth {
       const store = await cookies();
       const payload = await verifySession(store.get(SESSION_COOKIE)?.value);
       if (!payload) return null;
-      // A valid cookie for a user that no longer exists (account deleted, database wiped) is signed out.
+      // One query: the live session joined with its profile. A valid cookie whose session row is gone or revoked
+      // (signed out, revoked by an admin, account deleted, database wiped) is signed out. The same statement
+      // moves last_seen_at forward, but only when it is more than 5 minutes old.
+      const now = Date.now();
       const rows = await getDb().withService((tx) =>
         tx.query<{ id: string; email: string | null; phone: string | null }>(
-          "select id, email, phone from public.profiles where id = $1",
-          [payload.sub],
+          `with touched as (
+             update public.user_sessions set last_seen_at = $3::timestamptz
+              where id = $1::uuid and user_id = $2::uuid and revoked_at is null and last_seen_at < $4::timestamptz
+              returning id
+           )
+           select p.id::text as id, p.email, p.phone
+             from public.user_sessions s join public.profiles p on p.id = s.user_id
+            where s.id = $1::uuid and s.user_id = $2::uuid and s.revoked_at is null`,
+          [payload.sid, payload.sub, new Date(now).toISOString(), new Date(now - TOUCH_AFTER_MS).toISOString()],
         ),
       );
-      return rows[0] ? { id: rows[0].id, email: rows[0].email, phone: rows[0].phone } : null;
+      return rows[0] ? { id: rows[0].id, email: rows[0].email, phone: rows[0].phone, sessionId: payload.sid } : null;
     },
 
     async signOut() {
       const store = await cookies();
+      const payload = await verifySession(store.get(SESSION_COOKIE)?.value);
       store.delete(SESSION_COOKIE);
+      if (!payload) return;
+      try {
+        // Nothing to log when there was no live row (already revoked, or the account was just deleted).
+        if (await revokeSession(payload.sid, "user", payload.sub)) {
+          void logEvent({ kind: "auth.sign_out", userId: payload.sub, sessionId: payload.sid });
+        }
+      } catch (e) {
+        // The cookie is already gone from this browser; say so loudly rather than hide that the row stayed live.
+        console.error("[auth] could not revoke the session", (e as Error)?.name ?? e);
+      }
     },
   };
 }

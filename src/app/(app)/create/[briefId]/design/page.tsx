@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 // Writing the words and drawing three options can take a while on the first visit.
 export const maxDuration = 120;
 
-/** Create a post, step 2 of 4 (Design): three options, quick edits, "Use this design". A brief of another business is "not found". */
+/** Create a post, step 3 of 5 (Design): three options in the centre, the editing panel on the right, "Use this design". A brief of another business is "not found". */
 export default async function Page({ params }: PageProps<"/create/[briefId]/design">) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
@@ -23,10 +23,9 @@ export default async function Page({ params }: PageProps<"/create/[briefId]/desi
   if (!brief) notFound();
 
   return (
-    <section className="space-y-4 md:max-w-5xl">
-      <h1 className="text-xl font-bold md:text-2xl">{s.create.title}</h1>
+    <section className="mx-auto w-full max-w-page-xl">
+      <h1 className="sr-only">{s.create.design.title}</h1>
       <StepBar current="design" />
-      <h2 className="text-lg font-bold">{s.create.design.title}</h2>
       <Suspense fallback={<DesignLoading />}>
         <DesignBody userId={user.id} brandId={brand.id} briefId={brief.id} />
       </Suspense>

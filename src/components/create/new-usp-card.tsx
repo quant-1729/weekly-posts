@@ -41,7 +41,7 @@ export function NewUspCard({
 
   return (
     <section data-new-usp className="min-w-0 space-y-2 rounded-2xl border border-sky-300 bg-sky-50 p-4">
-      <h2 className="text-lg font-bold">{t.title}</h2>
+      <h2 className="text-card-title text-title">{t.title}</h2>
       <p className="break-words font-medium">{suggestion.title}</p>
       <p className="text-sm text-stone-700">{s.usps.kinds[suggestion.kind]}</p>
       <p className="break-words text-sm text-stone-700">{fill(t.body, { quote: suggestion.quote })}</p>

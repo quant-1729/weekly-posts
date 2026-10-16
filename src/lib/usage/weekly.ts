@@ -25,7 +25,9 @@ function assertMonday(weekStart: string): void {
 
 /**
  * Sum of usage_events.usd for the brand's local week starting on `weekStart` (a Monday, "YYYY-MM-DD").
- * `timezone` skips the lookup when the caller already has it.
+ * `timezone` skips the lookup when the caller already has it. Research runs are left out: they have their own
+ * weekly budget (RESEARCH_WEEKLY_CAP_USD, owner decision 2026-10-15), so a research run never blocks post making. Brand Face creation is left out too: the owner approves its price
+ * up front and it has its own per-face cap (FACE_CAP_USD).
  */
 export async function weekCost(brandId: string, weekStart: string, timezone?: string): Promise<number> {
   assertMonday(weekStart);
@@ -34,6 +36,7 @@ export async function weekCost(brandId: string, weekStart: string, timezone?: st
     tx.query<{ usd: string | number | null }>(
       `select coalesce(sum(usd), 0) as usd from public.usage_events
         where brand_id = $1
+          and kind not in ('research'::public.usage_kind, 'face_create'::public.usage_kind)
           and created_at >= ($2::date)::timestamp at time zone $4::text
           and created_at <  ($3::date)::timestamp at time zone $4::text`,
       [brandId, weekStart, addDaysIso(weekStart, 7), tz],

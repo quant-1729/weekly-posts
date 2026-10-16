@@ -115,7 +115,7 @@ export function ProfileForm({
     <form onSubmit={submit} className="space-y-6" noValidate>
       {unclear.length > 0 && (
         <div role="note" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-900">
-          <p className="font-semibold">{s.setup.unclearTitle}</p>
+          <p className="font-medium">{s.setup.unclearTitle}</p>
           <p className="text-sm">{s.setup.unclearHint}</p>
           <ul className="mt-1 list-disc pl-5 text-sm">
             {unclear.map((u) => (
@@ -126,7 +126,7 @@ export function ProfileForm({
       )}
 
       <fieldset className="space-y-4">
-        <legend className="mb-2 text-lg font-bold">{s.brand.sections.basics}</legend>
+        <legend className="mb-2 text-card-title text-title">{s.brand.sections.basics}</legend>
 
         <div className={wrap("business_name")}>
           <label htmlFor="business_name" className={labelClass}>
@@ -190,7 +190,7 @@ export function ProfileForm({
       </fieldset>
 
       <fieldset className={`space-y-3 ${wrap("products")}`}>
-        <legend className="mb-1 text-lg font-bold">{s.brand.sections.products}</legend>
+        <legend className="mb-1 text-card-title text-title">{s.brand.sections.products}</legend>
         <p className={hintClass}>{s.brand.productsHint}</p>
         {draft.products.length === 0 && <p className="text-sm text-stone-500">{s.brand.noProducts}</p>}
         {draft.products.map((p, i) => (
@@ -276,7 +276,7 @@ export function ProfileForm({
       </fieldset>
 
       <fieldset className="space-y-5">
-        <legend className="mb-2 text-lg font-bold">{s.brand.sections.look}</legend>
+        <legend className="mb-2 text-card-title text-title">{s.brand.sections.look}</legend>
 
         <div>
           <p className={labelClass}>{s.brand.tone}</p>
@@ -319,7 +319,7 @@ export function ProfileForm({
       </fieldset>
 
       <fieldset className="space-y-4">
-        <legend className="mb-2 text-lg font-bold">{s.brand.sections.contact}</legend>
+        <legend className="mb-2 text-card-title text-title">{s.brand.sections.contact}</legend>
 
         <div>
           <label htmlFor="whatsapp" className={labelClass}>

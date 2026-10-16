@@ -50,7 +50,8 @@ import {
   saveStepAction,
   setupFindingsAction,
 } from "@/app/(app)/setup/actions";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import { getCurrentBrand } from "@/lib/brand/current";
 import { listContacts } from "@/lib/contacts/service";
 import type { MockDb } from "@/lib/db/mock";

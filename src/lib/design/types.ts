@@ -4,6 +4,9 @@
 import { z } from 'zod';
 import { POST_TYPES, type BlockKey, type CtaKind } from '@/lib/briefs/types';
 import type { UspKind } from '@/lib/usps/types';
+import type { CharacterId, CharacterRole } from '@/lib/characters/types';
+import type { FacePlacement, FacePose } from '@/lib/faces/types';
+import type { PostFilter } from './filter-presets';
 
 // ---------------------------------------------------------------------------------------------
 // Formats (G-5). Names are the `public.image_format` enum values.
@@ -111,6 +114,22 @@ export interface DesignContent {
   bubble: string;
 }
 
+/** What a carousel slide is for (owner request 2026-10-16): decides the character's role on it. */
+export const SLIDE_KINDS = ['cover', 'point', 'proof', 'cta'] as const;
+export type SlideKind = (typeof SLIDE_KINDS)[number];
+
+/** The format a channel's carousel slides are drawn in: portrait 4:5 for Instagram and Facebook, square for every other channel. */
+export function carouselFormat(channel: string): DesignFormat {
+  return channel === 'instagram' || channel === 'facebook' ? 'portrait' : 'square';
+}
+
+/** The words of one carousel slide (validated copy); `body` may be empty. */
+export interface SlideText {
+  kind: SlideKind;
+  headline: string;
+  body: string;
+}
+
 export interface DesignInput {
   format: DesignFormat;
   themeId: ThemeId;
@@ -123,13 +142,36 @@ export interface DesignInput {
   /** Imagen abstract background (C-18) when the theme uses one and no photo is placed there. */
   background?: Buffer | null;
   mascot?: import('@/lib/render').MascotInput | null;
+  /**
+   * CH-2: the brand's character as a part of the layout. With `role` set (and a source) the character is placed by the role
+   * (a reserved zone, no header sticker, no separate speech bubble); without it, `mascot` is the old small header sticker.
+   */
+  character?: CharacterSource | null;
+  role?: CharacterRole | null;
+  /** The copy's pose: only a hint (the role decides the action). */
+  poseHint?: string;
+  /** A number from the brand id: two brands with the same inputs differ in side and action. */
+  seed?: number;
   language: string; // BCP 47, for shaping and fonts
   dir?: 'ltr' | 'rtl' | 'auto';
   content: DesignContent;
-  /** Carousel slide (C-20): one USP per slide. */
-  slide?: { index: number; total: number } | null;
+  /**
+   * Carousel slide: its place ("2/5" marker). With a `kind` (a carousel the owner asked for, owner request 2026-10-16) the slide
+   * takes part in the brand's character like a post does, with a role by kind; without one (C-20's one-USP-per-slide split) it is
+   * typographic.
+   */
+  slide?: { index: number; total: number; kind?: SlideKind } | null;
+  /** The side the character stands on, fixed for a whole slide set (the first slide's choice); absent: the brand's habit. */
+  charSide?: 'left' | 'right';
+  /** Overrides the role's scale band (a carousel's cover uses the Lead band). */
+  charBand?: 'lead' | 'support' | 'accent';
   /** Colour scheme within the kit (G-6 options). Stored with the post (`posts.design`) so a re-render matches. */
   scheme?: DesignOption['scheme'];
+  /**
+   * Colour filter for the post (UX-2), applied by code to the photo and the Imagen background only: never to text, logo, QR,
+   * brand-colour shapes or the face. Absent, null or preset "none" leaves every pixel as it was.
+   */
+  filter?: PostFilter | null;
 }
 
 /**
@@ -168,10 +210,17 @@ export interface DesignResult {
   report: DesignReport;
 }
 
+/** Where a layout's character comes from: the shared code rig (mascot faces) or approved pose images (the other face kinds). */
+export type CharacterSource =
+  | { kind: 'rig'; id: CharacterId }
+  | { kind: 'image'; images: Partial<Record<FacePose, { uri: string; w: number; h: number }>>; aiTag: boolean; size?: FacePlacement['size'] };
+
 /** A design option shown to the owner (G-6): same details, different layout/colour scheme. */
 export interface DesignOption {
   themeId: ThemeId;
   layoutId: string;
+  /** CH-2: how the brand's character takes part in this composition. Absent: the old header sticker (if the face is on); null: a typographic option with no character. */
+  role?: CharacterRole | null;
   /** Colour scheme variant within the kit (e.g. primary background vs light background). */
   scheme: 'primary' | 'light' | 'dark' | 'accent';
 }

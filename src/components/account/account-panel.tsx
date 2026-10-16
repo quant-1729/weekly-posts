@@ -26,10 +26,10 @@ export function AccountPanel() {
 
   return (
     <div className="space-y-6">
-      <p className="text-stone-600">{t.intro}</p>
+      <p className="text-[14px] leading-5 text-desc">{t.intro}</p>
 
       <div className="space-y-2">
-        <h3 className="font-semibold">{t.download.title}</h3>
+        <h3 className="font-medium">{t.download.title}</h3>
         <p className="text-sm text-stone-600">{t.download.body}</p>
         {/* A plain link: the browser downloads the ZIP as it streams. */}
         <a href="/api/account/export" download className={`${secondaryButton} inline-block text-center`}>
@@ -38,11 +38,11 @@ export function AccountPanel() {
       </div>
 
       <div className="space-y-2 border-t border-stone-200 pt-5">
-        <h3 className="font-semibold">{t.delete.title}</h3>
+        <h3 className="font-medium">{t.delete.title}</h3>
         <p className="text-sm text-stone-600">{t.delete.body}</p>
         {sentTo ? (
           <div role="status" className="rounded-lg bg-stone-100 px-3 py-3">
-            <p className="font-semibold">{t.delete.sentTitle}</p>
+            <p className="font-medium">{t.delete.sentTitle}</p>
             <p className="text-sm text-stone-700">{fill(t.delete.sentBody, { email: sentTo })}</p>
           </div>
         ) : (
@@ -56,7 +56,7 @@ export function AccountPanel() {
               type="button"
               onClick={requestDelete}
               disabled={pending}
-              className="w-full rounded-lg border border-red-300 bg-white px-4 py-3 text-base font-semibold text-red-800 disabled:opacity-50"
+              className="w-full rounded-lg border border-red-300 bg-white px-4 py-3 text-base font-medium text-red-800 disabled:opacity-50"
             >
               {pending ? t.delete.sending : t.delete.button}
             </button>

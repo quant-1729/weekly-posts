@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { errorClass, hintClass, inputClass, labelClass, primaryButton, secondaryButton } from "@/components/ui";
+import { errorClass, ghostButton, hintClass, inputClass, labelClass, outlineButton, primaryButton, secondaryButton, wellClass } from "@/components/ui";
 import { fill, s } from "@/lib/i18n/strings";
 import type { InstagramImageView, InstagramState } from "@/lib/instagram/import";
 import {
@@ -122,7 +122,7 @@ export function InstagramCard({ brandId, initial }: { brandId: string; initial: 
   return (
     <div className="space-y-3" data-testid="instagram-card">
       <div>
-        <h3 className="text-lg font-semibold">{t.title}</h3>
+        <h3 className="text-card-title text-title">{t.title}</h3>
         <p className={hintClass}>{t.hint}</p>
       </div>
 
@@ -142,7 +142,7 @@ export function InstagramCard({ brandId, initial }: { brandId: string; initial: 
           value={handleInput}
           onChange={(e) => setHandleInput(e.target.value)}
         />
-        <p id="ig-own" className="mt-1 text-sm text-stone-500">
+        <p id="ig-own" className="mt-1 text-[13px] leading-[18px] text-desc">
           {t.ownAccount}
         </p>
       </div>
@@ -157,19 +157,19 @@ export function InstagramCard({ brandId, initial }: { brandId: string; initial: 
           {busy === "import" ? t.bringing : state.available ? t.bring : t.save}
         </button>
         {state.available && state.handle && (
-          <button type="button" className={secondaryButton} disabled={!idle} onClick={() => run("refresh", () => refreshInstagramAction(brandId))}>
+          <button type="button" className={outlineButton} disabled={!idle} onClick={() => run("refresh", () => refreshInstagramAction(brandId))}>
             {busy === "refresh" ? t.refreshing : t.refresh}
           </button>
         )}
         {state.importedPosts > 0 && (
-          <button type="button" className={secondaryButton} disabled={!idle} onClick={() => run("remove", () => removeInstagramPostsAction(brandId))}>
+          <button type="button" className={ghostButton} disabled={!idle} onClick={() => run("remove", () => removeInstagramPostsAction(brandId))}>
             {busy === "remove" ? t.removing : t.remove}
           </button>
         )}
       </div>
 
       {line && (
-        <p role="status" className="text-sm text-stone-700">
+        <p role="status" className="text-[13px] leading-[18px] text-desc">
           {line}
         </p>
       )}
@@ -180,9 +180,9 @@ export function InstagramCard({ brandId, initial }: { brandId: string; initial: 
       )}
 
       {state.available && state.handle && state.status === "imported" && (
-        <div className="space-y-3 rounded-xl border border-stone-200 p-3">
+        <div className={`space-y-3 ${wellClass}`}>
           <div>
-            <h4 className="font-semibold">{t.photos.title}</h4>
+            <h4 className="text-ui text-title">{t.photos.title}</h4>
             <p className={hintClass}>{t.photos.hint}</p>
           </div>
           {images === null ? (
@@ -190,30 +190,30 @@ export function InstagramCard({ brandId, initial }: { brandId: string; initial: 
               {busy === "images" ? t.photos.loading : t.photos.show}
             </button>
           ) : images.length === 0 ? (
-            <p className="text-stone-600">{t.photos.none}</p>
+            <p className="text-[13px] leading-[18px] text-desc">{t.photos.none}</p>
           ) : (
             <>
               <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {images.map((im) => (
                   <li key={im.mediaId}>
-                    <label className={`relative block overflow-hidden rounded-lg border ${picked.has(im.mediaId) ? "border-[#E4572E] ring-2 ring-[#E4572E]/40" : "border-stone-200"}`}>
+                    <label className={`relative block overflow-hidden rounded-xl focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-coral ${picked.has(im.mediaId) ? "outline-2 outline-offset-2 outline-coral" : ""}`}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={im.previewUrl}
                         alt={fill(t.photos.pick, { description: im.caption ?? t.photos.noDescription })}
                         referrerPolicy="no-referrer"
                         loading="lazy"
-                        className="aspect-square w-full bg-stone-100 object-cover"
+                        className="aspect-square w-full bg-well object-cover"
                       />
                       <input
                         type="checkbox"
-                        className="absolute left-2 top-2 h-6 w-6"
+                        className="absolute left-2 top-2"
                         checked={picked.has(im.mediaId) || im.added}
                         disabled={im.added || !idle}
                         onChange={() => toggle(im.mediaId)}
                       />
                     </label>
-                    {im.added && <p className="mt-1 text-xs text-stone-500">{t.photos.alreadyAdded}</p>}
+                    {im.added && <p className="mt-1 text-note text-desc">{t.photos.alreadyAdded}</p>}
                   </li>
                 ))}
               </ul>
@@ -223,7 +223,7 @@ export function InstagramCard({ brandId, initial }: { brandId: string; initial: 
             </>
           )}
           {note && (
-            <p role="status" className="text-sm text-stone-700">
+            <p role="status" className="text-[13px] leading-[18px] text-desc">
               {note}
             </p>
           )}

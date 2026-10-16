@@ -20,12 +20,17 @@ import { checkCompleteness } from './completeness';
 import { checkDateRange } from './dates';
 import { BriefIncompleteError, BriefNotFoundError, BriefValidationError } from './errors';
 import {
+  AVAILABLE_CONTENT_FORMATS,
   BLOCK_KEYS,
+  CONTENT_FORMATS,
   CTA_KINDS,
+  MAX_SLIDES,
+  MIN_SLIDES,
   POST_TYPES,
   qrSpecSchema,
   type Blocks,
   type Brief,
+  type ContentFormat,
   type CtaKind,
   type PostType,
   type QrSpec,
@@ -41,6 +46,12 @@ export const NOTES_MAX = 2000;
 /** What a caller may set. On update, a key that is absent keeps its current value. */
 export interface BriefInput {
   postType?: PostType;
+  /** Further types besides the main one (max 7, none equal to the main type, no duplicates). */
+  extraPostTypes?: PostType[];
+  /** 'post' (default), 'carousel' or 'reel' (coming soon: refused with `reel_coming_soon`). */
+  contentFormat?: ContentFormat;
+  /** Carousel only: 3 to 10 slides (5 when not given). Must be absent or null for other formats. */
+  slideCount?: number | null;
   primaryUspId?: string | null;
   secondaryUspIds?: string[];
   cta?: CtaKind | null;
@@ -68,6 +79,9 @@ interface Row {
   id: string;
   brand_id: string;
   post_type: PostType;
+  extra_post_types: PostType[] | null;
+  content_format: ContentFormat | null;
+  slide_count: number | null;
   primary_usp_id: string | null;
   secondary_usp_ids: string[];
   usp_snapshot: UspSnapshot[];
@@ -85,7 +99,7 @@ interface Row {
   status: 'draft' | 'ready';
 }
 
-const COLUMNS = `id, brand_id, post_type::text as post_type, primary_usp_id, secondary_usp_ids, usp_snapshot, cta::text as cta, blocks, qr,
+const COLUMNS = `id, brand_id, post_type::text as post_type, extra_post_types::text[] as extra_post_types, content_format, slide_count, primary_usp_id, secondary_usp_ids, usp_snapshot, cta::text as cta, blocks, qr,
   photo_id, language, to_char(starts_on, 'YYYY-MM-DD') as starts_on, to_char(ends_on, 'YYYY-MM-DD') as ends_on, open_ended, timezone,
   channels::text[] as channels, notes, status`;
 
@@ -94,6 +108,9 @@ function toBrief(r: Row): Brief {
     id: r.id,
     brandId: r.brand_id,
     postType: r.post_type,
+    extraPostTypes: r.extra_post_types ?? [],
+    contentFormat: r.content_format ?? 'post',
+    slideCount: r.slide_count ?? null,
     primaryUspId: r.primary_usp_id,
     secondaryUspIds: r.secondary_usp_ids ?? [],
     uspSnapshot: r.usp_snapshot ?? [],
@@ -189,6 +206,43 @@ async function save(
     // Post type
     const postType = (has('postType') ? inp.postType : cur?.postType) as PostType | undefined;
     if (!postType || !(POST_TYPES as readonly string[]).includes(postType)) errors.postType = 'invalid';
+
+    // Extra types: known, no duplicates, never the main type, at most 7
+    let extraPostTypes: PostType[] = cur?.extraPostTypes ?? [];
+    if (has('extraPostTypes')) {
+      const v = inp.extraPostTypes;
+      if (!Array.isArray(v) || !v.every((x) => typeof x === 'string' && (POST_TYPES as readonly string[]).includes(x))) errors.extraPostTypes = 'invalid';
+      else if (new Set(v).size !== v.length) errors.extraPostTypes = 'duplicate';
+      else if (v.length > POST_TYPES.length - 1) errors.extraPostTypes = 'too_many';
+      else extraPostTypes = v as PostType[];
+    }
+    if (!errors.extraPostTypes && postType && extraPostTypes.includes(postType)) {
+      // Changing only the main type to one that was an extra: it moves out of the extras. Giving both explicitly is an error.
+      if (has('extraPostTypes')) errors.extraPostTypes = 'includes_main';
+      else extraPostTypes = extraPostTypes.filter((x) => x !== postType);
+    }
+
+    // Content format: a post, a carousel (3 to 10 slides) or a reel (coming soon)
+    let contentFormat: ContentFormat = cur?.contentFormat ?? 'post';
+    let slideCount: number | null = cur?.slideCount ?? null;
+    if (has('contentFormat')) {
+      if (inp.contentFormat === 'reel') errors.contentFormat = 'reel_coming_soon';
+      else if (typeof inp.contentFormat === 'string' && (CONTENT_FORMATS as readonly string[]).includes(inp.contentFormat) && AVAILABLE_CONTENT_FORMATS.includes(inp.contentFormat as ContentFormat)) {
+        contentFormat = inp.contentFormat as ContentFormat;
+      } else errors.contentFormat = 'invalid_format';
+    }
+    if (has('slideCount')) {
+      if (inp.slideCount === null) slideCount = null;
+      else if (typeof inp.slideCount === 'number' && Number.isInteger(inp.slideCount) && inp.slideCount >= MIN_SLIDES && inp.slideCount <= MAX_SLIDES) slideCount = inp.slideCount;
+      else errors.slideCount = 'slide_count_range';
+    }
+    if (!errors.contentFormat && !errors.slideCount) {
+      if (contentFormat !== 'carousel') {
+        // A single post has no slides. Switching away from a carousel drops the count; giving one with another format is an error.
+        if (has('slideCount') && slideCount !== null) errors.slideCount = 'slides_only_for_carousel';
+        else slideCount = null;
+      } else if (slideCount === null) errors.slideCount = 'slide_count_required';
+    }
 
     // CTA
     let cta: CtaKind | null = cur?.cta ?? null;
@@ -342,6 +396,9 @@ async function save(
       id: cur?.id ?? '',
       brandId,
       postType: postType as PostType,
+      extraPostTypes,
+      contentFormat,
+      slideCount,
       primaryUspId,
       secondaryUspIds,
       uspSnapshot,
@@ -383,11 +440,12 @@ async function save(
     if (cur === null) {
       const [row] = await tx.query<Row>(
         `insert into public.post_briefs (brand_id, post_type, primary_usp_id, secondary_usp_ids, usp_snapshot, cta, blocks, qr, photo_id,
-                                         language, starts_on, ends_on, timezone, channels, notes, status, created_by, open_ended)
+                                         language, starts_on, ends_on, timezone, channels, notes, status, created_by, open_ended, extra_post_types,
+                                         content_format, slide_count)
          values ($16, $1::public.post_type, $2, $3::uuid[], $4::jsonb, $5::public.cta_kind, $6::jsonb, $7::jsonb, $8, $9, $10::date, $11::date,
-                 $12, $13::text[]::public.post_channel[], $14, $15, $17, $18)
+                 $12, $13::text[]::public.post_channel[], $14, $15, $17, $18, $19::text[]::public.post_type[], $20, $21::smallint)
          returning ${COLUMNS}`,
-        [...params, brandId, userId, openEnded],
+        [...params, brandId, userId, openEnded, extraPostTypes, contentFormat, slideCount],
       );
       return toBrief(row);
     }
@@ -396,9 +454,10 @@ async function save(
           set post_type = $1::public.post_type, primary_usp_id = $2, secondary_usp_ids = $3::uuid[], usp_snapshot = $4::jsonb,
               cta = $5::public.cta_kind, blocks = $6::jsonb, qr = $7::jsonb, photo_id = $8, language = $9,
               starts_on = $10::date, ends_on = $11::date, timezone = $12, channels = $13::text[]::public.post_channel[],
-              notes = $14, status = $15, open_ended = $18, updated_at = now()
+              notes = $14, status = $15, open_ended = $18, extra_post_types = $19::text[]::public.post_type[],
+              content_format = $20, slide_count = $21::smallint, updated_at = now()
         where id = $16 and brand_id = $17 returning ${COLUMNS}`,
-      [...params, cur.id, brandId, openEnded],
+      [...params, cur.id, brandId, openEnded, extraPostTypes, contentFormat, slideCount],
     );
     return toBrief(row);
   });

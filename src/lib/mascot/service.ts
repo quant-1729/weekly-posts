@@ -6,6 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { findBlockedTerm } from '@/lib/ai/mascot-blocklist';
 import { BrandAccessError, requireBrandMember } from '@/lib/brand/current';
 import { getDb } from '@/lib/db';
+import { syncMascotSwitch } from '@/lib/faces/service';
 import { getStorage, type Storage } from '@/lib/storage';
 import { cleanHex, tweenColorsFor, type BrandColorsInput, type TweenColors } from './colors';
 import { computeEligibility, storeEligibility, type EligibilityInput, type StoredEligibility } from './eligibility';
@@ -257,9 +258,13 @@ export async function setMascotInPosts(
     assertMayHave(await getMascotEligibility(userId, brandId), row !== null, opts.tryAnyway);
     if (!row) await saveMascot({ userId, brandId, tryAnyway: opts.tryAnyway, storage: opts.storage });
   }
-  const done = await getDb().withUser(userId, (tx) =>
-    tx.query('update public.brand_memory set mascot_in_posts = $2 where brand_id = $1 returning brand_id', [brandId, on]),
-  );
+  // The brand's face follows the switch (Brand Face): Tween's face becomes the active one, or a mascot face goes off.
+  const done = await getDb().withUser(userId, async (tx) => {
+    const found = await tx.query('select 1 from public.brand_memory where brand_id = $1', [brandId]);
+    if (found.length === 0) return found;
+    await syncMascotSwitch(tx, brandId, userId, on);
+    return found;
+  });
   if (done.length === 0) throw new BrandAccessError();
   return on;
 }

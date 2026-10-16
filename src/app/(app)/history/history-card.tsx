@@ -1,22 +1,17 @@
 import Link from "next/link";
+import { badge, cardClass, outlineButton } from "@/components/ui";
 import { s } from "@/lib/i18n/strings";
 import { postDownloads } from "@/lib/posts/download";
 import type { HistoryPost } from "@/lib/posts/history";
+import { historyView } from "@/lib/posts/history-view";
 import { formatIstDateTime } from "@/lib/posts/ist";
 
-const STATUS_STYLE: Record<HistoryPost["status"], string> = {
-  draft: "bg-stone-100 text-stone-700",
-  ready: "bg-green-100 text-green-800",
-  failed: "bg-red-100 text-red-800",
-  generating: "bg-amber-100 text-amber-900",
-};
-
-const actionClass =
-  "flex min-h-11 flex-1 items-center justify-center rounded-lg border border-stone-300 bg-white px-3 text-sm font-medium text-stone-800";
+const actionClass = `${outlineButton} w-full`;
 
 /** One past post: opens its review page; "Download" sits underneath. */
 export function HistoryCard({ post, brandName }: { post: HistoryPost; brandName: string }) {
   const createdAt = new Date(post.createdAt);
+  const view = historyView(post);
   const downloads = postDownloads({
     brandName,
     createdAt,
@@ -24,48 +19,56 @@ export function HistoryCard({ post, brandName }: { post: HistoryPost; brandName:
   });
 
   return (
-    <li className="rounded-xl border border-stone-200 bg-white">
-      <Link href={`/review/${post.id}`} aria-label={s.history.openPost} className="flex gap-3 p-3">
+    <li className={`${cardClass} !p-0`}>
+      <Link href={view.href} aria-label={s.history.openPost} className="flex gap-3 p-3">
         {post.thumbnail ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={`/api/files/${post.thumbnail.path}?v=${post.thumbnail.version}`}
             alt={s.history.thumbnailAlt}
             loading="lazy"
-            className="h-20 w-20 shrink-0 rounded-lg bg-stone-100 object-cover"
+            className="h-16 w-16 shrink-0 rounded-xl bg-well object-cover ring-1 ring-black/5"
           />
         ) : (
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-xs text-stone-500">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-well text-center text-note text-helper">
             {s.history.noImage}
           </div>
         )}
         <div className="min-w-0 flex-1 space-y-1">
-          <p className="text-sm text-stone-600">{formatIstDateTime(createdAt)}</p>
-          <p className="line-clamp-2 font-medium">{post.title || s.history.untitled}</p>
+          <p className="text-[13px] leading-[18px] text-desc">{formatIstDateTime(createdAt)}</p>
+          <p className="line-clamp-2 text-ui text-title">{post.title || s.history.untitled}</p>
           <div className="flex flex-wrap items-center gap-1">
             {post.languages.map((l) => (
-              <span key={l} className="rounded-full border border-stone-300 px-2 py-0.5 text-xs text-stone-700">
+              <span key={l} className={badge("neutral")}>
                 {s.history.languages[l]}
               </span>
             ))}
-            <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[post.status]}`}>
-              {s.history.status[post.status]}
-            </span>
+            <span className={badge(view.tone)}>{view.label}</span>
+            {view.formatLabel ? (
+              <span data-format-badge className={badge("neutral")}>
+                {view.formatLabel}
+              </span>
+            ) : null}
           </div>
         </div>
       </Link>
 
-      <div className="flex gap-2 border-t border-stone-200 p-2">
+      <div className="flex gap-2 border-t border-divider p-2">
+        {view.permalink && (
+          <a href={view.permalink} target="_blank" rel="noopener noreferrer" className={`${actionClass} flex-1`}>
+            {s.history.v3Status.viewPost}
+          </a>
+        )}
         {downloads.length > 0 ? (
           <details className="relative flex-1">
-            <summary className={`${actionClass} cursor-pointer list-none`}>{s.history.download}</summary>
-            <ul className="absolute bottom-full right-0 z-10 mb-1 w-56 rounded-lg border border-stone-200 bg-white p-1 shadow-lg">
+            <summary className={`${actionClass} cursor-pointer`}>{s.history.download}</summary>
+            <ul className="absolute bottom-full right-0 z-10 mb-1 w-56 rounded-card border border-line bg-white p-1.5 shadow-dialog">
               {downloads.map((d) => (
                 <li key={d.channel}>
                   <a
                     href={d.href}
                     download={d.filename}
-                    className="block rounded-md px-3 py-3 text-sm text-stone-800 hover:bg-stone-100"
+                    className="block rounded-lg px-3 py-2.5 text-ui text-sub hover:bg-fill-active hover:text-title"
                   >
                     {s.history.downloadChannels[d.channel]}
                   </a>
@@ -74,7 +77,7 @@ export function HistoryCard({ post, brandName }: { post: HistoryPost; brandName:
             </ul>
           </details>
         ) : (
-          <button type="button" disabled title={s.history.noImages} className={`${actionClass} opacity-50`}>
+          <button type="button" disabled title={s.history.noImages} className={actionClass}>
             {s.history.download}
           </button>
         )}

@@ -26,6 +26,7 @@ export {
 export {
   CAPTION_MAX,
   PostCopyError,
+  hashtagLimitFor,
   copyChannels,
   hashtagsFor,
   trimCaption,
@@ -49,6 +50,7 @@ export {
   logCreateShare,
   redrawPosts,
   removePostFlag,
+  resetToBase,
   saveCopy,
   undoCreateApproval,
   chooseDesign,
@@ -56,5 +58,7 @@ export {
   type CopyEdit,
   type CreateDeps,
 } from './posts';
+export { getPostFilter, setPostFilter, type FilterImage, type SetFilterResult } from './filter';
+export { filterOf } from './posts';
 export { describeCreateError, loadDesignPage, loadReviewData, previewForOption, shareTextFor } from './view';
 export type { DesignPage, DesignPageData, OptionView, ReviewData, ReviewPost } from './view';

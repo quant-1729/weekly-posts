@@ -3,7 +3,7 @@
 import { fill, s } from '@/lib/i18n/strings';
 import { REQUIRED_BY_TYPE, USP_LIMITS, type Brief } from './types';
 
-export type MissingKey = 'primaryUsp' | 'dates' | 'cta';
+export type MissingKey = 'description' | 'primaryUsp' | 'dates' | 'cta';
 
 export interface MissingItem {
   key: MissingKey;
@@ -22,11 +22,13 @@ function pick(map: Record<string, string>, type: string): string {
  * What is still missing before design starts, per `REQUIRED_BY_TYPE`, each with a one-line
  * question for the owner. An offer needs a date it ends (`endsOn`); an event needs a date (start
  * or end); an offer's main point must be a discount, price or free extra (the "how much").
+ * A post also needs something to say: the owner's description (`notes`) or a main point.
  * An empty list means the brief is complete.
  */
 export function checkCompleteness(brief: Brief): MissingItem[] {
   const q = s.brief.questions;
   const missing: MissingItem[] = [];
+  if (!brief.notes?.trim() && !brief.primaryUspId) missing.push({ key: 'description', question: q.description });
   for (const key of REQUIRED_BY_TYPE[brief.postType]) {
     if (key === 'primaryUsp') {
       if (!brief.primaryUspId) {

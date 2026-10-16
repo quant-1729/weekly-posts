@@ -178,12 +178,13 @@ export async function runGuardrail(args: {
         where p.brand_id = $1 and p.caption is not null and p.status <> 'skipped'
           and b.week_start >= $2::date and b.week_start <= $3::date
        union all
-       select p.id::text, p.caption, p.created_at::date::text
+       select p.id::text, p.caption, (p.created_at at time zone 'UTC')::date::text
          from public.posts p
         where p.brand_id = $1 and p.batch_id is null and p.brief_id is not null
           and p.caption is not null and p.status <> 'skipped' and p.slide_index is null
           and ($4::uuid is null or p.brief_id <> $4::uuid)
-          and p.created_at::date >= $2::date and p.created_at::date <= $3::date`,
+          -- UTC days on both sides (ref is a UTC date), whatever the database session's time zone is
+          and (p.created_at at time zone 'UTC')::date >= $2::date and (p.created_at at time zone 'UTC')::date <= $3::date`,
       [args.brandId, addDays(ref, -HISTORY_DAYS), ref, args.excludeBriefId ?? null],
     );
     const history: HistoryCaption[] = rows.filter((r) => !own.has(r.id)).map((r) => ({ caption: r.caption, weekStart: r.week_start }));

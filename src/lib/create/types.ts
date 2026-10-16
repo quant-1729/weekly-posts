@@ -2,9 +2,31 @@
 // Pure types: safe to import in the browser.
 
 import type { WeeklyFact } from '@/lib/ai/prompts/v2-weekly';
+import type { PostType } from '@/lib/briefs/types';
+import type { CharacterId } from '@/lib/characters/types';
 import type { ContactPoint } from '@/lib/contacts/types';
-import type { DesignContent, DesignFormat, DesignOption } from '@/lib/design/types';
+import type { FaceKind, FacePlacement, FacePose } from '@/lib/faces/types';
+import type { DesignContent, DesignFormat, DesignOption, SlideKind, SlideText } from '@/lib/design/types';
+import type { PostFilter } from '@/lib/design/filter-presets';
 import type { Flag, RegulatedKind } from '@/lib/guardrail/types';
+
+/**
+ * The brand's face in posts (Brand Face, docs/10 section 2), as the pipeline needs it. `poses` holds the storage path of
+ * each approved transparent pose PNG ("{bucket}/{brand_id}/..."), or null for a mascot (Tween is drawn by code).
+ */
+export interface CreateFace {
+  /** Null for the Tween that an older brand has switched on without a face row. */
+  id: string | null;
+  kind: FaceKind;
+  name: string;
+  /** A mascot's kit character ('tween' when none was saved); absent for every other kind. */
+  character?: CharacterId;
+  poses: Record<FacePose, string> | null;
+  placement: FacePlacement;
+  neverSay: string[];
+  /** Null = every post type. */
+  postTypes: PostType[] | null;
+}
 
 /** The brand, as the pipeline needs it (loaded once by `loadCreateBrand`). */
 export interface CreateBrand {
@@ -23,11 +45,15 @@ export interface CreateBrand {
   contacts: ContactPoint[];
   hasLogo: boolean;
   logoPath: string | null;
-  /** brand_memory.mascot_in_posts. */
+  /** The active face when it is on in posts (and usable by this brand), else null. */
+  face: CreateFace | null;
+  /** True when the face is the Tween mascot (kept for code written before Brand Face). */
   mascotOn: boolean;
   /** The brand's active facts (f1, f2, ...), the base of `factsForBrief`. */
   facts: WeeklyFact[];
 }
+
+export type { SlideText };
 
 /** The words of a post, validated in code. */
 export interface PostCopyResult {
@@ -39,6 +65,8 @@ export interface PostCopyResult {
   hashtags: string[];
   bubble: string;
   pose: string;
+  /** A carousel's slides in order (cover first, call to action last); empty for a single post. */
+  slides: SlideText[];
   /** What code had to repair (for logs and tests; not shown to the owner). */
   fixes: string[];
 }
@@ -73,12 +101,16 @@ export interface StoredDesign {
   dropped: Partial<Record<DesignFormat, string[]>>;
   blockers: DesignBlocker[];
   /** For a carousel slide. */
-  slide?: { index: number; total: number };
+  slide?: { index: number; total: number; kind?: SlideKind };
   /** For the post a carousel belongs to. */
   carousel?: { id: string; slides: number };
   /** The language and photo the picture was drawn with. */
   language: string;
   photoId: string | null;
+  /** The picture shows a realistic AI person (Brand Face): publishing adds the AI disclosure to the caption. */
+  aiFace?: true;
+  /** The colour filter applied to the photo and background (UX-2). Absent on designs made before filters: read it with `filterOf`. */
+  filter?: PostFilter;
 }
 
 export interface CreatePost {
@@ -91,7 +123,7 @@ export interface CreatePost {
   caption: string;
   cta: string;
   hashtags: string[];
-  imageText: { headline: string; subline: string; bubble: string; pose: string };
+  imageText: { headline: string; subline: string; bubble: string; pose: string; slides: SlideText[] };
   photoId: string | null;
   mascotId: string | null;
   flags: Flag[];

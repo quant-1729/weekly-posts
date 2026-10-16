@@ -51,24 +51,31 @@ export function PhotoPicker({
       <fieldset className="min-w-0 space-y-3">
         <legend className="sr-only">{t.title}</legend>
         <label className={pickClass(photoId === null)}>
-          <input type="radio" name="photo" className="mt-1 h-5 w-5 shrink-0" checked={photoId === null} onChange={() => onChange(null)} />
+          <input type="radio" name="photo" className="mt-0.5 shrink-0" checked={photoId === null} onChange={() => onChange(null)} />
           <span className="min-w-0">
-            <span className="block font-medium">{t.none}</span>
-            <span className="block text-sm text-stone-600">{t.noneHint}</span>
+            <span className="block text-ui text-title">{t.none}</span>
+            <span className="mt-0.5 block text-note text-desc">{t.noneHint}</span>
           </span>
         </label>
         {photos.length === 0 ? (
-          <p className="text-stone-600">{t.empty}</p>
+          <p className="text-[13px] leading-[18px] text-desc">{t.empty}</p>
         ) : (
-          <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
             {photos.map((p) => (
               <li key={p.id} data-photo-id={p.id} className="min-w-0">
-                <label className={`block cursor-pointer rounded-xl border p-1.5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#E4572E] ${photoId === p.id ? "border-[#E4572E] ring-2 ring-[#E4572E]/40" : "border-stone-300"}`}>
+                <label className={`relative block cursor-pointer rounded-xl focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-coral ${photoId === p.id ? "outline-2 outline-offset-2 outline-coral" : ""}`}>
                   <input type="radio" name="photo" className="sr-only" checked={photoId === p.id} onChange={() => onChange(p.id)} />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={p.url} alt={p.description ?? t.alt} className="aspect-square w-full rounded-lg bg-stone-100 object-cover" />
-                  {p.usable === false && <span className="mt-1 block text-xs text-amber-800">{t.notUsable}</span>}
-                  {p.hasPeople === true && <span className="mt-1 block text-xs text-amber-800">{t.people}</span>}
+                  <img src={p.url} alt={p.description ?? t.alt} className="aspect-square w-full rounded-xl bg-well object-cover" />
+                  {photoId === p.id && (
+                    <span className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-coral text-white" aria-hidden="true">
+                      <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 12.5l4.5 4.5L19 7.5" />
+                      </svg>
+                    </span>
+                  )}
+                  {p.usable === false && <span className="mt-1 block text-note text-warn-tx">{t.notUsable}</span>}
+                  {p.hasPeople === true && <span className="mt-1 block text-note text-warn-tx">{t.people}</span>}
                 </label>
               </li>
             ))}

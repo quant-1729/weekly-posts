@@ -160,13 +160,13 @@ export function VoiceRecorder({
           type="button"
           onClick={start}
           disabled={busy}
-          className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-[#E4572E] bg-[#E4572E]/5 px-4 py-6 text-[#B93A15] disabled:opacity-50"
+          className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-coral bg-coral-50 px-4 py-6 text-coral-dark disabled:opacity-50"
         >
           <svg viewBox="0 0 24 24" className="h-10 w-10" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="9" y="3" width="6" height="11" rx="3" />
             <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
           </svg>
-          <span className="text-lg font-semibold">{s.voice.tapToRecord}</span>
+          <span className="text-card-title text-title">{s.voice.tapToRecord}</span>
           <span className="text-sm text-stone-600">{s.voice.maxLabel}</span>
         </button>
       )}
@@ -177,7 +177,7 @@ export function VoiceRecorder({
             <span className="h-3 w-3 animate-pulse rounded-full bg-red-600" aria-hidden="true" />
             {s.voice.recording}
           </p>
-          <p className="text-3xl font-bold tabular-nums" aria-live="off">
+          <p className="text-3xl font-medium tabular-nums" aria-live="off">
             {formatTime(elapsed)} <span className="text-base font-normal text-stone-500">/ {formatTime(MAX_RECORDING_SECONDS)}</span>
           </p>
           <button type="button" onClick={() => stop(false)} className={primaryButton}>

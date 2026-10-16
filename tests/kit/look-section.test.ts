@@ -20,7 +20,8 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: () => undefined
 import { chooseLogoVariantAction, saveKitAction } from "@/app/(app)/brand/kit-actions";
 import { LookBlock } from "@/components/brand/blocks";
 import { KitEditor, LogoExtras } from "@/components/brand/look-kit";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import type { MockDb } from "@/lib/db/mock";
 import { THEME_IDS, type BrandKit } from "@/lib/design/types";
 import { kitCopy } from "@/lib/kit/copy";

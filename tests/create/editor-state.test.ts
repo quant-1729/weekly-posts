@@ -12,6 +12,10 @@ import {
   endsInText,
   formatsForChannels,
   missingForNext,
+  tickedTypes,
+  toggleAllChannels,
+  toggleAllTypes,
+  toggleType,
   qrTargetUrl,
   type EditorDraft,
   type LibraryUsp,
@@ -73,6 +77,21 @@ describe("draftToInput", () => {
     expect(d).toMatchObject({ postType: "event", cta: "book", ctaChosen: true, qr: { mode: "link", target: "booking", url: "https://book.example/" }, language: "hi" });
     expect(draftToInput(d)).toMatchObject({ postType: "event", cta: "book", startsOn: "2026-10-20", endsOn: "2026-10-21", channels: ["facebook"] });
   });
+
+  it("the description round-trips as the brief's notes (trimmed; empty becomes null)", () => {
+    expect(emptyDraft({ blocks: {}, language: "en", channels: [] }).notes).toBe("");
+    expect(draftToInput(base({ postType: "brand", notes: "  20% off cakes this weekend.  " }))?.notes).toBe("20% off cakes this weekend.");
+    expect(draftToInput(base({ postType: "brand", notes: "   " }))?.notes).toBeNull();
+    const brief: Brief = {
+      id: "x", brandId: "b", postType: "brand", primaryUspId: null, secondaryUspIds: [], uspSnapshot: [], cta: null, blocks: {}, qr: null, photoId: null, language: null,
+      startsOn: null, endsOn: null, openEnded: false, timezone: null, channels: [], notes: "Our new loaf is here", status: "draft",
+    };
+    expect(draftFromBrief(brief).notes).toBe("Our new loaf is here");
+    expect(draftFromBrief({ ...brief, notes: null }).notes).toBe("");
+    expect(draftToInput(draftFromBrief(brief))?.notes).toBe("Our new loaf is here");
+    // Typing a description changes the autosave key.
+    expect(draftKey(base({ postType: "brand", notes: "a" }))).not.toBe(draftKey(base({ postType: "brand", notes: "ab" })));
+  });
 });
 
 describe("missingForNext (B-8)", () => {
@@ -80,34 +99,30 @@ describe("missingForNext (B-8)", () => {
     expect(missingForNext(base(), [], NEEDS_CONFIRMATION).map((m) => m.key)).toEqual(["postType"]);
   });
 
-  it("an offer needs a main point, an end date and a call to action, each as a one-line question", () => {
-    const m = missingForNext(base({ postType: "offer" }), [discount], NEEDS_CONFIRMATION);
-    expect(m.map((x) => x.key)).toEqual(["primaryUsp", "dates", "cta"]);
-    for (const x of m) expect(x.question.split("\n")).toHaveLength(1);
-    expect(m[1].question).toBe("Until when is the offer on?");
+  it("asks for a description when there are no notes and no main point, as one line", () => {
+    for (const type of POST_TYPES) {
+      const m = missingForNext(base({ postType: type }), [], NEEDS_CONFIRMATION);
+      expect(m.map((x) => x.key)).toEqual(["description"]);
+      expect(m[0].question).not.toContain("\n");
+    }
+    expect(missingForNext(base({ postType: "offer", notes: "   " }), [], NEEDS_CONFIRMATION).map((m) => m.key)).toEqual(["description"]);
   });
 
-  it("an offer whose main point is not a discount, price or free extra still needs the 'how much'", () => {
-    const m = missingForNext(base({ postType: "offer", primaryUspId: family.id, cta: "visit", endsOn: "2026-10-20" }), [family], NEEDS_CONFIRMATION);
-    expect(m.map((x) => x.key)).toEqual(["primaryUsp"]);
-  });
-
-  it("is empty for a complete offer, and a brand post needs nothing", () => {
-    expect(missingForNext(base({ postType: "offer", primaryUspId: discount.id, cta: "visit", endsOn: "2026-10-20" }), [discount], NEEDS_CONFIRMATION)).toEqual([]);
-    expect(missingForNext(base({ postType: "brand" }), [], NEEDS_CONFIRMATION)).toEqual([]);
+  it("a description is enough for any type: selling points, dates and a call to action are no longer asked", () => {
+    for (const type of POST_TYPES) expect(missingForNext(base({ postType: type, notes: "Cakes, 20% off this weekend" }), [], NEEDS_CONFIRMATION)).toEqual([]);
   });
 
   it("a chosen claim that needs the owner's confirmation blocks until confirmed", () => {
-    const d = base({ postType: "brand", primaryUspId: rating.id });
+    const d = base({ postType: "brand", notes: "x", primaryUspId: rating.id });
     const m = missingForNext(d, [rating], NEEDS_CONFIRMATION);
     expect(m).toEqual([{ key: "confirm", question: 'Confirm "4.8 on Google" in the selling points before using it.' }]);
     expect(missingForNext(d, [{ ...rating, confirmed: true }], NEEDS_CONFIRMATION)).toEqual([]);
     // A kind that doesn't need confirming never blocks.
-    expect(missingForNext(base({ postType: "brand", primaryUspId: family.id }), [family], NEEDS_CONFIRMATION)).toEqual([]);
+    expect(missingForNext(base({ postType: "brand", notes: "x", primaryUspId: family.id }), [family], NEEDS_CONFIRMATION)).toEqual([]);
   });
 
   it("a link QR needs its link", () => {
-    expect(missingForNext(base({ postType: "brand", qr: { mode: "link", target: "website", url: "" } }), [], NEEDS_CONFIRMATION).map((m) => m.key)).toEqual(["qr"]);
+    expect(missingForNext(base({ postType: "brand", notes: "x", qr: { mode: "link", target: "website", url: "" } }), [], NEEDS_CONFIRMATION).map((m) => m.key)).toEqual(["qr"]);
   });
 });
 
@@ -178,11 +193,15 @@ describe("Ends in N days", () => {
 });
 
 describe("applyDescription", () => {
-  it("fills what the answer carries and leaves the rest alone", () => {
+  it("sets the type, call to action, blocks and language, but no longer selling points or dates", () => {
     const before = base({ cta: "scan", ctaChosen: true, language: "en", blocks: { phone: true, whatsapp: true } });
-    const after = applyDescription(before, { brief: { postType: "offer", primaryUspId: discount.id, secondaryUspIds: [family.id], endsOn: "2026-10-18" } });
-    expect(after).toMatchObject({ postType: "offer", primaryUspId: discount.id, secondaryUspIds: [family.id], endsOn: "2026-10-18", cta: "scan", language: "en" });
-    expect(after.blocks).toEqual({ phone: true, whatsapp: true, dates: true });
+    const after = applyDescription(before, { brief: { postType: "offer", primaryUspId: discount.id, secondaryUspIds: [family.id], startsOn: "2026-10-15", endsOn: "2026-10-18" } });
+    expect(after).toMatchObject({ postType: "offer", primaryUspId: null, secondaryUspIds: [], startsOn: "", endsOn: "", cta: "scan", language: "en" });
+    expect(after.blocks).toEqual({ phone: true, whatsapp: true });
+  });
+
+  it("leaves the owner's own description alone", () => {
+    expect(applyDescription(base({ notes: "my words" }), { brief: { postType: "brand" } }).notes).toBe("my words");
   });
 
   it("starts the CTA from the post type unless the owner chose one, and applies named blocks and language", () => {
@@ -190,9 +209,71 @@ describe("applyDescription", () => {
     const named = applyDescription(base({ blocks: { phone: true, whatsapp: true } }), { brief: { postType: "brand", cta: "whatsapp", blocks: { phone: false, whatsapp: true }, language: "hi" } });
     expect(named).toMatchObject({ cta: "whatsapp", ctaChosen: true, language: "hi", blocks: { phone: false, whatsapp: true } });
   });
+});
 
-  it("an extra point never repeats the main one", () => {
-    const d = applyDescription(base(), { brief: { postType: "offer", primaryUspId: discount.id, secondaryUspIds: [discount.id, family.id] } });
-    expect(d.secondaryUspIds).toEqual([family.id]);
+describe("several post types (main + extras)", () => {
+  it("the first ticked type is the main one, the rest are extras in tick order", () => {
+    let d = base();
+    d = toggleType(d, "new_product");
+    d = toggleType(d, "offer");
+    d = toggleType(d, "event");
+    expect(d).toMatchObject({ postType: "new_product", extraPostTypes: ["offer", "event"], cta: DEFAULT_CTA.new_product });
+    expect(draftToInput(d)).toMatchObject({ postType: "new_product", extraPostTypes: ["offer", "event"] });
+    expect(tickedTypes(d)).toEqual(["new_product", "offer", "event"]);
+  });
+
+  it("unticking the main type promotes the next ticked one; unticking an extra keeps the main", () => {
+    let d = (["new_product", "offer", "event"] as const).reduce((x, t) => toggleType(x, t), base());
+    d = toggleType(d, "offer");
+    expect(d).toMatchObject({ postType: "new_product", extraPostTypes: ["event"] });
+    d = toggleType(d, "new_product");
+    expect(d).toMatchObject({ postType: "event", extraPostTypes: [], cta: DEFAULT_CTA.event });
+    d = toggleType(d, "event");
+    expect(d).toMatchObject({ postType: null, extraPostTypes: [], cta: null });
+    expect(draftToInput(d)).toBeNull();
+  });
+
+  it("a call to action the owner chose is kept when the main type changes", () => {
+    const d = toggleType(base({ postType: "offer", cta: "call", ctaChosen: true }), "offer");
+    expect(d.postType).toBeNull();
+    expect(d.cta).toBe("call");
+  });
+
+  it("select all ticks all 8 keeping the earlier order, and clears them when all are ticked", () => {
+    let d = toggleType(toggleType(base(), "hiring"), "event");
+    d = toggleAllTypes(d);
+    expect(tickedTypes(d)).toHaveLength(POST_TYPES.length);
+    expect(d.postType).toBe("hiring");
+    expect(d.extraPostTypes[0]).toBe("event");
+    expect(d.extraPostTypes).not.toContain("hiring");
+    expect(new Set(tickedTypes(d)).size).toBe(8);
+    d = toggleAllTypes(d);
+    expect(d).toMatchObject({ postType: null, extraPostTypes: [] });
+  });
+
+  it("select all for channels", () => {
+    const options = ["instagram", "facebook", "whatsapp"];
+    expect(toggleAllChannels(["instagram"], options)).toEqual(["instagram", "facebook", "whatsapp"]);
+    expect(toggleAllChannels(options, options)).toEqual([]);
+    expect(toggleAllChannels(["youtube", ...options], options)).toEqual(["youtube"]);
+  });
+
+  it("loads extras from the brief and applyDescription changes the main type only", () => {
+    const brief = { id: "x", brandId: "b", postType: "new_product", extraPostTypes: ["offer"], primaryUspId: null, secondaryUspIds: [], uspSnapshot: [], cta: null, blocks: {}, qr: null, photoId: null, language: "en", startsOn: null, endsOn: null, openEnded: false, timezone: null, channels: [], notes: null, status: "draft" } as Brief;
+    const d = draftFromBrief(brief);
+    expect(d.extraPostTypes).toEqual(["offer"]);
+    expect(applyDescription(d, { brief: { postType: "offer" } as never })).toMatchObject({ postType: "offer", extraPostTypes: [] });
+    expect(applyDescription(d, { brief: { postType: "event" } as never })).toMatchObject({ postType: "event", extraPostTypes: ["offer"] });
+  });
+});
+
+describe("copy cache key", () => {
+  it("changes when the extra types change, and stays the same when there are none", async () => {
+    const { briefFingerprint } = await import("@/lib/create/posts");
+    const brief = { id: "x", brandId: "b", postType: "new_product", primaryUspId: null, secondaryUspIds: [], uspSnapshot: [], cta: null, blocks: {}, qr: null, photoId: null, language: "en", startsOn: null, endsOn: null, openEnded: false, timezone: null, channels: [], notes: "n", status: "draft" } as Brief;
+    const none = briefFingerprint(brief);
+    expect(briefFingerprint({ ...brief, extraPostTypes: [] })).toBe(none);
+    expect(briefFingerprint({ ...brief, extraPostTypes: ["offer"] })).not.toBe(none);
+    expect(briefFingerprint({ ...brief, extraPostTypes: ["offer"] })).not.toBe(briefFingerprint({ ...brief, extraPostTypes: ["event"] }));
   });
 });

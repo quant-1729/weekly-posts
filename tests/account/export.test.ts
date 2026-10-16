@@ -57,7 +57,7 @@ describe("buildExport", () => {
     const a = await seedAccount(db, storage);
     const zip = parseZip(await collect(await buildExport(a.userId, { storage, now: NOW })));
 
-    const jsonFiles = ["account.json", "brand.json", "facts.json", "photos.json", "posts.json", "actions.json", "checkins.json", "clicks.json", "owner-dates.json", "emails.json", "usps.json", "contact-points.json", "post-briefs.json", "payment-ids.json", "connections.json", "queue.json", "queue-settings.json"];
+    const jsonFiles = ["account.json", "brand.json", "facts.json", "photos.json", "posts.json", "actions.json", "checkins.json", "clicks.json", "owner-dates.json", "emails.json", "sessions.json", "usps.json", "contact-points.json", "post-briefs.json", "payment-ids.json", "connections.json", "queue.json", "queue-settings.json", "insights.json", "competitors.json", "research.json"];
     const files = expectedFiles(a);
     expect(zip.names.slice().sort()).toEqual(["README.txt", ...jsonFiles, ...files.keys()].sort());
     expect(zip.names).not.toContain("MISSING-FILES.txt");
@@ -238,6 +238,8 @@ describe("buildExport", () => {
     const briefs = jsonOf(zip.files, "post-briefs.json");
     expect(briefs).toHaveLength(1);
     expect(briefs[0]).toMatchObject({ post_type: "offer", cta: "visit", photo_id: a.photoId });
+    expect(briefs[0]).toHaveProperty("extra_post_types");
+    expect(briefs[0]).toMatchObject({ content_format: "post", slide_count: null });
     const pay = jsonOf(zip.files, "payment-ids.json");
     expect(pay).toHaveLength(1);
     expect(pay[0]).toMatchObject({ address: "shop@okbank", payee_name: "Corner Bakery", status: "pending" });
@@ -249,7 +251,7 @@ describe("buildExport", () => {
   it("an account with no business still exports its account file", async () => {
     const userId = await newUser(db, `empty-${randomUUID().slice(0, 6)}@example.com`);
     const zip = parseZip(await collect(await buildExport(userId, { storage, now: NOW })));
-    expect(zip.names.sort()).toEqual(["README.txt", "account.json", "emails.json"]);
+    expect(zip.names.sort()).toEqual(["README.txt", "account.json", "emails.json", "sessions.json"]);
   });
 
   it("puts each business in its own folder when the account has more than one", async () => {
@@ -276,7 +278,7 @@ describe("export reads rows as the user (row-level security)", () => {
     const a = await seedAccount(db, storage);
     const outsider = await newUser(db, `outsider-${randomUUID().slice(0, 6)}@example.com`);
     const zip = parseZip(await collect(await buildExport(outsider, { storage, now: NOW })));
-    expect(zip.names.sort()).toEqual(["README.txt", "account.json", "emails.json"]);
+    expect(zip.names.sort()).toEqual(["README.txt", "account.json", "emails.json", "sessions.json"]);
     expect([...zip.files.values()].some((v) => new TextDecoder().decode(v).includes(a.brandId))).toBe(false);
   });
 });

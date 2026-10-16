@@ -23,8 +23,8 @@ import { requireBrandMember } from '@/lib/brand/current';
 import { getBrief } from '@/lib/briefs/service';
 import type { Brief } from '@/lib/briefs/types';
 import { getDb, type Tx } from '@/lib/db';
-import { needsCarousel, renderCarousel, splitIntoSlides } from '@/lib/design';
-import type { DesignContent, DesignFormat, DesignOption } from '@/lib/design/types';
+import { needsCarousel, renderCarousel, slideContents, splitIntoSlides } from '@/lib/design';
+import { carouselFormat, type DesignContent, type DesignFormat, type DesignOption, type SlideKind, type SlideText } from '@/lib/design/types';
 import {
   GuardrailActionError,
   confirmFlag as confirmFlagText,
@@ -40,9 +40,10 @@ import { logAction } from '@/lib/approvals/data';
 import { dropQueuedItems } from '@/lib/queue/service';
 import { loadCreateBrand } from './brand';
 import { approvalCheck, blockersFromReport, carryDecisions, checkPosts } from './check';
-import { briefFormats, channelFormats, contentFromBrief, primaryFormat } from './content';
+import { channelFormats, contentFromBrief, designFormat, designFormats, isCarouselBrief } from './content';
 import {
   BUBBLE_MAX_CHARS,
+  hashtagLimitFor,
   CAPTION_MAX,
   CTA_MAX_CHARS,
   HASHTAGS_MAX,
@@ -56,8 +57,9 @@ import {
   writePostCopy,
   type PostCopyDeps,
 } from './copy';
-import { loadDesignAssets, renderOne, buildInput, saveTypeDefault, validOption, optionsFor, type DesignAssets } from './render';
+import { loadDesignAssets, renderOne, renderSlides, buildInput, saveTypeDefault, validOption, optionsFor, type DesignAssets } from './render';
 import type { CreateBrand, CreatePost, DesignBlocker, DesignWords, StoredDesign } from './types';
+import { DEFAULT_POST_FILTER, parsePostFilter, type PostFilter } from '@/lib/design/filter-presets';
 
 const e = s.create.design.errors;
 
@@ -93,7 +95,7 @@ interface Row {
   caption: string;
   cta: string;
   hashtags: string[] | null;
-  image_text: { headline?: string; subline?: string; bubble?: string; pose?: string } | null;
+  image_text: { headline?: string; subline?: string; bubble?: string; pose?: string; slides?: unknown } | null;
   photo_id: string | null;
   mascot_id: string | null;
   fact_flags: Flag[] | null;
@@ -115,6 +117,20 @@ const COLUMNS = `p.id::text as id, p.brand_id::text as brand_id, p.brief_id::tex
 
 const iso = (v: unknown): string | null => (v == null ? null : v instanceof Date ? v.toISOString() : new Date(String(v)).toISOString());
 
+const SLIDE_KIND_SET = new Set<string>(['cover', 'point', 'proof', 'cta']);
+
+/** The slides stored in a post's `image_text` (a carousel the owner asked for); anything malformed is dropped. */
+function slidesOf(raw: unknown): SlideText[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.flatMap((x): SlideText[] => {
+    const o = x && typeof x === 'object' ? (x as Record<string, unknown>) : {};
+    return typeof o.kind === 'string' && SLIDE_KIND_SET.has(o.kind) && typeof o.headline === 'string' ? [{ kind: o.kind as SlideKind, headline: o.headline, body: typeof o.body === 'string' ? o.body : '' }] : [];
+  });
+}
+
+/** True when the post is one channel of a carousel the owner asked for: its slides are the point of it. */
+export const hasSlides = (p: Pick<CreatePost, 'imageText'>): boolean => p.imageText.slides.length >= 2;
+
 function toPost(r: Row): CreatePost {
   return {
     id: r.id,
@@ -126,7 +142,7 @@ function toPost(r: Row): CreatePost {
     caption: r.caption,
     cta: r.cta,
     hashtags: r.hashtags ?? [],
-    imageText: { headline: r.image_text?.headline ?? '', subline: r.image_text?.subline ?? '', bubble: r.image_text?.bubble ?? '', pose: r.image_text?.pose ?? '' },
+    imageText: { headline: r.image_text?.headline ?? '', subline: r.image_text?.subline ?? '', bubble: r.image_text?.bubble ?? '', pose: r.image_text?.pose ?? '', slides: slidesOf(r.image_text?.slides) },
     photoId: r.photo_id,
     mascotId: r.mascot_id,
     flags: Array.isArray(r.fact_flags) ? r.fact_flags : [],
@@ -180,14 +196,18 @@ export async function getPost(userId: string, brandId: string, postId: string): 
   return row ? toPost(row) : null;
 }
 
+/** The colour filter a post's pictures were drawn with ("none" for a post without a design or from before filters). */
+export const filterOf = (p: CreatePost | undefined | null): PostFilter => (p?.design?.filter ? parsePostFilter(p.design.filter) : DEFAULT_POST_FILTER);
+
 /** The words on the picture, as stored on a post. */
 export const wordsOf = (p: CreatePost): DesignWords => ({ headline: p.imageText.headline, subline: p.imageText.subline, ctaText: p.cta, bubble: p.imageText.bubble });
 
-const storedImageText = (w: { headline: string; subline: string; bubble: string; pose: string }): Record<string, string> => ({
+const storedImageText = (w: { headline: string; subline: string; bubble: string; pose: string; slides?: SlideText[] }): Record<string, unknown> => ({
   headline: w.headline,
   subline: w.subline,
   ...(w.bubble ? { bubble: w.bubble } : {}),
   ...(w.pose ? { pose: w.pose } : {}),
+  ...(w.slides && w.slides.length > 0 ? { slides: w.slides } : {}),
 });
 
 const CODE_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -226,7 +246,7 @@ export interface DraftResult {
  */
 export function briefFingerprint(b: Brief): string {
   const usps = b.uspSnapshot.map((u) => [u.uspId, u.kind, u.title, u.details, u.confirmed, u.role]);
-  const key = JSON.stringify([b.postType, usps, b.cta, b.qr, b.startsOn, b.endsOn, b.openEnded, b.channels, b.language, b.notes]);
+  const key = JSON.stringify([b.postType, usps, b.cta, b.qr, b.startsOn, b.endsOn, b.openEnded, b.channels, b.language, b.notes, ...(b.extraPostTypes?.length ? [b.extraPostTypes] : []), ...(b.contentFormat && b.contentFormat !== 'post' ? [b.contentFormat, b.slideCount ?? null] : [])]);
   return createHash('sha256').update(key).digest('hex').slice(0, 16);
 }
 
@@ -279,21 +299,22 @@ async function ensureDraftPostsOnce(args: { userId: string; brandId: string; bri
     }
   }
   const assets = await loadDesignAssets({ userId, brandId, brief, brand, storage: deps.storage });
-  const { copy } = await writePostCopy({ userId, brandId, brief, brand, mascot: assets.mascotId !== null, now: deps.now }, deps.copy);
+  const { copy } = await writePostCopy({ userId, brandId, brief, brand, mascot: assets.faceOn, face: assets.face, now: deps.now }, deps.copy);
   const channels = copyChannels(brief);
   const words: DesignWords = { headline: copy.headline, subline: copy.subline, ctaText: copy.ctaText, bubble: copy.bubble };
   const inputs = channels.map((c) => ({ channel: c, caption: copy.captions[c], hashtags: hashtagsFor(c, copy.hashtags) }));
-  const results = await checkPosts({ userId, brandId, brief, brand, words, posts: inputs, now: deps.now, aiFixture: deps.aiFixture });
+  const results = await checkPosts({ userId, brandId, brief, brand, words, posts: inputs, now: deps.now, aiFixture: deps.aiFixture, slides: copy.slides });
   const language = brief.language ?? brand.language;
-  const pose = assets.mascotId ? copy.pose : '';
+  const pose = assets.faceOn ? copy.pose : '';
 
   const created = await getDb().withService(async (tx) => {
     await tx.query('select id from public.post_briefs where id = $1 and brand_id = $2 for update', [briefId, brandId]);
     const [have] = await tx.query<{ n: number }>('select count(*)::int as n from public.posts where brief_id = $1 and brand_id = $2 and carousel_id is null', [briefId, brandId]);
     if ((have?.n ?? 0) > 0) return false; // another request wrote it first
     for (let i = 0; i < channels.length; i++) {
-      const text = { headline: words.headline, subline: words.subline, bubble: assets.mascotId ? words.bubble : '', pose };
-      const original = { caption: inputs[i].caption, cta: words.ctaText, hashtags: inputs[i].hashtags, image_text: storedImageText(text), fixes: copy.fixes, fp: fingerprint };
+      const text = { headline: words.headline, subline: words.subline, bubble: assets.faceOn ? words.bubble : '', pose, slides: copy.slides };
+      // `original` is the base version "Undo all" goes back to: the generated words and their flags (the design is added when first chosen).
+      const original = { caption: inputs[i].caption, cta: words.ctaText, hashtags: inputs[i].hashtags, image_text: storedImageText(text), fixes: copy.fixes, fp: fingerprint, flags: results[i].flags };
       await insertPost(tx, {
         brandId,
         userId,
@@ -325,7 +346,7 @@ interface NewPost {
   caption: string;
   cta: string;
   hashtags: string[];
-  imageText: Record<string, string>;
+  imageText: Record<string, unknown>;
   photoId: string | null;
   mascotId: string | null;
   flags: Flag[];
@@ -369,8 +390,10 @@ export interface CopyEdit {
   bubble?: string;
   /** New caption per channel. */
   captions?: Record<string, string>;
-  /** Comma or space separated. */
+  /** Comma or space separated; the same tags on every channel (each keeps as many as it takes). */
   hashtags?: string;
+  /** Comma or space separated, per channel: the review step edits one channel's hashtags at a time. Wins over `hashtags`. */
+  hashtagsByChannel?: Record<string, string>;
 }
 
 export type SaveCopyResult = { ok: true; posts: CreatePost[]; changed: boolean } | { ok: false; errors: string[] };
@@ -395,6 +418,11 @@ export function checkCopyEdit(edit: CopyEdit, language: string, channels: readon
     else if (visibleLength(text.trim()) > (CAPTION_MAX[channel] ?? 1200)) errors.push(fill(e.captionLong, { channel: label, max: CAPTION_MAX[channel] ?? 1200 }));
   }
   if (edit.hashtags !== undefined && cleanHashtags(edit.hashtags.split(/[\s,]+/).filter(Boolean), 99).length > HASHTAGS_MAX) errors.push(fill(e.hashtagsMany, { max: HASHTAGS_MAX }));
+  for (const [channel, text] of Object.entries(edit.hashtagsByChannel ?? {})) {
+    if (!channels.includes(channel)) continue;
+    const max = hashtagLimitFor(channel);
+    if (max > 0 && cleanHashtags(text.split(/[\s,]+/).filter(Boolean), 99).length > max) errors.push(fill(e.hashtagsMany, { max }));
+  }
   return errors;
 }
 
@@ -420,12 +448,18 @@ export async function saveCopy(args: { userId: string; brandId: string; briefId:
     bubble: edit.bubble === undefined ? first.imageText.bubble : oneLine(edit.bubble),
   };
   const tags = edit.hashtags === undefined ? null : cleanHashtags(edit.hashtags.split(/[\s,]+/).filter(Boolean));
-  const next = posts.map((p) => ({
-    post: p,
-    caption: edit.captions?.[p.channel] === undefined ? p.caption : edit.captions[p.channel].replace(/\r\n/g, '\n').trim(),
-    hashtags: tags === null ? p.hashtags : hashtagsFor(p.channel, tags),
-  }));
-  const changed = next.some((n) => n.caption !== n.post.caption || n.hashtags.join(' ') !== n.post.hashtags.join(' ')) || posts.some((p) => p.imageText.headline !== words.headline || p.imageText.subline !== words.subline || p.cta !== words.ctaText || p.imageText.bubble !== words.bubble);
+  const next = posts.map((p) => {
+    const own = edit.hashtagsByChannel?.[p.channel];
+    return {
+      post: p,
+      caption: edit.captions?.[p.channel] === undefined ? p.caption : edit.captions[p.channel].replace(/\r\n/g, '\n').trim(),
+      hashtags: own !== undefined ? hashtagsFor(p.channel, cleanHashtags(own.split(/[\s,]+/).filter(Boolean))) : tags === null ? p.hashtags : hashtagsFor(p.channel, tags),
+    };
+  });
+  // The words on the picture are shared by every channel; a caption or hashtag change is only that channel's.
+  const pictureChanged = posts.some((p) => p.imageText.headline !== words.headline || p.imageText.subline !== words.subline || p.cta !== words.ctaText || p.imageText.bubble !== words.bubble);
+  const ownChanged = (n: (typeof next)[number]) => n.caption !== n.post.caption || n.hashtags.join(' ') !== n.post.hashtags.join(' ');
+  const changed = pictureChanged || next.some(ownChanged);
   if (!changed) return { ok: true, posts, changed: false };
 
   const results = await checkPosts({
@@ -437,14 +471,16 @@ export async function saveCopy(args: { userId: string; brandId: string; briefId:
     posts: next.map((n) => ({ channel: n.post.channel, caption: n.caption, hashtags: n.hashtags })),
     now: deps.now,
     aiFixture: deps.aiFixture,
+    slides: first.imageText.slides,
   });
   const now = (deps.now ?? new Date()).toISOString();
-  const hadDesign = posts.some((p) => p.themeId !== null);
+  const hadDesign = pictureChanged && posts.some((p) => p.themeId !== null); // a caption edit leaves the pictures alone
   await getDb().withService(async (tx) => {
     for (let i = 0; i < next.length; i++) {
       const n = next[i];
+      if (!pictureChanged && !ownChanged(n)) continue; // another channel's caption was edited: this post and its approval stay as they are
       const flags = carryDecisions(results[i].flags, n.post.flags);
-      const text = { headline: words.headline, subline: words.subline, bubble: words.bubble, pose: n.post.imageText.pose };
+      const text = { headline: words.headline, subline: words.subline, bubble: words.bubble, pose: n.post.imageText.pose, slides: n.post.imageText.slides };
       await tx.query(
         `update public.posts set caption = $3, cta = $4, hashtags = $5::text[], image_text = $6::jsonb, fact_flags = $7::jsonb, edited_at = $8::timestamptz,
                 status = 'draft', approved_at = null
@@ -500,12 +536,12 @@ interface Drawn {
 }
 
 /** Draws the sizes of one post (all at once). A size that cannot be drawn is reported as a blocker, not thrown. */
-async function drawPost(assets: DesignAssets, post: CreatePost, content: DesignContent, option: DesignOption): Promise<Drawn[]> {
+async function drawPost(assets: DesignAssets, post: CreatePost, content: DesignContent, option: DesignOption, filter: PostFilter): Promise<Drawn[]> {
   const pose = postPoseOrDefault(post.imageText.pose);
   return Promise.all(
     channelFormats(post.channel).map(async (format): Promise<Drawn> => {
       try {
-        const r = await renderOne(assets, { format, option, content, pose });
+        const r = await renderOne(assets, { format, option, content, pose, filter });
         return { format, png: r.png, layoutId: r.layoutId, scheme: r.scheme, dropped: r.report.dropped, blockers: blockersFromReport(format, r.report) };
       } catch (err) {
         return { format, png: Buffer.alloc(0), layoutId: option.layoutId, scheme: option.scheme, dropped: [], blockers: [{ format, code: 'render_failed', detail: err instanceof Error ? err.message : String(err) }] };
@@ -517,6 +553,7 @@ async function drawPost(assets: DesignAssets, post: CreatePost, content: DesignC
 interface Slide {
   index: number;
   total: number;
+  kind?: SlideKind;
   png: Buffer;
   content: DesignContent;
   layoutId: string;
@@ -525,8 +562,9 @@ interface Slide {
   dropped: string[];
 }
 
-async function drawCarousel(assets: DesignAssets, post: CreatePost, content: DesignContent, option: DesignOption, format: DesignFormat): Promise<Slide[]> {
-  const base = await buildInput(assets, { format, option, content, pose: postPoseOrDefault(post.imageText.pose) });
+/** C-20: one slide per extra selling point, when a post holds more than its size can show. */
+async function drawCarousel(assets: DesignAssets, post: CreatePost, content: DesignContent, option: DesignOption, format: DesignFormat, filter: PostFilter): Promise<Slide[]> {
+  const base = await buildInput(assets, { format, option, content, pose: postPoseOrDefault(post.imageText.pose), filter });
   const contents = splitIntoSlides(content, format);
   const details = await renderCarousel({ ...base, content });
   return details.map((d, i) => ({
@@ -541,6 +579,28 @@ async function drawCarousel(assets: DesignAssets, post: CreatePost, content: Des
   }));
 }
 
+/** A carousel the owner asked for: the post's own slide words drawn as a set in the option (same theme, colours, type and character side). */
+async function drawSlideSet(assets: DesignAssets, post: CreatePost, content: DesignContent, option: DesignOption, filter: PostFilter): Promise<{ format: DesignFormat; slides: Slide[] }> {
+  const format = carouselFormat(post.channel);
+  const words = post.imageText.slides;
+  const set = await renderSlides(assets, { format, option, content, pose: postPoseOrDefault(post.imageText.pose), filter, slides: words });
+  const contents = slideContents(content, words);
+  return {
+    format,
+    slides: set.map((d, i) => ({
+      index: i,
+      total: set.length,
+      kind: words[i].kind,
+      png: d.png,
+      content: contents[i],
+      layoutId: d.layoutId,
+      scheme: d.scheme,
+      blockers: blockersFromReport(format, d.report),
+      dropped: d.report.dropped,
+    })),
+  };
+}
+
 /** What `drawAndStore` needs: the drawn posts' contents (QR included) and the option. */
 interface DrawJob {
   userId: string;
@@ -552,30 +612,73 @@ interface DrawJob {
   contents: Map<string, DesignContent>;
   option: DesignOption;
   options: DesignOption[];
+  /** The colour filter every picture of the posts is drawn with. */
+  filter: PostFilter;
   storage: Storage;
+  /** The first time a design is chosen, remember it as the base "Undo all" goes back to. */
+  storeBase?: boolean;
 }
 
 const imagePath = (brandId: string, postId: string, format: string) => `${brandId}/${postId}/${format}.png`;
+
+/** A post's slide pictures (a set), the size they are drawn in, and the ids the slide rows get. */
+interface PostSet {
+  format: DesignFormat;
+  slides: Slide[];
+  carouselId: string;
+  slideIds: string[];
+}
 
 async function drawAndStore(job: DrawJob): Promise<void> {
   const { brandId, assets, posts, option, storage } = job;
   const first = posts[0];
   const firstContent = job.contents.get(first.id)!;
-  const wantCarousel = needsCarousel(firstContent, channelFormats(first.channel)[0]);
+  const asked = isCarouselBrief(job.brief) && posts.every(hasSlides);
+  const autoSplit = !asked && needsCarousel(firstContent, channelFormats(first.channel)[0]);
 
-  const [drawn, slides] = await Promise.all([
-    Promise.all(posts.map((p) => drawPost(assets, p, job.contents.get(p.id)!, option))),
-    wantCarousel ? drawCarousel(assets, first, firstContent, option, channelFormats(first.channel)[0]) : Promise.resolve([] as Slide[]),
-  ]);
+  const sets = new Map<string, PostSet>();
+  let drawn: Drawn[][];
+  if (asked) {
+    // Every channel gets its own slide set (its own QR short link), in its own size. Channels that draw the same thing share the work.
+    const cache = new Map<string, Promise<{ format: DesignFormat; slides: Slide[] }>>();
+    const made: { format: DesignFormat; slides: Slide[] }[] = [];
+    for (const p of posts) {
+      const content = job.contents.get(p.id)!;
+      const key = JSON.stringify([carouselFormat(p.channel), content, p.imageText.slides, p.imageText.pose]);
+      let run = cache.get(key);
+      if (!run) {
+        run = drawSlideSet(assets, p, content, option, job.filter);
+        cache.set(key, run);
+      }
+      made.push(await run);
+    }
+    posts.forEach((p, i) => sets.set(p.id, { ...made[i], carouselId: randomUUID(), slideIds: made[i].slides.map(() => randomUUID()) }));
+    // The post's own picture is the cover; the problems of all its slides are listed on the post.
+    drawn = posts.map((p) => {
+      const set = sets.get(p.id)!;
+      const cover = set.slides[0];
+      return [{ format: set.format, png: cover.png, layoutId: cover.layoutId, scheme: cover.scheme, dropped: cover.dropped, blockers: [] }];
+    });
+  } else {
+    const [all, slides] = await Promise.all([
+      Promise.all(posts.map((p) => drawPost(assets, p, job.contents.get(p.id)!, option, job.filter))),
+      autoSplit ? drawCarousel(assets, first, firstContent, option, channelFormats(first.channel)[0], job.filter) : Promise.resolve([] as Slide[]),
+    ]);
+    drawn = all;
+    if (slides.length > 1) sets.set(first.id, { format: channelFormats(first.channel)[0], slides, carouselId: randomUUID(), slideIds: slides.map(() => randomUUID()) });
+  }
+
+  // A realistic AI person on the picture: the design remembers it so publishing can add the AI disclosure (F-7).
+  const aiFace = assets.faceOn && assets.face?.kind === 'photoreal' ? { aiFace: true as const } : {};
 
   // Files first (a failed write leaves rows untouched), then rows.
-  const carouselId = slides.length > 1 ? randomUUID() : null;
-  const slideIds = carouselId ? slides.map(() => randomUUID()) : [];
-  const formatsOf = (i: number) => channelFormats(posts[i].channel);
+  const formatsOf = (i: number) => (asked ? [sets.get(posts[i].id)!.format] : channelFormats(posts[i].channel));
   for (let i = 0; i < posts.length; i++) {
     for (const d of drawn[i]) if (d.png.length > 0) await storage.put('renders', imagePath(brandId, posts[i].id, d.format), d.png, 'image/png');
   }
-  if (carouselId) for (let k = 0; k < slides.length; k++) await storage.put('renders', imagePath(brandId, slideIds[k], channelFormats(first.channel)[0]), slides[k].png, 'image/png');
+  for (const set of sets.values()) {
+    for (let k = 0; k < set.slides.length; k++) await storage.put('renders', imagePath(brandId, set.slideIds[k], set.format), set.slides[k].png, 'image/png');
+  }
 
   const oldSlides = await getDb().withService(async (tx) => {
     const old = await tx.query<{ id: string }>('select id::text as id from public.posts where brief_id = $1 and brand_id = $2 and carousel_id is not null', [job.brief.id, brandId]);
@@ -586,7 +689,8 @@ async function drawAndStore(job: DrawJob): Promise<void> {
       const p = posts[i];
       const content = job.contents.get(p.id)!;
       const head = drawn[i][0];
-      const blockers = drawn[i].flatMap((d) => d.blockers);
+      const set = sets.get(p.id);
+      const blockers = [...drawn[i].flatMap((d) => d.blockers), ...(set ? set.slides.flatMap((sl) => sl.blockers) : [])];
       const dropped: StoredDesign['dropped'] = {};
       for (const d of drawn[i]) dropped[d.format] = d.dropped;
       const design: StoredDesign = {
@@ -597,10 +701,12 @@ async function drawAndStore(job: DrawJob): Promise<void> {
         options: job.options,
         formats: formatsOf(i),
         dropped,
-        blockers: [...blockers, ...(i === 0 ? slides.flatMap((sl) => sl.blockers) : [])],
-        ...(i === 0 && carouselId ? { carousel: { id: carouselId, slides: slides.length } } : {}),
+        blockers,
+        ...(set ? { carousel: { id: set.carouselId, slides: set.slides.length } } : {}),
         language,
         photoId: job.brief.photoId,
+        ...aiFace,
+        filter: job.filter,
       };
       await tx.query(
         `update public.posts set theme_id = $3, layout_id = $4, design = $5::jsonb, mascot_id = $6::uuid, photo_id = $7::uuid,
@@ -609,6 +715,14 @@ async function drawAndStore(job: DrawJob): Promise<void> {
         [p.id, brandId, option.themeId, head.layoutId, JSON.stringify(design), assets.mascotId, job.brief.photoId],
       );
       await dropQueuedItems(tx, brandId, [p.id]); // drawn again: it has to be approved again
+      if (job.storeBase) {
+        // The first design chosen is the base version (with the generated words kept in `original`): "Undo all" draws it again. Never overwritten.
+        await tx.query(
+          `update public.posts set original = jsonb_set(coalesce(original, '{}'::jsonb), '{design}', $3::jsonb, true)
+            where id = $1 and brand_id = $2 and (original is null or original->'design' is null)`,
+          [p.id, brandId, JSON.stringify({ option, options: job.options })],
+        );
+      }
       const kept = drawn[i].filter((d) => d.png.length > 0).map((d) => d.format);
       await tx.query('delete from public.post_images where post_id = $1 and brand_id = $2 and not (format::text = any($3::text[]))', [p.id, brandId, kept]);
       for (const d of drawn[i]) {
@@ -620,40 +734,42 @@ async function drawAndStore(job: DrawJob): Promise<void> {
           [p.id, brandId, d.format, d.layoutId, `renders/${imagePath(brandId, p.id, d.format)}`],
         );
       }
-    }
 
-    if (carouselId) {
-      const fmt = channelFormats(first.channel)[0];
-      for (let k = 0; k < slides.length; k++) {
-        const sl = slides[k];
+      // The carousel's slides: extra rows of this channel's post, each with its one picture.
+      if (!set) continue;
+      const ownText = { headline: p.imageText.headline, subline: p.imageText.subline, bubble: p.imageText.bubble, pose: p.imageText.pose };
+      for (let k = 0; k < set.slides.length; k++) {
+        const sl = set.slides[k];
         const slideDesign: StoredDesign = {
           v: 1,
           content: sl.content,
           scheme: sl.scheme,
           option,
           options: job.options,
-          formats: [fmt],
-          dropped: { [fmt]: sl.dropped },
+          formats: [set.format],
+          dropped: { [set.format]: sl.dropped },
           blockers: sl.blockers,
-          slide: { index: sl.index, total: sl.total },
+          slide: { index: sl.index, total: sl.total, ...(sl.kind ? { kind: sl.kind } : {}) },
           language,
           photoId: job.brief.photoId,
+          ...aiFace,
+          filter: job.filter,
         };
-        const id = slideIds[k];
+        const id = set.slideIds[k];
         await tx.query(
           `insert into public.posts (id, brand_id, created_by, brief_id, status, post_code, channel, post_language, caption, cta, hashtags, image_text,
                                      photo_id, fact_flags, mascot_id, carousel_id, slide_index, theme_id, layout_id, design)
            values ($1, $2, $3::uuid, $4, 'draft', $5, $6::public.post_channel, $7, $8, $9, $10::text[], $11::jsonb, $12::uuid, '[]'::jsonb, $13::uuid,
                    $14::uuid, $15::smallint, $16, $17, $18::jsonb)`,
           [
-            id, brandId, job.userId, job.brief.id, await freeCode(tx), first.channel, language, first.caption, first.cta, first.hashtags,
-            JSON.stringify(storedImageText({ ...first.imageText, headline: sl.content.headline, subline: sl.content.subline })), job.brief.photoId, assets.mascotId, carouselId,
+            id, brandId, job.userId, job.brief.id, await freeCode(tx), p.channel, language, p.caption, p.cta, p.hashtags,
+            JSON.stringify(storedImageText({ ...ownText, headline: sl.content.headline, subline: sl.content.subline })), job.brief.photoId, assets.mascotId, set.carouselId,
             k, option.themeId, sl.layoutId, JSON.stringify(slideDesign),
           ],
         );
         await tx.query(
           `insert into public.post_images (post_id, brand_id, format, template_id, image_path) values ($1, $2, $3::public.image_format, $4, $5)`,
-          [id, brandId, fmt, sl.layoutId, `renders/${imagePath(brandId, id, fmt)}`],
+          [id, brandId, set.format, sl.layoutId, `renders/${imagePath(brandId, id, set.format)}`],
         );
       }
     }
@@ -690,25 +806,27 @@ export interface UseDesignResult {
  * more points than a size holds), stores the pictures and the design, and makes the option the default for this
  * type of post. The posts stay drafts. Throws CreateError('invalid_option') for an option that does not exist.
  */
-export async function chooseDesign(args: { userId: string; brandId: string; briefId: string; option: DesignOption }, deps: CreateDeps = {}): Promise<UseDesignResult> {
+export async function chooseDesign(args: { userId: string; brandId: string; briefId: string; option: DesignOption; filter?: PostFilter }, deps: CreateDeps = {}): Promise<UseDesignResult> {
   const { userId, brandId, briefId } = args;
   const { brief, brand, posts } = await ensureDraftPosts({ userId, brandId, briefId }, deps);
   const storage = deps.storage ?? getStorage();
   const assets = await loadDesignAssets({ userId, brandId, brief, brand, storage });
-  const formats = briefFormats(brief.channels);
+  const formats = designFormats(brief);
   if (!validOption(args.option, formats, !!assets.photo)) throw new CreateError('invalid_option');
 
   const contents = new Map<string, DesignContent>();
   for (const p of posts) {
     try {
-      contents.set(p.id, await contentFromBrief(brief, brand, wordsOf(p), { postCode: p.postCode, mascot: assets.mascotId !== null }));
+      contents.set(p.id, await contentFromBrief(brief, brand, wordsOf(p), { postCode: p.postCode, mascot: assets.faceOn }));
     } catch (err) {
       if (err instanceof QrContentError) throw new CreateError('qr_blocked'); // a payment ID that is not confirmed never reaches a picture
       throw err;
     }
   }
-  const options = optionsFor(assets, contents.get(posts[0].id)!, primaryFormat(brief.channels));
-  await drawAndStore({ userId, brandId, brief, brand, assets, posts, contents, option: args.option, options, storage });
+  const options = optionsFor(assets, contents.get(posts[0].id)!, designFormat(brief), 3, { postType: brief.postType, extras: brief.extraPostTypes });
+  // The filter the owner picked on the design step; else the one the posts already have (choosing another layout keeps it).
+  const filter = args.filter ? parsePostFilter(args.filter) : filterOf(posts[0]);
+  await drawAndStore({ userId, brandId, brief, brand, assets, posts, contents, option: args.option, options, filter, storage, storeBase: true });
   await saveTypeDefault(userId, brandId, brief.postType, { themeId: args.option.themeId, layoutId: args.option.layoutId, scheme: args.option.scheme });
   return summary(userId, brandId, briefId);
 }
@@ -724,11 +842,11 @@ async function summary(userId: string, brandId: string, briefId: string): Promis
  * Draws the posts again from what is stored (after the words of a design changed, e.g. a flagged phrase was
  * removed): same option and scheme, new text. Posts without a design are left alone.
  */
-export async function redrawPosts(args: { userId: string; brandId: string; briefId: string }, deps: CreateDeps = {}): Promise<void> {
+export async function redrawPosts(args: { userId: string; brandId: string; briefId: string; base?: { option: DesignOption; options: DesignOption[] }; filter?: PostFilter }, deps: CreateDeps = {}): Promise<boolean> {
   const { userId, brandId, briefId } = args;
   const { brief, brand, posts } = await ensureDraftPosts({ userId, brandId, briefId }, deps);
   const designed = posts.filter((p) => p.design && p.themeId);
-  if (designed.length === 0 || designed.length !== posts.length) return;
+  if (designed.length === 0 || designed.length !== posts.length) return false;
   const storage = deps.storage ?? getStorage();
   const assets = await loadDesignAssets({ userId, brandId, brief, brand, storage });
   const stored = designed[0].design!;
@@ -740,10 +858,11 @@ export async function redrawPosts(args: { userId: string; brandId: string; brief
       headline: p.imageText.headline,
       subline: p.imageText.subline,
       cta: c.cta ? { ...c.cta, text: p.cta } : null,
-      bubble: assets.mascotId ? p.imageText.bubble : '',
+      bubble: assets.faceOn ? p.imageText.bubble : '',
     });
   }
-  await drawAndStore({ userId, brandId, brief, brand, assets, posts: designed, contents, option: stored.option, options: stored.options, storage });
+  await drawAndStore({ userId, brandId, brief, brand, assets, posts: designed, contents, option: args.base?.option ?? stored.option, options: args.base?.options ?? stored.options, filter: args.filter ? parsePostFilter(args.filter) : filterOf(designed[0]), storage });
+  return true;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -777,6 +896,24 @@ async function loadMain(tx: Tx, brandId: string, postId: string, lock = true): P
     [postId, brandId],
   );
   return row ? toPost(row) : null;
+}
+
+/**
+ * After an edit: open flags whose text is gone from their field become removed. A flag on a carousel slide looks in that slide's
+ * headline (field headline) or body (field subline); the others look in the post's own fields.
+ */
+function resolveFlagSpans(post: { caption: string; cta: string; image_text: CreatePost['imageText'] }, flags: Flag[], now: Date): Flag[] {
+  const own = resolveRemovedSpans(post, flags.filter((f) => f.slide === undefined), now);
+  const decided = now.toISOString();
+  const bySlide = flags
+    .filter((f) => f.slide !== undefined)
+    .map((f) => {
+      const sl = post.image_text.slides[f.slide!];
+      if (!sl) return f.status === 'open' ? { ...f, status: 'removed' as const, decided_at: decided } : f;
+      return resolveRemovedSpans({ caption: '', cta: '', image_text: { headline: sl.headline, subline: sl.body } }, [f], now)[0];
+    });
+  const byId = new Map([...own, ...bySlide].map((f) => [f.id, f]));
+  return flags.map((f) => byId.get(f.id) ?? f);
 }
 
 /** Fields of a flag that are drawn on the picture and so are the same on every channel's post. */
@@ -831,14 +968,20 @@ export async function removePostFlag(args: { userId: string; brandId: string; po
     const flag = post.flags.find((f) => f.id === args.flagId);
     if (!flag) return fail('not_found', eA.flagNotFound);
     if (flag.status !== 'open') return fail('not_open', eA.flagNotOpen);
+    // A flag on a carousel slide cuts the text out of that slide's headline or body.
+    const slideAt = flag.slide;
+    const slide = slideAt === undefined ? null : (post.imageText.slides[slideAt] ?? null);
+    if (slideAt !== undefined && !slide) return fail('not_found', eA.flagNotFound);
     let edited;
     try {
-      edited = removeFlagText({ caption: post.caption, cta: post.cta, image_text: post.imageText }, flag);
+      edited = removeFlagText({ caption: post.caption, cta: post.cta, image_text: slide ? { headline: slide.headline, subline: slide.body, bubble: '' } : post.imageText }, flag);
     } catch (err) {
       if (err instanceof GuardrailActionError) return flagFailure(err);
       throw err;
     }
-    if (!edited.caption.trim()) return fail('cannot_remove', eA.removeEmptiesCaption);
+    if (!edited.caption.trim() && !slide) return fail('cannot_remove', eA.removeEmptiesCaption);
+    const editedSlide: SlideText | null = slide ? { ...slide, headline: edited.image_text.headline, body: edited.image_text.subline } : null;
+    if (editedSlide && !editedSlide.headline.trim()) return fail('cannot_remove', eA.removeEmptiesSlide);
     const shared = sharedField(flag);
     const targets = shared
       ? (await tx.query<Row>(`select ${COLUMNS} from public.posts p where p.brief_id = $1 and p.brand_id = $2 and p.carousel_id is null for update of p`, [post.briefId, brandId])).map(toPost)
@@ -847,9 +990,11 @@ export async function removePostFlag(args: { userId: string; brandId: string; po
       // The picture's words are the same on every channel, so they get the same cut; a caption is only this channel's.
       const caption = shared ? t.caption : edited.caption;
       const cta = shared ? edited.cta : t.cta;
-      const text = shared ? { ...t.imageText, headline: edited.image_text.headline, subline: edited.image_text.subline, bubble: edited.image_text.bubble ?? '' } : t.imageText;
+      let text: CreatePost['imageText'] = t.imageText;
+      if (editedSlide && slideAt !== undefined) text = { ...t.imageText, slides: t.imageText.slides.map((x, k) => (k === slideAt ? editedSlide : x)) };
+      else if (shared) text = { ...t.imageText, headline: edited.image_text.headline, subline: edited.image_text.subline, bubble: edited.image_text.bubble ?? '' };
       const marked = t.flags.map((f) => (f.id === flag.id && f.status === 'open' ? { ...f, status: 'removed' as const, decided_at: now.toISOString() } : f));
-      const flags = resolveRemovedSpans({ caption, cta, image_text: text }, marked, now);
+      const flags = resolveFlagSpans({ caption: editedSlide ? t.caption : caption, cta: editedSlide ? t.cta : cta, image_text: text }, marked, now);
       await tx.query(
         `update public.posts set caption = $3, cta = $4, image_text = $5::jsonb, fact_flags = $6::jsonb, edited_at = $7::timestamptz,
                 status = case when status = 'approved' then 'draft'::public.post_status else status end,
@@ -909,6 +1054,78 @@ export async function undoCreateApproval(args: { userId: string; brandId: string
     await logAction(tx, { via: 'dashboard', userId: args.userId }, args.brandId, post.id, 'undo', { from: 'approved' });
     return { ok: true, changed: true };
   });
+}
+
+/** What `posts.original` holds (written when the words were first generated, and the design when it was first chosen). */
+interface BaseVersion {
+  caption?: string;
+  cta?: string;
+  hashtags?: string[];
+  image_text?: { headline?: string; subline?: string; bubble?: string; pose?: string; slides?: unknown };
+  flags?: Flag[];
+  design?: { option?: DesignOption; options?: DesignOption[] };
+}
+
+/**
+ * "Undo all" (review step): puts every post of the brief back to its base version: the words and flags as first generated, the
+ * design as first chosen, drawn again; every edit, flag decision and approval is gone and the posts leave the queue. The brief itself
+ * and its details are untouched. Refused when a post is already marked as posted. A post whose base was never stored
+ * (written before this existed) gets the generated words back and keeps its current design.
+ */
+export async function resetToBase(args: { userId: string; brandId: string; briefId: string }, deps: CreateDeps = {}): Promise<OpResult<{ redrawn: boolean }>> {
+  const { userId, brandId, briefId } = args;
+  const { brief, brand, posts } = await ensureDraftPosts({ userId, brandId, briefId }, deps);
+  if (posts.some((p) => p.status === 'posted')) return fail('posted', eA.posted);
+  const bases = new Map<string, BaseVersion>();
+  const raw = await getDb().withService((tx) => tx.query<{ id: string; original: BaseVersion | null }>('select id::text as id, original from public.posts where brief_id = $1 and brand_id = $2 and carousel_id is null', [briefId, brandId]));
+  for (const r of raw) bases.set(r.id, r.original && typeof r.original === 'object' ? r.original : {});
+
+  // Flags: the ones stored with the base; an older post has none stored, so its generated words are checked again.
+  const missing = posts.filter((p) => !Array.isArray(bases.get(p.id)?.flags));
+  const rechecked = new Map<string, Flag[]>();
+  if (missing.length > 0) {
+    const results = await checkPosts({
+      userId,
+      brandId,
+      brief,
+      brand,
+      words: wordsFromBase(bases.get(missing[0].id) ?? {}, missing[0]),
+      posts: missing.map((p) => ({ channel: p.channel, caption: bases.get(p.id)?.caption ?? p.caption, hashtags: bases.get(p.id)?.hashtags ?? p.hashtags })),
+      now: deps.now,
+      aiFixture: deps.aiFixture,
+      slides: slidesOf(bases.get(missing[0].id)?.image_text?.slides),
+    });
+    missing.forEach((p, i) => rechecked.set(p.id, results[i].flags));
+  }
+
+  await getDb().withService(async (tx) => {
+    for (const p of posts) {
+      const base = bases.get(p.id) ?? {};
+      const words = wordsFromBase(base, p);
+      const flags = Array.isArray(base.flags) ? base.flags : (rechecked.get(p.id) ?? []);
+      const baseSlides = slidesOf(base.image_text?.slides);
+      const text = { headline: words.headline, subline: words.subline, bubble: words.bubble, pose: base.image_text?.pose ?? p.imageText.pose, slides: baseSlides.length > 0 ? baseSlides : p.imageText.slides };
+      await tx.query(
+        `update public.posts set caption = $3, cta = $4, hashtags = $5::text[], image_text = $6::jsonb, fact_flags = $7::jsonb,
+                status = 'draft', approved_at = null, skipped_at = null, edited_at = null
+          where id = $1 and brand_id = $2`,
+        [p.id, brandId, base.caption ?? p.caption, words.ctaText, base.hashtags ?? p.hashtags, JSON.stringify(storedImageText(text)), JSON.stringify(flags)],
+      );
+      await dropQueuedItems(tx, brandId, [p.id]);
+      if (p.design?.carousel) await tx.query(`update public.posts set status = 'draft', approved_at = null where carousel_id = $1 and brand_id = $2`, [p.design.carousel.id, brandId]);
+      await logAction(tx, { via: 'dashboard', userId }, brandId, p.id, 'undo', { from: 'all' });
+    }
+  });
+
+  const designed = posts.length > 0 && posts.every((p) => p.design && p.themeId);
+  if (!designed) return { ok: true, redrawn: false };
+  const base = bases.get(posts[0].id)?.design;
+  await redrawPosts({ userId, brandId, briefId, base: base?.option && Array.isArray(base.options) ? { option: base.option, options: base.options } : undefined }, deps);
+  return { ok: true, redrawn: true };
+}
+
+function wordsFromBase(base: BaseVersion, p: CreatePost): DesignWords {
+  return { headline: base.image_text?.headline ?? p.imageText.headline, subline: base.image_text?.subline ?? p.imageText.subline, ctaText: base.cta ?? p.cta, bubble: base.image_text?.bubble ?? p.imageText.bubble };
 }
 
 /** The owner shared or downloaded an approved post's picture (Copy is not recorded). */

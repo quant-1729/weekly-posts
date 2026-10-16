@@ -3,7 +3,9 @@ import { getEnv } from "@/lib/env";
 
 /**
  * Session = signed JWT (HS256, AUTH_SECRET) in an httpOnly cookie, valid 30
- * days and renewed (sliding) when it is more than a day old. This file uses
+ * days and renewed (sliding) when it is more than a day old. The token carries `sid`, the id of the
+ * user_sessions row made at sign-in; a renewal keeps the same sid. A token without a valid sid (signed
+ * before sessions existed) counts as signed out everywhere, the proxy included. This file uses
  * only jose and env so the proxy can import it.
  */
 
@@ -14,20 +16,24 @@ export const SESSION_REFRESH_AFTER_SECONDS = 24 * 60 * 60;
 export interface SessionPayload {
   sub: string;
   email: string;
+  /** user_sessions.id of this sign-in. */
+  sid: string;
   iat: number;
   exp: number;
 }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function key(): Uint8Array {
   return new TextEncoder().encode(getEnv().authSecret);
 }
 
 export async function signSession(
-  user: { id: string; email: string },
+  user: { id: string; email: string; sid: string },
   nowMs: number = Date.now(),
 ): Promise<string> {
   const iat = Math.floor(nowMs / 1000);
-  return new SignJWT({ email: user.email })
+  return new SignJWT({ email: user.email, sid: user.sid })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt(iat)
@@ -49,12 +55,14 @@ export async function verifySession(
     if (
       typeof payload.sub !== "string" ||
       typeof payload.email !== "string" ||
+      typeof payload.sid !== "string" ||
+      !UUID_RE.test(payload.sid) ||
       typeof payload.iat !== "number" ||
       typeof payload.exp !== "number"
     ) {
       return null;
     }
-    return { sub: payload.sub, email: payload.email, iat: payload.iat, exp: payload.exp };
+    return { sub: payload.sub, email: payload.email, sid: payload.sid, iat: payload.iat, exp: payload.exp };
   } catch {
     return null;
   }

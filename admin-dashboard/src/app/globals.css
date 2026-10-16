@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+/*
+ * Tokens from the approved Weekly Posts theme (docs/design/11-theme-fish-style.md): Onest, warm cream page, white 16px
+ * cards with a hairline border, near-black pill buttons, coral used sparingly.
+ */
+@theme {
+  --font-sans: "Onest Variable", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  --color-cream: #fbfaf9;
+  --color-hover: #faf7f7;
+  --color-well: #f6f0ec;
+  --color-divider: #f0eae7;
+  --color-edge: #e5dcd9;
+  --color-helper: #9f928e;
+  --color-desc: #7a6f6b;
+  --color-sub: #554f4c;
+  --color-ink: #1d1d1c;
+  --color-ink-2: #333130;
+  --color-title: #161616;
+  --color-fill-active: rgb(96 0 0 / 0.03);
+  --color-fill-secondary: rgb(96 32 0 / 0.063);
+  --color-fill-secondary-hover: rgb(102 31 0 / 0.1);
+  --color-line-input: rgb(73 21 0 / 0.192);
+  --color-line: rgb(0 0 0 / 0.05);
+  --color-coral: #e4572e;
+  --color-ok-bg: #ebf9f6;
+  --color-ok-tx: #13725c;
+  --color-warn-bg: #fff6e5;
+  --color-warn-tx: #c2670c;
+  --color-err-bg: #ffefeb;
+  --color-err-tx: #b9241c;
+  --radius-card: 16px;
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.04);
+}
+
+html {
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+}
+
+table {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-coral);
+  outline-offset: 2px;
+}

@@ -8,7 +8,7 @@ import type { UspKind } from '@/lib/usps/types';
 import { checkCompleteness, type FormatFamily, type MissingItem } from './completeness';
 import type { BriefFromTextResult } from './from-text';
 import type { BriefInput } from './service';
-import { BLOCK_KEYS, type Blocks, type BlockKey, type Brief, type CtaKind, type PostType, type QrLinkTarget, type QrSpec } from './types';
+import { BLOCK_KEYS, DEFAULT_SLIDE_COUNT, MAX_SLIDES, MIN_SLIDES, POST_TYPES, type Blocks, type BlockKey, type Brief, type ContentFormat, type CtaKind, type PostType, type QrLinkTarget, type QrSpec } from './types';
 
 /** Channels the brief can hold (the `post_channel` enum, migrations 0005 and 0017). */
 export const EDITOR_CHANNELS = ['instagram', 'facebook', 'whatsapp', 'youtube', 'linkedin', 'gbp'] as const;
@@ -33,7 +33,14 @@ export type QrDraft =
   | { mode: 'payment'; paymentId: string };
 
 export interface EditorDraft {
+  /** What is being made (owner request 2026-10-16): a post or a carousel; 'reel' is shown as coming soon and never set. */
+  contentFormat: ContentFormat;
+  /** Carousel only: how many slides (3 to 10). Kept while the owner switches back to Post, so switching again restores it. */
+  slideCount: number;
+  /** The main type: the first one ticked. It drives the layout and the default call to action. */
   postType: PostType | null;
+  /** The other ticked types, in the order they were ticked. Never contains `postType`. */
+  extraPostTypes: PostType[];
   primaryUspId: string | null;
   secondaryUspIds: string[];
   cta: CtaKind | null;
@@ -48,6 +55,8 @@ export interface EditorDraft {
   /** An offer with no end date, chosen on purpose. Then `endsOn` is empty. */
   openEnded: boolean;
   channels: string[];
+  /** The owner's own words about the post (`brief.notes`): what the copy is written from. */
+  notes: string;
 }
 
 /** "No end date" only means something for an offer. */
@@ -61,7 +70,10 @@ export function draftFromBrief(brief: Brief): EditorDraft {
         ? { mode: 'payment', paymentId: brief.qr.paymentId }
         : { mode: 'none' };
   return {
+    contentFormat: brief.contentFormat ?? 'post',
+    slideCount: brief.slideCount ?? DEFAULT_SLIDE_COUNT,
     postType: brief.postType,
+    extraPostTypes: (brief.extraPostTypes ?? []).filter((x) => x !== brief.postType),
     primaryUspId: brief.primaryUspId,
     secondaryUspIds: brief.secondaryUspIds,
     cta: brief.cta,
@@ -74,13 +86,17 @@ export function draftFromBrief(brief: Brief): EditorDraft {
     endsOn: brief.endsOn ?? '',
     openEnded: brief.openEnded,
     channels: brief.channels,
+    notes: brief.notes ?? '',
   };
 }
 
 /** A new, empty draft: the brand's defaults and nothing chosen yet. */
 export function emptyDraft(d: { blocks: Blocks; language: string; channels: string[] }): EditorDraft {
   return {
+    contentFormat: 'post',
+    slideCount: DEFAULT_SLIDE_COUNT,
     postType: null,
+    extraPostTypes: [],
     primaryUspId: null,
     secondaryUspIds: [],
     cta: null,
@@ -93,6 +109,7 @@ export function emptyDraft(d: { blocks: Blocks; language: string; channels: stri
     endsOn: '',
     openEnded: false,
     channels: d.channels,
+    notes: '',
   };
 }
 
@@ -107,6 +124,9 @@ export function draftToInput(d: EditorDraft): BriefInput | null {
   if (d.qr.mode === 'payment' && d.qr.paymentId) qr = { kind: 'payment', paymentId: d.qr.paymentId };
   return {
     postType: d.postType,
+    extraPostTypes: d.extraPostTypes,
+    contentFormat: d.contentFormat === 'carousel' ? 'carousel' : 'post',
+    slideCount: d.contentFormat === 'carousel' ? clampSlides(d.slideCount) : null,
     primaryUspId: d.primaryUspId,
     secondaryUspIds: d.primaryUspId ? d.secondaryUspIds : [],
     cta: d.cta,
@@ -118,7 +138,59 @@ export function draftToInput(d: EditorDraft): BriefInput | null {
     endsOn: isOpen(d) ? null : d.endsOn || null,
     openEnded: isOpen(d),
     channels: d.channels,
+    notes: d.notes.trim() || null,
   };
+}
+
+// ---------------------------------------------------------------------------------------------
+// What to make: post, carousel (reel is coming soon)
+// ---------------------------------------------------------------------------------------------
+
+/** A slide count kept inside 3 to 10 (a whole number). */
+export const clampSlides = (n: number): number => Math.min(MAX_SLIDES, Math.max(MIN_SLIDES, Math.round(Number.isFinite(n) ? n : DEFAULT_SLIDE_COUNT)));
+
+/** Picks a format. Reel cannot be picked yet: the draft stays as it was. */
+export function setContentFormat(d: EditorDraft, format: ContentFormat): EditorDraft {
+  if (format === 'reel') return d;
+  return { ...d, contentFormat: format };
+}
+
+/** The stepper's − and + (never outside 3 to 10). */
+export const stepSlides = (d: EditorDraft, by: 1 | -1): EditorDraft => ({ ...d, slideCount: clampSlides(d.slideCount + by) });
+
+// ---------------------------------------------------------------------------------------------
+// Post types and channels: tick several (the first ticked type is the main one)
+// ---------------------------------------------------------------------------------------------
+
+/** Every ticked type in tick order: the main one first. */
+export const tickedTypes = (d: Pick<EditorDraft, 'postType' | 'extraPostTypes'>): PostType[] => (d.postType ? [d.postType, ...d.extraPostTypes] : []);
+
+function withTypes(d: EditorDraft, ticked: PostType[]): EditorDraft {
+  const [main, ...extras] = ticked;
+  const postType = main ?? null;
+  return { ...d, postType, extraPostTypes: extras, cta: d.ctaChosen ? d.cta : postType ? DEFAULT_CTA[postType] : null };
+}
+
+/**
+ * Ticks or unticks one type. The first ticked type is the main one; unticking the main type makes
+ * the next one in tick order the main one. The default call to action follows the main type
+ * unless the owner chose one.
+ */
+export function toggleType(d: EditorDraft, type: PostType): EditorDraft {
+  const cur = tickedTypes(d);
+  return withTypes(d, cur.includes(type) ? cur.filter((x) => x !== type) : [...cur, type]);
+}
+
+/** "Select all": ticks every type (those already ticked keep their order), or clears them all when every type is ticked. */
+export function toggleAllTypes(d: EditorDraft): EditorDraft {
+  const cur = tickedTypes(d);
+  if (cur.length === POST_TYPES.length) return withTypes(d, []);
+  return withTypes(d, [...cur, ...POST_TYPES.filter((x) => !cur.includes(x))]);
+}
+
+/** "Select all" for the channels: ticks every channel, or clears them all when every one is ticked. */
+export function toggleAllChannels(channels: readonly string[], options: readonly string[]): string[] {
+  return options.every((c) => channels.includes(c)) ? channels.filter((c) => !options.includes(c)) : [...channels, ...options.filter((c) => !channels.includes(c))];
 }
 
 /** The same draft as a stable string, to know whether anything changed since the last save. */
@@ -149,6 +221,9 @@ export function missingForNext(d: EditorDraft, usps: readonly LibraryUsp[], need
     id: '',
     brandId: '',
     postType: d.postType,
+    extraPostTypes: d.extraPostTypes,
+    contentFormat: d.contentFormat,
+    slideCount: d.contentFormat === 'carousel' ? d.slideCount : null,
     primaryUspId: d.primaryUspId,
     secondaryUspIds: d.secondaryUspIds,
     uspSnapshot: chosen.flatMap((id) => {
@@ -165,7 +240,7 @@ export function missingForNext(d: EditorDraft, usps: readonly LibraryUsp[], need
     openEnded: isOpen(d),
     timezone: null,
     channels: d.channels,
-    notes: null,
+    notes: d.notes.trim() || null,
     status: 'draft',
   };
   out.push(...checkCompleteness(brief));
@@ -308,27 +383,19 @@ export function defaultChannels(contacts: readonly ContactPoint[]): string[] {
 
 /**
  * Applies what `briefFromText` returned to the draft. Only fields the answer carries are set; the
- * rest stay as the owner had them. A call to action the owner did not name starts from the post
- * type's default unless the owner already chose one. Returns a new draft.
+ * rest stay as the owner had them. Selling points and dates are not applied: the editor no longer
+ * shows them, and the description itself (saved as the brief's notes) carries them into the copy.
+ * A call to action the owner did not name starts from the post type's default unless the owner
+ * already chose one. Returns a new draft.
  */
 export function applyDescription(d: EditorDraft, r: Pick<BriefFromTextResult, 'brief'>): EditorDraft {
   const b = r.brief;
-  const next: EditorDraft = { ...d, postType: b.postType };
-  if (b.primaryUspId) {
-    next.primaryUspId = b.primaryUspId;
-    next.secondaryUspIds = (b.secondaryUspIds ?? []).filter((x) => x !== b.primaryUspId);
-  }
+  const next: EditorDraft = { ...d, postType: b.postType, extraPostTypes: d.extraPostTypes.filter((x) => x !== b.postType) };
   if (b.cta) {
     next.cta = b.cta;
     next.ctaChosen = true;
   } else if (!d.ctaChosen) next.cta = DEFAULT_CTA[b.postType];
   if (b.blocks) next.blocks = { ...d.blocks, ...b.blocks };
-  if (b.startsOn || b.endsOn) {
-    next.startsOn = b.startsOn ?? d.startsOn;
-    next.endsOn = b.endsOn ?? d.endsOn;
-    if (b.endsOn) next.openEnded = false; // an end date the owner named replaces "no end date"; the description never sets openEnded itself
-    next.blocks = { ...next.blocks, dates: true };
-  }
   if (b.language) next.language = b.language;
   return next;
 }

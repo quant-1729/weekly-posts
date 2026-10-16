@@ -15,7 +15,7 @@ import { BrandAccessError } from '@/lib/brand/current';
 import { getDb } from '@/lib/db';
 import { checkPostDeterministic, loadGuardrailContext, type FlagKind } from '@/lib/guardrail';
 import { POST_LANGUAGE_CODES } from '@/lib/setup/languages';
-import { assertUnderDailyCap, failedCallUsd, recordUsage } from '@/lib/usage';
+import { assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage } from '@/lib/usage';
 import { assertUnderWeeklyCap } from '@/lib/usage/caps';
 import { reviewReplyFixture } from './fixtures';
 
@@ -164,13 +164,13 @@ export async function draftReviewReply(
     });
   } catch (err) {
     const lost = failedCallUsd(err); // an answer that did not validate still cost money (H-2)
-    if (lost > 0) await recordUsage(args.brandId, args.userId, 'review_reply', lost).catch(() => undefined);
+    if (lost > 0) await recordUsage(args.brandId, args.userId, 'review_reply', lost, { ok: false, model: failedCallModel(err) }).catch(() => undefined);
     // Ids and the error type only in the log: a message could echo the review or the reply.
     console.warn(`[reviews] reply failed for brand ${args.brandId}: ${err instanceof AiError ? err.code : err instanceof Error ? err.name : 'error'}`);
     throw new ReviewReplyAiError('The AI did not give a reply');
   }
   const aiMs = Date.now() - tAi;
-  await recordUsage(args.brandId, args.userId, 'review_reply', generated.stats?.usd ?? 0);
+  await recordUsage(args.brandId, args.userId, 'review_reply', generated.stats?.usd ?? 0, { model: generated.stats?.model });
 
   // The guardrail's code layer only: numbers, contact details, risky phrases and words to avoid,
   // against the brand's facts. No second AI call.

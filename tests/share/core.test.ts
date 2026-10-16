@@ -160,6 +160,24 @@ describe("Share", () => {
     expect(p.nav.share).not.toHaveBeenCalled();
   });
 
+  it("a carousel shares all its slides as files, in order, in one share sheet", async () => {
+    const p = phone();
+    const kit = createShareKit(p.env);
+    const files = (await Promise.all([1, 2, 3].map((n) => kit.prepare(`/i/s${n}`, `instagram-slide-${n}.png`)))) as File[];
+    const out = await kit.share(files, "Three things we love");
+    expect(out).toEqual({ kind: "shared", copied: true });
+    expect(p.shareArgs).toHaveLength(1);
+    expect(p.shareArgs[0].files!.map((f) => f.name)).toEqual(["instagram-slide-1.png", "instagram-slide-2.png", "instagram-slide-3.png"]);
+  });
+
+  it("falls back to Download when the browser cannot share that many files", async () => {
+    const p = phone({ canShare: (d) => (d.files?.length ?? 0) <= 1 });
+    const kit = createShareKit(p.env);
+    const files = (await Promise.all([1, 2].map((n) => kit.prepare(`/i/s${n}`, `a-${n}.png`)))) as File[];
+    expect((await kit.share(files, "text")).kind).toBe("unsupported");
+    expect(p.nav.share).not.toHaveBeenCalled();
+  });
+
   it("the story path shares the vertical picture", async () => {
     const p = phone();
     const kit = createShareKit(p.env);
@@ -304,6 +322,18 @@ describe("the ready page script", () => {
     expect(page.posts).toHaveLength(1);
     expect(page.posts[0].url).toBe("/e/TOKEN");
     expect(Object.fromEntries(page.posts[0].body)).toMatchObject({ nonce: "NONCE", op: "log", kind: "share", format: "square", post: "11111111-1111-4111-8111-111111111111" });
+  });
+
+  it("a carousel's Share button shares every slide as files in one go and logs it once", async () => {
+    const page = fakePage(true);
+    page.el.shareBtn.setAttribute("data-urls", "/i/s1 /i/s2 /i/s3");
+    page.el.shareBtn.setAttribute("data-filenames", "instagram-slide-1.png instagram-slide-2.png instagram-slide-3.png");
+    new Function("window", sharePageScript())(page.win);
+    await page.el.shareBtn.click();
+    expect(page.p.shareArgs).toHaveLength(1);
+    expect(page.p.shareArgs[0].files!.map((f) => f.name)).toEqual(["instagram-slide-1.png", "instagram-slide-2.png", "instagram-slide-3.png"]);
+    expect(page.p.calls.filter((c) => c.startsWith("fetch:"))).toEqual(["fetch:/i/s1", "fetch:/i/s2", "fetch:/i/s3"]);
+    expect(page.posts).toHaveLength(1);
   });
 
   it("Share as story or status shares the vertical picture and logs the story flag", async () => {

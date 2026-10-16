@@ -16,7 +16,7 @@ import { getDb } from "@/lib/db";
 import { fill, s } from "@/lib/i18n/strings";
 import { renderPostDetailed, templateInfo } from "@/lib/render";
 import { getStorage, type Storage } from "@/lib/storage";
-import { DailyCapError, assertUnderDailyCap, failedCallUsd, recordUsage } from "@/lib/usage";
+import { DailyCapError, assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage, type UsageMeta } from "@/lib/usage";
 import { flagsFromIssues, paletteWithDefaults } from "./generate";
 import { switchFixture } from "./fixtures";
 import {
@@ -192,6 +192,7 @@ export async function switchOutputLanguage(opts: SwitchOptions): Promise<SwitchO
     const callModel = async (attempt: number): Promise<ChannelOutput> => {
       const t = Date.now();
       let usd = 0;
+      let meta: UsageMeta = { ok: false };
       try {
         const { data, stats } = await generateJson({
           budgetMs: 20_000,
@@ -206,14 +207,16 @@ export async function switchOutputLanguage(opts: SwitchOptions): Promise<SwitchO
             typeof fixtureSource === "function" ? fixtureSource(attempt) : (fixtureSource ?? switchFixture(channel, to)),
         });
         usd = stats?.usd ?? 0;
+        meta = { model: stats?.model };
         return data;
       } catch (e) {
         usd = failedCallUsd(e); // an answer that did not validate still cost money (H-2)
+        meta = { ok: false, model: failedCallModel(e) };
         throw e;
       } finally {
         timings.aiMs += Date.now() - t;
         // The call was attempted, so it counts against the cap even if it failed.
-        await recordUsage(brandId, userId, "switch_language", usd);
+        await recordUsage(brandId, userId, "switch_language", usd, meta);
       }
     };
     // Script and length are judged against the owner's sources only: the old text must not

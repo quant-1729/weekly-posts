@@ -17,7 +17,8 @@ import { isDevToolsEnabled } from "@/lib/env";
  *
  * Everything is protected except a public list, so a new page is private by
  * default. Signed-out users go to /login (API routes get a 401 instead);
- * signed-in users on /login go to / (which sends them to /week or /setup).
+ * signed-in users on /login are sent on by the login page itself (it checks the database: a signed-out or
+ * revoked device still holds a validly signed cookie, and redirecting that from here would loop).
  *
  * Public: /login, /auth/callback and /auth/invalid (email sign-in), /dev/outbox (non-production only), /a/*, /s/*, /r/*, /e/* and /i/* (no-login links; /e/* pages act on POST only), /api/email/* (one-click unsubscribe), /api/files/* (it checks
  * membership itself), /api/whatsapp/* (webhook, checks its signature), Next
@@ -38,9 +39,6 @@ export async function proxy(request: NextRequest) {
     }
     return NextResponse.redirect(new URL("/login", request.url));
   }
-  if (session && pathname === "/login") {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
 
   // Tell server components which page this is (a layout cannot see the path).
   // Set here, so a value sent by the client is always overwritten.
@@ -50,7 +48,7 @@ export async function proxy(request: NextRequest) {
   if (session && needsRefresh(session)) {
     response.cookies.set(
       SESSION_COOKIE,
-      await signSession({ id: session.sub, email: session.email }),
+      await signSession({ id: session.sub, email: session.email, sid: session.sid }),
       sessionCookieOptions(),
     );
   }

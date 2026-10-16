@@ -152,3 +152,13 @@ Website reader with sourced facts and the JavaScript-site reader · Instagram im
 | 3. Queue + publishing | C-24, C-25, C-26, C-27, C-28 (Meta review submitted in week 1) | Week 3 |
 | 4. Imports, analytics, voice, languages, international | C-22, C-23, C-29, C-30, C-34, C-35, C-36, C-37 | Week 4 |
 | 5. Legal, docs, acceptance | C-38, C-39, C-40; stretch C-21 if time | Week 4 |
+
+## 16. Owner changes after launch
+
+**2026-10-15, simpler "Create a post" (owner request, UI-15).** Replaces parts of B-2, B-3, B-4 and B-8 on the Details step:
+- The page opens on one card, "Create a post" ("Describe what kind of post you want."), with a microphone icon in the text box that records, then puts the words in the box for the owner to edit (like ChatGPT). No "Speak instead" button, no voice hint.
+- The description is saved on the brief (`notes`) and is what the post is written from: the copy prompt gets it as OWNER DESCRIPTION and the fact check counts it as an owner fact (payment IDs removed before either).
+- Selling points, "What should customers do?" and Dates are gone from the Details step. A brief is complete with a description (or, for older briefs, a main point); no post type needs a main point, dates or a call to action. The call to action still defaults from the post type, unseen.
+- "Details to show on the post" and the QR code move to their own short step, "On the post", between Details and Design (5 steps now).
+- The Photo card is now "Supporting photo or design". An Instagram post link there is not built yet (needs a new field; owner to confirm).
+- No "Before you continue" panel; problems show inline when Next is pressed.

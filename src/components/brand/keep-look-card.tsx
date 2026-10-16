@@ -70,7 +70,7 @@ export function KeepMyLookCard({ brandId, initial = null }: { brandId: string; i
   return (
     <div className="space-y-3 rounded-lg border border-stone-200 bg-stone-50 p-4" data-keep-look>
       <div>
-        <h3 className="font-semibold">{t.title}</h3>
+        <h3 className="font-medium">{t.title}</h3>
         <p className={hintClass}>{t.intro}</p>
       </div>
 

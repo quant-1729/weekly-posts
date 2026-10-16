@@ -58,7 +58,8 @@ import { DatesBlock, FactsBlock, LookBlock, SettingsBlock, WebsiteLookExtras } f
 import { BrandSection } from "@/components/brand/section";
 import { UploadsSection, VoiceSection } from "@/components/uploads/uploads-section";
 import { PATHNAME_HEADER } from "@/lib/auth/public-paths";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import type { MockDb } from "@/lib/db/mock";
 import { s } from "@/lib/i18n/strings";
 import { closeTestDb, createBrandFor, createUser, openTestDb } from "../brand/helpers";
@@ -106,16 +107,15 @@ function find(node: ReactNode, match: (el: ReactElement) => boolean, out: ReactE
 }
 
 describe("bottom nav", () => {
-  it("shows Queue, Brand, Results and History, in that order, and no Create or Plan", () => {
+  it("shows Create, Queue, Brand and Results, in that order, and no Plan", () => {
     const html = renderToString(createElement(BottomNav));
-    const labels = [...html.matchAll(/<a [^>]*href="([^"]+)"[^>]*>.*?<\/svg>([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]);
+    const labels = [...html.matchAll(/<a [^>]*href="([^"]+)"[^>]*>.*?<\/svg><\/span>([^<]+)<\/a>/g)].map((m) => [m[1], m[2]]);
     expect(labels).toEqual([
+      ["/create", "Create"],
       ["/week", "Queue"],
       ["/brand", "Brand"],
       ["/results", "Results"],
-      ["/history", "History"],
     ]);
-    expect(html).not.toContain("/create");
     expect(html).not.toContain("/plan");
     expect(html).toContain('aria-current="page"'); // /brand is the current page
   });
@@ -132,7 +132,7 @@ describe("header: one business per account", () => {
     const html = renderToString(layout as ReactElement);
     expect(html).toContain("Corner Bakery");
     expect(html).toContain("page body");
-    expect(html).not.toMatch(/aria-haspopup|aria-expanded/); // the switcher's menu button
+    expect(html).not.toMatch(/aria-haspopup|Switch business/); // the switcher's menu button
     expect(html).toContain(s.nav.queue);
     expect(html).toContain(s.signOut);
   });
@@ -152,13 +152,10 @@ describe("/week page", () => {
     expect(html).toContain("Generate this week"); // the full string has an apostrophe React escapes
   });
 
-  it("has a prominent Create button in the header on phones (the bottom nav keeps four tabs)", async () => {
+  it("has no Create button of its own in the header: Create is in the bottom nav and the sidebar (the empty queue still offers a link)", async () => {
     const html = renderToString((await WeekPage()) as ReactElement);
-    const button = /<a [^>]*data-create-button[^>]*>[^<]*<\/a>/.exec(html)?.[0] ?? "";
-    expect(button).toContain('href="/create"');
-    expect(button).toContain("Create a post");
-    expect(button).toContain("bg-[#E4572E]"); // a filled, prominent button
-    expect(button).toContain("md:hidden"); // wider screens list Create in the navigation instead
+    expect(html).not.toMatch(/<a [^>]*data-create-button[^>]*class="[^"]*md:hidden/);
+    if (html.includes("data-create-button")) expect(/<a [^>]*data-create-button[^>]*>/.exec(html)?.[0]).toContain('href="/create"');
   });
 
   it("needs a signed-in owner with a finished setup", async () => {
@@ -172,14 +169,15 @@ describe("/brand page", () => {
     const page = (await Page()) as ReactElement;
     const sections = find(page, (el) => el.type === BrandSection);
     const titles = sections.map((el) => (el.props as { title: string }).title);
-    // v3 adds "Your selling points" and "How customers reach you" right after the facts (and a payment card).
+    // v3 adds "Your selling points" and "How customers reach you" right after the facts (and a payment card);
+    // Ideas adds the "Competitors" card (R-1).
     expect(titles.slice(0, 3)).toEqual(["Your facts", "Your selling points", "How customers reach you"]);
-    const v2Titles = titles.filter((x) => !["Your selling points", "How customers reach you", "Payment QR code"].includes(x));
+    const v2Titles = titles.filter((x) => !["Your selling points", "How customers reach you", "Payment QR code", "Competitors"].includes(x));
     expect(v2Titles).toEqual([
       "Your facts",
       "Your voice",
       "Logo and colours",
-      "Your mascot",
+      "Your face in posts",
       "Photos and past posts",
       "Your dates",
       "Settings",

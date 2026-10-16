@@ -22,3 +22,5 @@ cloudbuild.yaml
 vercel.json
 .vercel
 START-PROMPT.md
+# Separate Vercel project (its own package.json); the Cloud Run image does not need it.
+admin-dashboard

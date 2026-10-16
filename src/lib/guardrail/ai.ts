@@ -5,7 +5,7 @@ import { generateJson } from '@/lib/ai/client';
 import { buildV2FactCheckPrompt, type V2CheckPost } from '@/lib/ai/prompts/v2-fact-check';
 import type { WeeklyFact } from '@/lib/ai/prompts/v2-weekly';
 import { v2FactCheckJsonSchema, v2FactCheckSchema, type V2FactCheck } from '@/lib/ai/schemas-v2';
-import { failedCallUsd, recordUsage } from '@/lib/usage';
+import { failedCallModel, failedCallUsd, recordUsage } from '@/lib/usage';
 import { assertUnderWeeklyCap } from '@/lib/usage/caps';
 
 /** Default time limits of the AI check: per attempt, and in all with retries. */
@@ -62,13 +62,13 @@ export async function checkPostsAi(args: {
     const lost = failedCallUsd(e);
     if (lost > 0) {
       args.onUsd?.(lost);
-      if (args.usage) await recordUsage(args.usage.brandId, args.usage.userId, 'fact_check', lost);
+      if (args.usage) await recordUsage(args.usage.brandId, args.usage.userId, 'fact_check', lost, { ok: false, model: failedCallModel(e) });
     }
     throw e;
   }
   const { data, stats } = result;
   const usd = stats?.usd ?? 0;
   args.onUsd?.(usd);
-  if (args.usage) await recordUsage(args.usage.brandId, args.usage.userId, 'fact_check', usd);
+  if (args.usage) await recordUsage(args.usage.brandId, args.usage.userId, 'fact_check', usd, { model: stats?.model });
   return { statements: data.facts, usd };
 }

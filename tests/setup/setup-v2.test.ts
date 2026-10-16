@@ -36,7 +36,8 @@ import {
   startWebsiteReadAction,
   websiteStatusAction,
 } from "@/app/(app)/setup/actions";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import type { MockDb } from "@/lib/db/mock";
 import { s } from "@/lib/i18n/strings";
 import { countryOptions, ISO_COUNTRY_CODES, isIsoCountry, regionOfLocale } from "@/lib/setup/countries";

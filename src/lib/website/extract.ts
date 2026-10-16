@@ -11,7 +11,7 @@ import { buildWebsiteFactsPrompt, type WebsitePage } from "@/lib/ai/prompts/v2-m
 import { websiteFactsJsonSchema, websiteFactsSchema, type WebsiteFacts } from "@/lib/ai/schemas-v2";
 import { BrandAccessError } from "@/lib/brand/current";
 import { getDb, type Tx } from "@/lib/db";
-import { assertUnderDailyCap, failedCallUsd, recordUsage } from "@/lib/usage";
+import { assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage, type UsageMeta } from "@/lib/usage";
 import { assertUnderWeeklyCap } from "@/lib/usage/caps";
 import type { LogoCandidate } from "./clean";
 import type { FetchEnv } from "./fetch";
@@ -255,6 +255,7 @@ export async function readWebsiteFacts(args: {
   const prompt = buildWebsiteFactsPrompt({ businessName, pages: toPrompt(loaded.pages) });
   let data: WebsiteFacts;
   let usd = 0;
+  let meta: UsageMeta = {};
   try {
     const fixture = args.options?.fixture ?? ((pages: WebsitePage[]) => websiteFactsFixture(pages.map((p) => p.url)));
     const res = await generateJson({
@@ -270,14 +271,15 @@ export async function readWebsiteFacts(args: {
     });
     data = res.data;
     usd = res.stats?.usd ?? 0;
+    meta = { model: res.stats?.model };
   } catch (e) {
     if (!(e instanceof AiError)) throw e;
     // The call was made, so it counts against the cap, but nothing is replaced.
-    await recordUsage(brandId, userId, "website_read", failedCallUsd(e));
+    await recordUsage(brandId, userId, "website_read", failedCallUsd(e), { ok: false, model: failedCallModel(e) });
     await setStatus("failed", typed.slice(0, 2000), "ai_failed");
     return { ...common, status: "failed", pagesRead: loaded.pages.map((p) => p.url), readerPages: loaded.readerPages, reason: "ai_failed" };
   }
-  await recordUsage(brandId, userId, "website_read", usd);
+  await recordUsage(brandId, userId, "website_read", usd, meta);
 
   const { kept, dropped } = verifyFacts(data.facts, loaded.pages);
   const status: WebsiteStatus = loaded.status; // "ok" | "partial"

@@ -73,7 +73,7 @@ export function BrandSwitcher({ brands, currentId }: { brands: BrandOption[]; cu
         className="m-0 mx-auto mb-0 mt-auto w-full max-w-[480px] rounded-t-2xl bg-white p-0 backdrop:bg-black/40"
       >
         <div className="space-y-3 p-4">
-          <h2 id="brand-switcher-title" className="text-lg font-bold">
+          <h2 id="brand-switcher-title" className="text-card-title text-title">
             {s.switcher.title}
           </h2>
           <ul className="space-y-2">
@@ -87,12 +87,12 @@ export function BrandSwitcher({ brands, currentId }: { brands: BrandOption[]; cu
                     aria-current={isCurrent ? "true" : undefined}
                     onClick={() => choose(b.id)}
                     className={`flex min-h-12 w-full items-center justify-between gap-2 rounded-lg border px-4 py-2 text-left text-base disabled:opacity-60 ${
-                      isCurrent ? "border-[#E4572E] bg-[#E4572E]/10 font-semibold" : "border-stone-300"
+                      isCurrent ? "border-coral bg-coral-tint font-medium" : "border-stone-300"
                     }`}
                   >
                     <span className="min-w-0 truncate">{b.name}</span>
                     {isCurrent && (
-                      <span className="flex shrink-0 items-center gap-1 text-sm text-[#B93A15]">
+                      <span className="flex shrink-0 items-center gap-1 text-sm text-coral-dark">
                         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                           <path d="M5 12l5 5 9-10" />
                         </svg>

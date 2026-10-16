@@ -17,7 +17,8 @@ vi.mock('next/cache', () => ({ revalidatePath: () => undefined }));
 
 import { saveMascotAction } from '@/app/(app)/mascot/actions';
 import { setMascotInPostsAction } from '@/app/(app)/brand/actions';
-import { SESSION_COOKIE, signSession } from '@/lib/auth/session';
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import { BrandAccessError } from '@/lib/brand/current';
 import type { MockDb } from '@/lib/db/mock';
 import { s } from '@/lib/i18n/strings';

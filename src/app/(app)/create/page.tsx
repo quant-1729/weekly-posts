@@ -6,7 +6,7 @@ import { loadEditorData } from "@/lib/briefs/editor-data";
 
 export const dynamic = "force-dynamic";
 
-/** Create a post, step 1 of 4 (Details): a new brief. The editor autosaves it and moves to /create/{briefId}. */
+/** Create a post, step 1 of 5 (Details): a new brief. The editor autosaves it and moves to /create/{briefId}. */
 export default async function Page() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");

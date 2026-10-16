@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ScheduleScreen } from "@/components/create/schedule-screen";
 import { StepBar } from "@/components/create/steps";
+import { linkButton } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurrentBrand } from "@/lib/brand/current";
 import { getBrief } from "@/lib/briefs/service";
@@ -12,7 +13,7 @@ import { loadScheduleStep } from "@/lib/queue";
 export const dynamic = "force-dynamic";
 
 /**
- * Create a post, step 4 of 4 (Schedule): the slot proposed for each approved channel post (S-1), with Confirm,
+ * Create a post, step 5 of 5 (Schedule): the slot proposed for each approved channel post (S-1), with Confirm,
  * "Post now" and "Pick another time". Approved posts can still be downloaded or shared by hand.
  */
 export default async function Page({ params }: PageProps<"/create/[briefId]/schedule">) {
@@ -28,12 +29,11 @@ export default async function Page({ params }: PageProps<"/create/[briefId]/sche
   const approved = (data?.posts ?? []).filter((p) => p.status === "approved" || p.status === "posted");
 
   return (
-    <section className="space-y-4 md:max-w-3xl">
-      <h1 className="text-xl font-bold md:text-2xl">{s.create.title}</h1>
+    <section className="mx-auto w-full max-w-page-sm">
+      <h1 className="sr-only">{s.create.schedule.title}</h1>
       <StepBar current="schedule" />
-      <h2 className="text-lg font-bold">{s.create.schedule.title}</h2>
       <ScheduleScreen briefId={brief.id} initial={step} posts={approved} />
-      <Link href="/create" className="inline-block py-2 text-sm text-stone-600 underline">
+      <Link href="/create" className={`${linkButton} mt-2`}>
         {s.create.schedule.another}
       </Link>
     </section>

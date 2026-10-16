@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { saveCheckinAction } from "@/app/(app)/results/actions";
+import { cardClass, segButton, segTrack } from "@/components/ui";
 import { fill, s } from "@/lib/i18n/strings";
 import { formatDayMonth } from "@/lib/links/format";
 
@@ -43,14 +44,15 @@ export function CheckinCard({
   };
 
   return (
-    <section aria-labelledby="checkin-title" className="space-y-3 rounded-lg border border-stone-200 bg-stone-50 p-4 md:max-w-2xl">
-      <div>
-        <h2 id="checkin-title" className="font-semibold">
-          {title}
-        </h2>
-        <p className="text-sm text-stone-600">{fill(c.weekLabel, { date: formatDayMonth(weekStart) })}</p>
-      </div>
-      <div role="group" aria-label={c.groupLabel} className="flex gap-2">
+    <section aria-labelledby="checkin-title" className={`space-y-2 ${cardClass}`}>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="min-w-0">
+          <h2 id="checkin-title" className="text-card-title text-title">
+            {title}
+          </h2>
+          <p className="text-[13px] leading-[18px] text-desc">{fill(c.weekLabel, { date: formatDayMonth(weekStart) })}</p>
+        </div>
+        <div role="group" aria-label={c.groupLabel} className={segTrack}>
         {ANSWERS.map((a) => {
           const selected = answer === a;
           return (
@@ -60,20 +62,19 @@ export function CheckinCard({
               aria-pressed={selected}
               disabled={pending}
               onClick={() => tap(a)}
-              className={`min-h-12 flex-1 rounded-lg border px-3 py-2 text-base font-medium disabled:opacity-60 ${
-                selected ? "border-[#E4572E] bg-[#E4572E] text-white" : "border-stone-300 bg-white text-stone-800"
-              }`}
+              className={segButton(selected)}
             >
               {LABELS[a]}
             </button>
           );
         })}
+        </div>
       </div>
-      <p role="status" className="min-h-5 text-sm text-stone-600">
+      <p role="status" className="min-h-5 text-[13px] leading-[18px] text-desc">
         {pending ? c.saving : answer && !error ? fill(c.saved, { answer: LABELS[answer] }) : ""}
       </p>
       {error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-[13px] leading-[18px] text-err-tx">
           {error}
         </p>
       )}

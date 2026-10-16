@@ -7,12 +7,12 @@ import { loadCard, mailHref, mapsHref, telHref } from "@/lib/shortlinks/card";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { robots: { index: false, follow: false }, referrer: "no-referrer-when-downgrade" };
 
-const linkClass = "inline-block py-2 text-base font-medium text-stone-900 underline";
+const linkClass = "inline-block py-2 text-base font-medium text-ink underline underline-offset-4";
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <section>
-      <h2 className="text-sm font-semibold text-stone-500">{label}</h2>
+      <h2 className="text-group text-helper">{label}</h2>
       <ul className="mt-1 space-y-1">{children}</ul>
     </section>
   );
@@ -24,10 +24,10 @@ export default async function Page({ params }: { params: Promise<{ code: string 
   if (!card) notFound();
   const empty = !card.phones.length && !card.emails.length && !card.addresses.length && !card.hours.length;
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-[480px] space-y-5 bg-white px-4 py-8 md:max-w-[640px] md:px-10 md:py-12">
+    <main className="mx-auto min-h-dvh w-full max-w-[480px] space-y-5 px-4 py-8 md:max-w-[640px] md:px-10 md:py-12">
       <div>
-        <h1 className="text-2xl font-bold">{card.businessName}</h1>
-        {card.city ? <p className="mt-1 text-stone-600">{card.city}</p> : null}
+        <h1 className="text-banner text-title">{card.businessName}</h1>
+        {card.city ? <p className="mt-1 text-[14px] leading-5 text-desc">{card.city}</p> : null}
       </div>
       {card.phones.length > 0 && (
         <Row label="Phone">
@@ -57,11 +57,11 @@ export default async function Page({ params }: { params: Promise<{ code: string 
       {card.hours.length > 0 && (
         <Row label="Opening hours">
           {card.hours.map((v) => (
-            <li key={v} className="text-stone-800">{v}</li>
+            <li key={v} className="text-ink">{v}</li>
           ))}
         </Row>
       )}
-      {empty ? <p className="text-stone-600">Contact details are not available yet.</p> : null}
+      {empty ? <p className="text-[14px] leading-5 text-desc">Contact details are not available yet.</p> : null}
     </main>
   );
 }

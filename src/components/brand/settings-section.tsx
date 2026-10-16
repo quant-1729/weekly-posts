@@ -112,7 +112,7 @@ export function SettingsPanel(props: SettingsPanelProps) {
         save();
       }}
     >
-      <p className="text-stone-600">{t.intro}</p>
+      <p className="text-[14px] leading-5 text-desc">{t.intro}</p>
 
       <div className={row}>
         <label htmlFor="st-name" className={labelClass}>

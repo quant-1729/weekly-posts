@@ -15,7 +15,7 @@ import type { Brief } from '@/lib/briefs/types';
 import type { DesignFormat, DesignReport } from '@/lib/design/types';
 import { hasBlockingFlags, runGuardrail, type Flag, type PostGuardrailResult } from '@/lib/guardrail';
 import { QR_LABEL, factsForBrief } from './content';
-import type { CreateBrand, DesignBlocker, DesignWords } from './types';
+import type { CreateBrand, DesignBlocker, DesignWords, SlideText } from './types';
 
 export interface CheckPostInput {
   channel: string;
@@ -38,7 +38,16 @@ export interface CheckArgs {
   now?: Date;
   /** Fixture mode only (tests and offline dev): what the AI fact check "answers". Empty (nothing to question) when not given. */
   aiFixture?: V2FactCheck | (() => V2FactCheck);
+  /**
+   * A carousel's slides: each one is checked like the picture's words (headline and body) in the same call. Their flags carry
+   * `slide` (0-based) and are added to every post's flags, since the slides are the same on every channel.
+   */
+  slides?: SlideText[];
 }
+
+/** A flag found in a slide's text, as it is stored on the post: its id is unique per slide and it says which slide. */
+const tagSlideFlag = (f: Flag, slide: number): Flag => ({ ...f, id: `s${slide}_${f.id}`, slide });
+const SLIDE_FIELDS: Flag['field'][] = ['image_text.headline', 'image_text.subline'];
 
 /** Flags for several posts of one brief (one AI call for all). Same order as `posts`. */
 export async function checkPosts(args: CheckArgs): Promise<PostGuardrailResult[]> {
@@ -48,24 +57,35 @@ export async function checkPosts(args: CheckArgs): Promise<PostGuardrailResult[]
     : null;
   const rules = { usps: brief.uspSnapshot, qr, timezone: brief.timezone };
   const facts = factsForBrief(brief, args.brand);
-  return runGuardrail({
+  const main = args.posts.map((p) => ({
+    channel: guardrailChannel(p.channel),
+    caption: p.caption,
+    cta: args.words.ctaText,
+    hashtags: p.hashtags,
+    image_text: { headline: args.words.headline, subline: args.words.subline, bubble: args.words.bubble },
+  }));
+  // Each slide is one more "post" of the same call: its headline and body are the picture's words, nothing else.
+  const slideChannel = main[0]?.channel ?? 'instagram';
+  const slides = (args.slides ?? []).map((x) => ({ channel: slideChannel, caption: '', cta: '', hashtags: [] as string[], image_text: { headline: x.headline, subline: x.body, bubble: '' } }));
+  const all = await runGuardrail({
     userId: args.userId,
     brandId: args.brandId,
-    posts: args.posts.map((p) => ({
-      channel: guardrailChannel(p.channel),
-      caption: p.caption,
-      cta: args.words.ctaText,
-      hashtags: p.hashtags,
-      image_text: { headline: args.words.headline, subline: args.words.subline, bubble: args.words.bubble },
-    })),
+    posts: [...main, ...slides],
     facts,
-    uspRules: args.posts.map(() => rules),
+    uspRules: [...main, ...slides].map(() => rules),
     now: args.now,
     // The channels of one brief share their facts and often a sentence: they are not compared with each other, nor with
     // this brief's earlier posts; earlier posts of other briefs (and the weekly batches) are (C-3).
     compareWithinCall: false,
     excludeBriefId: brief.id,
     aiFixture: args.aiFixture ?? (aiMode() === 'fixture' ? { facts: [] } : undefined),
+  });
+  const results = all.slice(0, main.length);
+  if (slides.length === 0) return results;
+  const slideFlags = all.slice(main.length).flatMap((r, i) => r.flags.filter((f) => SLIDE_FIELDS.includes(f.field) && f.kind !== 'regulated_reminder').map((f) => tagSlideFlag(f, i)));
+  return results.map((r) => {
+    const flags = [...r.flags, ...slideFlags];
+    return { ...r, flags, blocking: hasBlockingFlags(flags) };
   });
 }
 

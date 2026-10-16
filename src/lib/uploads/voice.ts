@@ -10,7 +10,7 @@ import { buildVoicePrompt } from "@/lib/ai/prompts/v2-memory";
 import { voiceJsonSchema, voiceSchema, type Voice } from "@/lib/ai/schemas-v2";
 import { BrandAccessError, requireBrandMember } from "@/lib/brand/current";
 import { getDb } from "@/lib/db";
-import { assertUnderDailyCap, failedCallUsd, recordUsage } from "@/lib/usage";
+import { assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage } from "@/lib/usage";
 import { assertUnderWeeklyCap } from "@/lib/usage/caps";
 import { voiceFixture } from "./fixtures";
 import { MAX_AVOID_WORDS, MAX_EXAMPLE_PHRASES, VOICE_DEBOUNCE_MS } from "./limits";
@@ -162,11 +162,11 @@ export async function refreshVoice(args: {
         logContext: { brandId },
         fixture: () => fixture(input.pastPosts),
       });
-      await recordUsage(brandId, userId, "upload_extract", res.stats?.usd ?? 0);
+      await recordUsage(brandId, userId, "upload_extract", res.stats?.usd ?? 0, { model: res.stats?.model });
       voice = res.data;
     } catch (e) {
       const lost = failedCallUsd(e); // an answer that did not validate still cost money (H-2)
-      if (lost > 0) await recordUsage(brandId, userId, "upload_extract", lost).catch(() => undefined);
+      if (lost > 0) await recordUsage(brandId, userId, "upload_extract", lost, { ok: false, model: failedCallModel(e) }).catch(() => undefined);
       console.warn("[uploads] voice refresh failed; keeping the saved voice", e instanceof Error ? e.message : e);
       return { status: "failed" };
     }

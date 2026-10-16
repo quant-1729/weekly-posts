@@ -22,11 +22,14 @@ vi.mock("@/app/(app)/create/[briefId]/actions", () => ({
   setBlockAction: vi.fn(),
   setPhotoAction: vi.fn(),
   chooseDesignAction: vi.fn(),
+  setFilterAction: vi.fn(),
   confirmFlagAction: vi.fn(),
   removeFlagAction: vi.fn(),
   approvePostAction: vi.fn(),
   approveAllAction: vi.fn(),
   undoApprovalAction: vi.fn(),
+  saveCaptionAction: vi.fn(),
+  undoAllAction: vi.fn(),
   logShareAction: vi.fn(),
   confirmScheduleAction: vi.fn(),
   postNowBriefAction: vi.fn(),
@@ -121,7 +124,7 @@ describe("design page", () => {
     expect(out).toContain("Option 3");
     expect(out).toMatch(/data:image\/jpeg;base64,/);
     expect(out).toContain("Use this design");
-    expect(out).toContain("Quick edits");
+    expect(out).toContain("Edit your design");
     expect(out).toContain("Previous layout");
     expect(out).toContain("Next layout");
     expect(out).toContain("Brand colour");
@@ -131,13 +134,51 @@ describe("design page", () => {
     expect(out).toContain("+44 20 7946 0958");
     expect(out).toContain("Headline (up to 7 words)");
     expect(out).toContain("Cake week is here");
-    expect(out).toContain("Caption for Instagram");
-    expect(out).toContain("Caption for Facebook");
     expect(out).toContain("Save and check");
     expect(out).toContain("Nothing to check. Every figure and claim comes from your details.");
     expect(out).toContain("We will draw: square (1080 x 1080), portrait (1080 x 1350)");
     // Each option says whether everything fits or what had no room.
     expect((out.match(/Everything fits\.|No room for:|Not shown on this size:/g) ?? []).length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("lays the three options in the centre and every design control in a right-hand panel; no captions or hashtags", async () => {
+    const brief = await readyBrief(b, { channels: ["instagram", "facebook"], secondaryUspIds: [b.usps.delivery.id, b.usps.free.id], photoId: b.photoId });
+    await ensureDraftPosts(args(brief.id), deps());
+    const out = html(await DesignBody(args(brief.id)));
+    // Two columns from 1024 px up: the options (flexible) and a 320 px panel; one column below.
+    expect(out).toMatch(/data-design-layout[^>]*>/);
+    expect(out).toMatch(/class="[^"]*lg:grid-cols-\[minmax\(0,1fr\)_320px\][^"]*"[^>]*data-design-layout/);
+    const options = out.slice(out.indexOf("data-design-options"), out.indexOf("data-design-panel"));
+    const panel = out.slice(out.indexOf("data-design-panel"));
+    expect(out.indexOf("data-design-options")).toBeLessThan(out.indexOf("data-design-panel")); // options first on phones, panel stacked below
+    expect((options.match(/data-option="\d"/g) ?? []).length).toBe(3);
+    expect(panel).not.toContain("data-option=");
+    expect(out).toMatch(/lg:sticky[^"]*"[^>]*aria-label="Edit your design"/);
+    // The panel container is like the left sidebar: on the cream page, no card (no corners, border or shadow), docked full height below the 52 px top bar.
+    const panelTag = out.slice(out.lastIndexOf("<aside"), out.indexOf(">", out.indexOf("data-design-panel")));
+    expect(panelTag).toContain("bg-cream");
+    expect(panelTag).toContain("lg:top-[52px]");
+    expect(panelTag).toContain("lg:h-[calc(100dvh-52px)]");
+    expect(panelTag).not.toMatch(/rounded|shadow|border|bg-white/);
+    // The panel holds the design controls and the primary button.
+    for (const text of ["Layout", "Previous layout", "Next layout", "Colours", "Words", "Headline (up to 7 words)", "Second line", "Button text", "Photo", "Show on the post", "Filter", "Save and check", "Use this design"]) expect(panel).toContain(text);
+    for (const preset of ["none", "warm", "cool", "vivid", "soft", "mono", "vintage"]) expect(panel).toContain(`data-filter-preset="${preset}"`);
+    expect(panel).toContain('type="range"');
+    expect(panel).toContain("data-use-design");
+    expect(options).not.toContain("Use this design");
+    // Captions and hashtags are edited in Review, not here.
+    expect(out).not.toMatch(/Caption for|Hashtags|<textarea|words-tags|words-cap/);
+    expect(out).not.toContain("until 20 Oct");
+    expect(out).not.toContain("#cakes");
+  });
+
+  it("hides the Filter section when the post has no photo (nothing to filter)", async () => {
+    const brief = await readyBrief(b, { channels: ["instagram"] });
+    await ensureDraftPosts(args(brief.id), deps());
+    const out = html(await DesignBody(args(brief.id)));
+    expect(out).toContain("data-design-panel");
+    expect(out).not.toContain("data-design-filter");
+    expect(out).not.toContain("data-filter-preset");
   });
 
   it("lists the flags as 'Please check' and offers the carousel when the points do not fit one picture", async () => {
@@ -189,7 +230,7 @@ describe("review page", () => {
     expect(out).toContain(`/api/files/renders/${b.brandId}/`);
     expect(out).toContain("Only £3.99!");
     expect(out).toContain("Please check");
-    expect(out).toContain("This is true");
+    expect(out).toContain("It&#x27;s true");
     expect(out).toContain(">Remove<");
     expect(out).toMatch(/<button[^>]*data-approve[^>]*disabled=""/);
     expect(out).toContain("You can approve once you have answered every item above.");
@@ -208,6 +249,7 @@ describe("review page", () => {
     await approveCreatePost({ userId: b.userId, brandId: b.brandId, postId: out0.posts[0].id });
     const out = html(await ReviewPage(params(brief.id)));
     expect(out).toContain("Share this post");
+    expect((out.match(/aria-label="Share"/g) ?? []).length).toBe(1); // one Share icon button; its menu holds the rest
     expect(out).toContain("Download square");
     expect(out).toContain("Download portrait");
     expect(out).toContain("Copy caption");

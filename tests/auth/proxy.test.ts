@@ -2,7 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { proxy } from "@/proxy";
 import { isPublicPath, PATHNAME_HEADER } from "@/lib/auth/public-paths";
-import { SESSION_COOKIE, SESSION_MAX_AGE_SECONDS, signSession } from "@/lib/auth/session";
+import { SignJWT } from "jose";
+import { getEnv } from "@/lib/env";
+import { SESSION_COOKIE, SESSION_MAX_AGE_SECONDS, verifySession } from "@/lib/auth/session";
+import { signSessionNoRow as signSession } from "../helpers/session";
 
 const user = { id: "11111111-1111-4111-8111-111111111111", email: "owner@example.com" };
 afterEach(() => vi.unstubAllEnvs());
@@ -118,9 +121,23 @@ describe("proxy guard", () => {
     expect(res.headers.get("location")).toBeNull();
   });
 
-  it("signed-in /login goes to /", async () => {
+  it("signed-in /login passes through: the login page checks the database and redirects (no loop for a revoked cookie)", async () => {
     const res = await proxy(req("/login", await signSession(user)));
-    expect(new URL(res.headers.get("location")!).pathname).toBe("/");
+    expect(res.headers.get("location")).toBeNull();
+  });
+
+  it("a cookie signed before sessions existed (no sid) counts as signed out", async () => {
+    const iat = Math.floor(Date.now() / 1000);
+    const legacy = await new SignJWT({ email: user.email })
+      .setProtectedHeader({ alg: "HS256" })
+      .setSubject(user.id)
+      .setIssuedAt(iat)
+      .setExpirationTime(iat + 3600)
+      .sign(new TextEncoder().encode(getEnv().authSecret));
+    expect(await verifySession(legacy)).toBeNull();
+    const res = await proxy(req("/create", legacy));
+    expect(new URL(res.headers.get("location")!).pathname).toBe("/login");
+    expect((await proxy(req("/api/setup/transcribe", legacy))).status).toBe(401);
   });
 
   it("signed-in app page passes through", async () => {
@@ -144,6 +161,12 @@ describe("proxy guard", () => {
     const set = res.headers.get("set-cookie")!;
     expect(set).toContain(`${SESSION_COOKIE}=`);
     expect(set).toContain(`Max-Age=${SESSION_MAX_AGE_SECONDS}`);
+    // The renewed cookie keeps the same session id.
+    const old = await signSession(user, Date.now() - 2 * DAY_MS);
+    const before = (await verifySession(old))!;
+    const res2 = await proxy(req("/create", old));
+    const token = /pm_session=([^;]+)/.exec(res2.headers.get("set-cookie")!)![1];
+    expect((await verifySession(token))!.sid).toBe(before.sid);
     expect(set.toLowerCase()).toContain("httponly");
     expect(set.toLowerCase()).toContain("samesite=lax");
   });

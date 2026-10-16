@@ -263,3 +263,80 @@ export async function generateText(args: {
   );
   return { text: (res.text ?? '').trim(), stats: stats(model, start, res.usageMetadata, args.logContext) };
 }
+
+// ---------------------------------------------------------------------------------------------
+// Google Search grounding (Ideas research, R-2)
+// ---------------------------------------------------------------------------------------------
+
+/** Price of one Google Search grounded request on Vertex, in USD (about $35 per 1000). The only place this number lives. */
+export const GROUNDED_REQUEST_USD = 0.035;
+
+/** One web source the search used: the (redirect) link, its title and the site, as Google reports them. */
+export interface GroundingChunkInfo {
+  uri: string;
+  title: string;
+  domain: string;
+}
+/** A sentence of the answer and the chunk indexes that back it. */
+export interface GroundingSupportInfo {
+  text: string;
+  chunkIndices: number[];
+}
+export interface GroundedResult {
+  /** The model's answer text (JSON asked for in the prompt; the caller parses it). */
+  text: string;
+  chunks: GroundingChunkInfo[];
+  supports: GroundingSupportInfo[];
+  /** Tokens plus the grounding price (GROUNDED_REQUEST_USD). Null in fixture mode. */
+  stats: CallStats | null;
+}
+
+/**
+ * One Gemini call with Google Search grounding (tools: googleSearch). No JSON mime type is set (not every
+ * model allows it together with a tool): the prompt asks for JSON and the caller parses and validates it.
+ * Payment IDs are redacted from the prompt here too. Fixture mode returns `fixture`.
+ */
+export async function generateGrounded(args: {
+  system: string;
+  user: string;
+  model?: string;
+  fixture?: Omit<GroundedResult, 'stats'> | (() => Omit<GroundedResult, 'stats'>);
+  timeoutMs?: number;
+  budgetMs?: number;
+  logContext?: LogContext;
+}): Promise<GroundedResult> {
+  if (aiMode() === 'fixture') {
+    if (args.fixture === undefined) throw new AiError('no_fixture', 'AI is in fixture mode and no fixture was given');
+    const value = typeof args.fixture === 'function' ? args.fixture() : args.fixture;
+    return { ...value, stats: null };
+  }
+  const model = args.model ?? textModel();
+  const start = Date.now();
+  const res = await withRetry(
+    (signal) =>
+      genai().models.generateContent({
+        model,
+        contents: [{ role: 'user', parts: [{ text: redactPaymentIds(args.user) }] }],
+        config: {
+          abortSignal: signal,
+          systemInstruction: redactPaymentIds(args.system),
+          tools: [{ googleSearch: {} }],
+          temperature: 0.3,
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
+        },
+      }),
+    { timeoutMs: args.timeoutMs ?? DEFAULT_CALL_TIMEOUT_MS, deadline: Date.now() + (args.budgetMs ?? DEFAULT_BUDGET_MS) },
+  );
+  const meta = res.candidates?.[0]?.groundingMetadata;
+  const chunks: GroundingChunkInfo[] = (meta?.groundingChunks ?? []).map((c) => ({
+    uri: c.web?.uri ?? '',
+    title: c.web?.title ?? '',
+    domain: c.web?.domain ?? '',
+  }));
+  const supports: GroundingSupportInfo[] = (meta?.groundingSupports ?? []).map((sp) => ({
+    text: sp.segment?.text ?? '',
+    chunkIndices: sp.groundingChunkIndices ?? [],
+  }));
+  const base = stats(model, start, res.usageMetadata, args.logContext);
+  return { text: (res.text ?? '').trim(), chunks, supports, stats: { ...base, usd: base.usd + GROUNDED_REQUEST_USD } };
+}

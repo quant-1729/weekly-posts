@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { errorClass, hintClass, primaryButton, secondaryButton } from "@/components/ui";
+import { alertClass, errorClass, hintClass, primaryButton, secondaryButton } from "@/components/ui";
 import { fill, s } from "@/lib/i18n/strings";
 import { tweenSignal } from "@/lib/tween/events";
 import type { WeekView as WeekData } from "@/lib/weekly/view";
@@ -83,25 +83,25 @@ export function WeekView({ initial }: { initial: WeekData }) {
 
   return (
     <section className="space-y-4" aria-live="polite">
-      <p className="text-sm text-stone-600">{fill(t.forWeek, { date: dayLabel(view.weekStart) })}</p>
+      <p className="text-[13px] leading-[18px] text-desc">{fill(t.forWeek, { date: dayLabel(view.weekStart) })}</p>
 
       {generating ? (
-        <div role="status" className="rounded-xl border border-stone-200 bg-stone-50 p-4">
-          <p className="font-semibold text-stone-800">{t.generating}</p>
+        <div role="status" className={alertClass("grey")}>
+          <p className="text-ui text-title">{t.generating}</p>
           <p className={hintClass}>{t.generatingHelp}</p>
         </div>
       ) : null}
 
       {failed && !generating ? (
-        <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4">
-          <p className="font-semibold text-red-800">{t.statusFailed}</p>
-          <p className="text-sm text-red-700">{t.statusFailedHelp}</p>
+        <div role="alert" className={alertClass("err")}>
+          <p className="text-ui text-err-tx">{t.statusFailed}</p>
+          <p className="text-[13px] leading-[18px]">{t.statusFailedHelp}</p>
         </div>
       ) : null}
 
-      {regenFailed && !generating ? <p className="text-sm text-amber-800">{t.regenFailed}</p> : null}
+      {regenFailed && !generating ? <p className="text-[13px] leading-[18px] text-warn-tx">{t.regenFailed}</p> : null}
 
-      {!generating && batch?.status === "ready" ? <p className="font-semibold text-green-800">{t.statusReady}</p> : null}
+      {!generating && batch?.status === "ready" ? <p className="text-ui text-ok-tx">{t.statusReady}</p> : null}
 
       {!generating && view.canGenerate ? (
         <div className="space-y-1">
@@ -125,7 +125,7 @@ export function WeekView({ initial }: { initial: WeekData }) {
           ))}
         </ul>
       ) : !generating && !failed ? (
-        <p className="text-stone-600">{t.emptyNone}</p>
+        <p className="text-[14px] leading-5 text-desc">{t.emptyNone}</p>
       ) : null}
     </section>
   );

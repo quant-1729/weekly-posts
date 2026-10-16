@@ -32,7 +32,8 @@ import { startInstagramImportAction } from "@/components/instagram/setup-actions
 import { UploadsSection } from "@/components/uploads/uploads-section";
 import { renderToString } from "react-dom/server";
 import type { ReactElement } from "react";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import type { MockDb } from "@/lib/db/mock";
 import { clearInstagramCache, getInstagramState } from "@/lib/instagram/import";
 import { discoverInstagram } from "@/lib/instagram/discovery";

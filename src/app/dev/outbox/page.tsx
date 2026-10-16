@@ -19,19 +19,19 @@ export default async function OutboxPage({ searchParams }: { searchParams?: Prom
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-8">
-      <h1 className="text-2xl font-bold">Dev outbox</h1>
+      <h1 className="text-2xl font-medium">Dev outbox</h1>
       <p className="text-sm text-stone-600">
         Emails written by the mock sender to .data/outbox. Nothing here was really sent.{" "}
-        <a href={plain ? "/dev/outbox" : "/dev/outbox?plain=1"} className="font-medium text-[#E4572E] underline">
+        <a href={plain ? "/dev/outbox" : "/dev/outbox?plain=1"} className="font-medium text-coral-dark underline">
           {plain ? "Show HTML" : "Show plain text"}
         </a>
       </p>
-      {emails.length === 0 && <p className="text-stone-600">No emails yet.</p>}
+      {emails.length === 0 && <p className="text-[14px] leading-5 text-desc">No emails yet.</p>}
       {emails.map((m) => (
         <article key={m.id} className="space-y-2 rounded-lg border border-stone-300 bg-white p-4">
           <header className="text-sm">
-            <p className="font-semibold">{m.subject}</p>
-            <p className="text-stone-600">
+            <p className="font-medium">{m.subject}</p>
+            <p className="text-[14px] leading-5 text-desc">
               To {m.to} &middot; {m.kind} &middot; {m.createdAt}
             </p>
           </header>
@@ -39,7 +39,7 @@ export default async function OutboxPage({ searchParams }: { searchParams?: Prom
             <ul className="space-y-1 text-sm">
               {linksIn(m.text).map((url) => (
                 <li key={url} className="break-all">
-                  <a href={url} className="font-medium text-[#E4572E] underline">
+                  <a href={url} className="font-medium text-coral-dark underline">
                     {url}
                   </a>
                 </li>

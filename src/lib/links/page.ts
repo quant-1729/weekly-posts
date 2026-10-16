@@ -19,13 +19,15 @@ export interface LinkPage {
 }
 
 const BRAND = "#E4572E";
+/** The fish-style theme, in inline CSS (these pages have no stylesheet and may not load fonts): warm cream page, near-black pill buttons. */
+const INK = "#1d1d1c";
 
 /**
  * Desktop layout for the no-login pages (decision D10): from 768 px the page is a centred card, 640 px wide.
  * Phones keep the plain 560 px column set inline. A plain style block, so it works without JavaScript
  * (PAGE_CSP allows inline styles).
  */
-export const WIDE_PAGE_CSS = `@media (min-width:768px){body{background:#fafaf9 !important}main{max-width:640px !important;margin:48px auto !important;padding:40px 48px 48px !important;background:#ffffff;border:1px solid #e7e5e4;border-radius:16px}}`;
+export const WIDE_PAGE_CSS = `@media (min-width:768px){body{background:#fbfaf9 !important}main{max-width:640px !important;margin:48px auto !important;padding:40px 48px 48px !important;background:#ffffff;border:1px solid rgba(0,0,0,0.05);box-shadow:0 1px 3px rgba(0,0,0,0.04);border-radius:16px}}`;
 
 export const PAGE_CSP =
   "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'";
@@ -48,10 +50,10 @@ export function renderPage(page: LinkPage): string {
 <title>${esc(page.title)} - ${esc(APP_NAME)}</title>
 <style>${WIDE_PAGE_CSS}</style>
 </head>
-<body style="margin:0;background:#ffffff;color:#1c1917;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;line-height:1.5;">
+<body style="margin:0;background:#fbfaf9;color:#1d1d1c;font-family:Onest,system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans',Arial,sans-serif;line-height:1.5;">
 <main style="box-sizing:border-box;max-width:560px;margin:0 auto;padding:28px 20px 48px;">
-<p style="margin:0 0 4px;font-size:22px;font-weight:700;color:${BRAND};">${esc(APP_NAME)}</p>
-<h1 style="margin:16px 0 8px;font-size:22px;font-weight:600;">${esc(page.title)}</h1>
+<p style="margin:0 0 4px;font-size:16px;font-weight:600;color:${INK};"><span style="display:inline-block;width:12px;height:12px;border-radius:4px;background:${BRAND};margin-right:8px;"></span>${esc(APP_NAME)}</p>
+<h1 style="margin:20px 0 8px;font-size:20px;line-height:28px;font-weight:500;color:#161616;">${esc(page.title)}</h1>
 ${page.body}
 </main>
 ${page.script ? `<script>${page.script}</script>\n` : ""}</body>
@@ -60,10 +62,10 @@ ${page.script ? `<script>${page.script}</script>\n` : ""}</body>
 
 export const buttonStyle = (kind: "primary" | "secondary" = "primary") =>
   kind === "primary"
-    ? `display:block;box-sizing:border-box;width:100%;border:0;border-radius:8px;background:${BRAND};color:#ffffff;font:inherit;font-size:18px;font-weight:600;padding:12px 16px;text-align:center;text-decoration:none;cursor:pointer;`
-    : `display:block;box-sizing:border-box;width:100%;border:1px solid #d6d3d1;border-radius:8px;background:#f5f5f4;color:#1c1917;font:inherit;font-size:16px;font-weight:600;padding:10px 16px;text-align:center;text-decoration:none;cursor:pointer;`;
+    ? `display:block;box-sizing:border-box;width:100%;border:0;border-radius:9999px;background:${INK};color:#ffffff;font:inherit;font-size:16px;font-weight:500;padding:12px 16px;text-align:center;text-decoration:none;cursor:pointer;`
+    : `display:block;box-sizing:border-box;width:100%;border:0;border-radius:9999px;background:#f0e8e4;color:#161616;font:inherit;font-size:16px;font-weight:500;padding:12px 16px;text-align:center;text-decoration:none;cursor:pointer;`;
 
-export const para = (text: string) => `<p style="margin:0 0 20px;color:#57534e;">${esc(text)}</p>`;
+export const para = (text: string) => `<p style="margin:0 0 20px;color:#554f4c;">${esc(text)}</p>`;
 
 /** A form that POSTs back to the same /e/ token with the CSRF nonce. `fields` are hidden inputs. */
 export function postForm(args: {

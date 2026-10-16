@@ -90,15 +90,18 @@ describe("autosave creates, then updates, one draft", () => {
 });
 
 describe("Next refuses an incomplete brief", () => {
-  it("'ready' needs the items B-8 lists, and the stored brief stays a draft", async () => {
-    const draft = await saveBriefFromEditor(o.userId, o.brandId, null, draftInput({ postType: "offer", primaryUspId: discount.id }), { now: NOW });
-    const err = await saveBriefFromEditor(o.userId, o.brandId, draft.brief.id, draftInput({ postType: "offer", primaryUspId: discount.id }), { status: "ready", now: NOW }).catch((e) => e);
+  it("'ready' needs a description (or a main point), and the stored brief stays a draft", async () => {
+    const draft = await saveBriefFromEditor(o.userId, o.brandId, null, draftInput({ postType: "offer" }), { now: NOW });
+    const err = await saveBriefFromEditor(o.userId, o.brandId, draft.brief.id, draftInput({ postType: "offer" }), { status: "ready", now: NOW }).catch((e) => e);
     expect(err).toBeInstanceOf(BriefIncompleteError);
-    expect((err as BriefIncompleteError).missing.map((m) => m.key)).toEqual(["dates", "cta"]);
+    expect((err as BriefIncompleteError).missing.map((m) => m.key)).toEqual(["description"]);
     expect((await getBrief(o.userId, o.brandId, draft.brief.id))?.status).toBe("draft");
 
-    const viaAction = await saveBriefAction(o.brandId, draft.brief.id, draftInput({ postType: "offer", primaryUspId: discount.id }), "ready");
-    expect(viaAction).toMatchObject({ ok: false, code: "incomplete", missing: [{ key: "dates", question: "Until when is the offer on?" }, { key: "cta" }] });
+    const viaAction = await saveBriefAction(o.brandId, draft.brief.id, draftInput({ postType: "offer" }), "ready");
+    expect(viaAction).toMatchObject({ ok: false, code: "incomplete", missing: [{ key: "description", question: "Please describe your post first." }] });
+
+    const described = await saveBriefAction(o.brandId, draft.brief.id, draftInput({ postType: "offer", notes: "20% off all cakes this weekend" }), "ready");
+    expect(described).toMatchObject({ ok: true, brief: { status: "ready", notes: "20% off all cakes this weekend" } });
   });
 
   it("a complete brief becomes ready", async () => {

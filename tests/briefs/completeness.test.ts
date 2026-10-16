@@ -32,48 +32,30 @@ function brief(postType: PostType, o: Partial<Brief> = {}): Brief {
 const keys = (b: Brief) => checkCompleteness(b).map((m) => m.key);
 
 describe("checkCompleteness", () => {
-  it("asks for exactly what REQUIRED_BY_TYPE lists on an empty brief", () => {
-    for (const type of POST_TYPES) expect(keys(brief(type)), type).toEqual([...REQUIRED_BY_TYPE[type]]);
+  // Owner change 2026-10-15: Details no longer asks for selling points, a call to action or dates. A post needs a
+  // description (or, for briefs from before, a main point); no type requires more.
+  it("no post type requires a main point, dates or a call to action any more", () => {
+    for (const type of POST_TYPES) expect(REQUIRED_BY_TYPE[type], type).toEqual([]);
   });
 
-  it("every missing item has a one-line question", () => {
+  it("an empty brief of any type asks for a description, as one line", () => {
     for (const type of POST_TYPES) {
-      for (const m of checkCompleteness(brief(type))) {
-        expect(m.question.length, `${type}/${m.key}`).toBeGreaterThan(10);
-        expect(m.question).not.toContain("\n");
-      }
+      expect(checkCompleteness(brief(type)), type).toEqual([{ key: "description", question: s.brief.questions.description }]);
+      expect(s.brief.questions.description).not.toContain("\n");
     }
-    expect(checkCompleteness(brief("offer")).map((m) => m.question)).toEqual([
-      s.brief.questions.primaryUsp.offer,
-      s.brief.questions.dates.offer,
-      s.brief.questions.cta.default,
-    ]);
   });
 
-  it("an offer needs a main point that says how much, and an end date", () => {
-    const base = { primaryUspId: "u", cta: "visit" as const, endsOn: "2026-10-20" };
-    expect(keys(brief("offer", { ...base, uspSnapshot: [snap("discount")] }))).toEqual([]);
-    expect(keys(brief("offer", { ...base, uspSnapshot: [snap("price")] }))).toEqual([]);
-    expect(keys(brief("offer", { ...base, uspSnapshot: [snap("free_extra")] }))).toEqual([]);
-    expect(checkCompleteness(brief("offer", { ...base, uspSnapshot: [snap("reviews")] }))).toEqual([{ key: "primaryUsp", question: s.brief.offerNeedsAmount }]);
-    expect(keys(brief("offer", { ...base, endsOn: null, startsOn: "2026-10-15", uspSnapshot: [snap("discount")] }))).toEqual(["dates"]); // "until when" is the end
+  it("a description is enough for every type", () => {
+    for (const type of POST_TYPES) expect(keys(brief(type, { notes: "20% off all cakes this weekend. Call to order." })), type).toEqual([]);
   });
 
-  it("an event is complete with a start or an end date and a call to action", () => {
-    expect(keys(brief("event", { startsOn: "2026-10-20", cta: "book" }))).toEqual([]);
-    expect(keys(brief("event", { endsOn: "2026-10-20", cta: "book" }))).toEqual([]);
-    expect(keys(brief("event", { cta: "book" }))).toEqual(["dates"]);
-    expect(keys(brief("event", { startsOn: "2026-10-20" }))).toEqual(["cta"]);
+  it("a blank description does not count", () => {
+    expect(keys(brief("offer", { notes: "   " }))).toEqual(["description"]);
   });
 
-  it("the other types", () => {
-    expect(keys(brief("new_product", { primaryUspId: "u" }))).toEqual(["cta"]);
-    expect(keys(brief("new_product", { primaryUspId: "u", cta: "order" }))).toEqual([]);
-    expect(keys(brief("announcement", { startsOn: "2026-12-24" }))).toEqual([]);
-    expect(keys(brief("testimonial", { primaryUspId: "u" }))).toEqual([]);
-    expect(keys(brief("hiring"))).toEqual(["cta"]);
-    expect(keys(brief("occasion"))).toEqual([]);
-    expect(keys(brief("brand"))).toEqual([]);
+  it("an older brief with a main point and no description is still complete", () => {
+    expect(keys(brief("offer", { primaryUspId: "u", uspSnapshot: [snap("discount")] }))).toEqual([]);
+    expect(keys(brief("testimonial", { primaryUspId: "u", uspSnapshot: [snap("reviews")] }))).toEqual([]);
   });
 });
 

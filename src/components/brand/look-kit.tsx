@@ -203,7 +203,7 @@ export function KitEditor({
       {/* The shipped font files, for the samples below. */}
       {fontFaces.length > 0 && <style>{fontFaceCss(fontFaces)}</style>}
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold">{t.colors.title}</h3>
+        <h3 className="text-card-title text-title">{t.colors.title}</h3>
         <p className={hintClass}>{t.colors.hint}</p>
         <PalettePicker
           value={draft.colors}
@@ -250,14 +250,14 @@ export function KitEditor({
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold">{t.fonts.title}</h3>
+        <h3 className="text-card-title text-title">{t.fonts.title}</h3>
         <p className={hintClass}>{t.fonts.hint}</p>
         <FontPicker label={t.fonts.headline} value={draft.fonts.headline} faces={fontFaces} businessName={businessName} onChange={(headline) => set({ fonts: { ...draft.fonts, headline } })} />
         <FontPicker label={t.fonts.body} value={draft.fonts.body} faces={fontFaces} businessName={businessName} onChange={(body) => set({ fonts: { ...draft.fonts, body } })} />
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold">{t.style.title}</h3>
+        <h3 className="text-card-title text-title">{t.style.title}</h3>
         <div className="grid gap-3 md:grid-cols-3">
           <Toggle
             label={t.style.corners.label}
@@ -281,7 +281,7 @@ export function KitEditor({
       </div>
 
       <div className="space-y-2" id="look-themes" data-themes>
-        <h3 className="text-lg font-semibold">{t.themes.title}</h3>
+        <h3 className="text-card-title text-title">{t.themes.title}</h3>
         <p className={hintClass}>{t.themes.hint}</p>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-label={t.themes.title}>
           {THEME_IDS.map((id) => {
@@ -293,7 +293,7 @@ export function KitEditor({
                 aria-pressed={draft.themeId === id}
                 data-theme={id}
                 onClick={() => set({ themeId: id })}
-                className={`flex flex-col gap-2 rounded-lg border p-2 text-left ${draft.themeId === id ? "border-[#E4572E] ring-2 ring-[#E4572E]/40" : "border-stone-300"}`}
+                className={`flex flex-col gap-2 rounded-lg border p-2 text-left ${draft.themeId === id ? "border-coral ring-2 ring-coral/40" : "border-stone-300"}`}
               >
                 {preview ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -301,7 +301,7 @@ export function KitEditor({
                 ) : (
                   <span className="aspect-[2/1] w-full rounded-md border border-dashed border-stone-300 bg-stone-50" aria-hidden="true" data-theme-preview-slot />
                 )}
-                <span className="font-semibold">{t.themes.names[id]}</span>
+                <span className="font-medium">{t.themes.names[id]}</span>
                 <span className="text-sm font-normal text-stone-600">{t.themes.descriptions[id]}</span>
               </button>
             );

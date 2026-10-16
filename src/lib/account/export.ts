@@ -26,8 +26,8 @@ This ZIP holds the data we keep for your account. Everything is in plain files:
 JSON files open in any text editor, and images open in any photo app.
 
 account.json        Your sign-in email, when your account was made, and when you agreed to our terms.
-brand.json          Your business details (the "brand" and your "brand memory"), your mascots and the
-                    instructions you gave when rewriting posts.
+brand.json          Your business details (the "brand" and your "brand memory"), your mascots and faces
+                    (with their pose images) and the instructions you gave when rewriting posts.
 facts.json          Every fact in your brand memory, including ones you removed (active = false),
                     and where each came from (website, setup, an upload, or you).
 photos.json         Your photo library and past posts: the text we read and the file name in photos/.
@@ -40,20 +40,28 @@ clicks.json         How many times each post's link was opened. We do not keep w
 owner-dates.json    The dates you added.
 usps.json           Your selling points (discounts, prices, ratings ...) and where each came from.
 contact-points.json How customers reach you: phone, website, address, hours and social handles.
-post-briefs.json    The details you gave for each post: type, selling points as used, dates, QR choice.
+post-briefs.json    The details you gave for each post: type, format (post or carousel and its slide count), selling points as used, dates, QR choice.
 payment-ids.json    Your payment IDs (like UPI) and their status. The confirmation codes are not included.
 connections.json    The Instagram and Facebook accounts you connected for posting: account name, status and dates.
                     The saved permissions (tokens) are never included.
 queue.json          Your queue: for each post the channel, the planned time, whether it was published or emailed to you,
                     its status, the link to the published post and dates.
 queue-settings.json How often, on which days and at what time you chose to post, and your auto-approve and pause choices.
+insights.json       How each published post did on Instagram or Facebook (reach, likes, comments, saves, shares, views) about 1, 3 and 7 days after
+                    it went out, where those platforms gave us the numbers.
+competitors.json    The competitors you named, with the public counts we stored for their Instagram (followers, posts).
+research.json       Your trend research: each run with its cost, and the trend cards (sources with links and dates) and
+                    post ideas it made. Your research focus and weekly switch are in brand.json.
 emails.json         The emails we sent you, including sign-in and delete-confirmation emails: kind, subject,
                     date and status. Not the email text.
+sessions.json       Your sign-ins: when, the device type, browser and system, the approximate city and country
+                    (from an offline database, not your IP address), when it was last used and whether it was
+                    signed out. We do not keep your IP address.
 
 logo.png            Your logo.
 photos/             Your photos. photos/past-posts/ holds screenshots of past posts.
 renders/            The finished post images: renders/{post code}/{square|vertical|landscape}.png.
-mascots/            Your mascot files, if you made one.
+mascots/            Your mascot files, if you made one. mascots/faces/ holds the pose images of your faces.
 inputs/             Photos and voice notes you sent when making posts, if any.
 
 Dates are in UTC, like 2026-10-13T09:30:00.000Z.
@@ -113,7 +121,7 @@ type Row = Record<string, unknown>;
 const rows = (tx: Tx, sql: string, params: unknown[]) => tx.query<Row>(sql, params);
 
 /** Reads all rows as the user. Row-level security is the only filter that matters. */
-async function readRows(userId: string): Promise<{ account: Row | null; blocks: BrandBlock[]; perBrand: Map<string, Record<string, Row[]>>; emails: Row[] }> {
+async function readRows(userId: string): Promise<{ account: Row | null; blocks: BrandBlock[]; perBrand: Map<string, Record<string, Row[]>>; emails: Row[]; sessions: Row[] }> {
   return getDb().withUser(userId, async (tx) => {
     const [account] = await rows(
       tx,
@@ -167,6 +175,9 @@ async function readRows(userId: string): Promise<{ account: Row | null; blocks: 
           `select to_jsonb(v) as row from public.voice_feedback v where brand_id = $1 order by created_at, id`,
         ),
         mascots: await q(`select to_jsonb(m) as row from public.mascots m where brand_id = $1 order by created_at, id`),
+        // Brand Face: the faces and their pose images (the files are under mascots/faces/ in the ZIP).
+        faces: await q(`select to_jsonb(f) as row from public.brand_faces f where brand_id = $1 order by created_at, id`),
+        facePoses: await q(`select to_jsonb(p) as row from public.brand_face_poses p where brand_id = $1 order by created_at, id`),
         // v3 details. The payment ID's confirmation token hash and its expiry are secrets and are left out.
         usps: await q(`select to_jsonb(u) as row from public.usps u where brand_id = $1 order by sort, created_at, id`),
         contacts: await q(`select to_jsonb(c) as row from public.contact_points c where brand_id = $1 order by created_at, id`),
@@ -190,6 +201,23 @@ async function readRows(userId: string): Promise<{ account: Row | null; blocks: 
             where i.brand_id = $1 order by i.slot_at, i.id`,
         ),
         queueSettings: await q(`select to_jsonb(s) as row from public.queue_settings s where brand_id = $1`),
+        // Insights (R-8): the numbers Instagram and Facebook gave for each published post, by post code. No platform ids.
+        insights: await q(
+          `select jsonb_build_object('post_code', p.post_code, 'channel', i.channel, 'age_hours', m.age_hours,
+                                     'fetched_at', to_char(m.fetched_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'),
+                                     'reach', m.reach, 'impressions', m.impressions, 'likes', m.likes, 'comments', m.comments,
+                                     'saves', m.saves, 'shares', m.shares, 'views', m.views) as row
+             from public.post_metrics m
+             join public.queue_items i on i.id = m.queue_item_id and i.brand_id = m.brand_id
+             join public.posts p on p.id = i.post_id and p.brand_id = i.brand_id
+            where m.brand_id = $1 order by i.slot_at, i.id, m.age_hours`,
+        ),
+        // Ideas (trend research): the competitors the owner named (with the counts we stored for them), and every run, card and idea.
+        competitors: await q(`select to_jsonb(c) as row from public.competitors c where brand_id = $1 order by created_at, id`),
+        competitorSnapshots: await q(`select to_jsonb(s) as row from public.competitor_snapshots s where brand_id = $1 order by taken_at, id`),
+        researchRuns: await q(`select to_jsonb(r) as row from public.research_runs r where brand_id = $1 order by started_at, id`),
+        trendCards: await q(`select to_jsonb(c) as row from public.trend_cards c where brand_id = $1 order by created_at, id`),
+        postIdeas: await q(`select to_jsonb(i) as row from public.post_ideas i where brand_id = $1 order by created_at, id`),
       });
     }
     // The owner's own emails (policy email_log_select_own, including ones with no brand) and their brands' emails.
@@ -199,7 +227,14 @@ async function readRows(userId: string): Promise<{ account: Row | null; blocks: 
         where user_id = $1 or brand_id = any ($2::uuid[]) order by created_at, id`,
       [userId, blocks.map((b) => String(b.brand.id))],
     );
-    return { account: account ?? null, blocks, perBrand, emails };
+    // Sign-in devices (policy user_sessions_select_own). Device fields only: no ip_hash, no raw user agent.
+    const sessions = await rows(
+      tx,
+      `select created_at, last_seen_at, revoked_at, revoked_by, device_type, browser, os, country, city
+         from public.user_sessions where user_id = $1 order by created_at, id`,
+      [userId],
+    );
+    return { account: account ?? null, blocks, perBrand, emails, sessions };
   });
 }
 
@@ -210,7 +245,7 @@ function buildPlan(
   data: Awaited<ReturnType<typeof readRows>>,
   generatedAt: Date,
 ): Plan {
-  const { account, blocks, perBrand, emails } = data;
+  const { account, blocks, perBrand, emails, sessions } = data;
   const multi = blocks.length > 1;
   const plan: Plan = { json: [], files: [], lists: [], brandIds: new Set() };
 
@@ -227,6 +262,7 @@ function buildPlan(
   });
 
   plan.json.push({ name: "emails.json", value: emails });
+  plan.json.push({ name: "sessions.json", value: sessions });
 
   for (const { brand, memory } of blocks) {
     const brandId = String(brand.id);
@@ -238,7 +274,14 @@ function buildPlan(
 
     plan.json.push({
       name: `${prefix}brand.json`,
-      value: { brand, brand_memory: memory, mascots: unwrap(d.mascots), voice_feedback: unwrap(d.voice) },
+      value: {
+        brand,
+        brand_memory: memory,
+        mascots: unwrap(d.mascots),
+        faces: unwrap(d.faces),
+        face_poses: unwrap(d.facePoses),
+        voice_feedback: unwrap(d.voice),
+      },
     });
     plan.json.push({ name: `${prefix}facts.json`, value: unwrap(d.facts) });
 
@@ -285,6 +328,18 @@ function buildPlan(
     plan.json.push({ name: `${prefix}connections.json`, value: unwrap(d.connections) });
     plan.json.push({ name: `${prefix}queue.json`, value: unwrap(d.queue) });
     plan.json.push({ name: `${prefix}queue-settings.json`, value: unwrap(d.queueSettings)[0] ?? null });
+    plan.json.push({ name: `${prefix}insights.json`, value: unwrap(d.insights) });
+    const snapshots = unwrap(d.competitorSnapshots);
+    plan.json.push({
+      name: `${prefix}competitors.json`,
+      value: unwrap(d.competitors).map((c) => ({ ...c, snapshots: snapshots.filter((s) => s.competitor_id === c.id) })),
+    });
+    const ideas = unwrap(d.postIdeas);
+    const cards: Row[] = unwrap(d.trendCards).map((c) => ({ ...c, ideas: ideas.filter((i) => i.card_id === c.id) }));
+    plan.json.push({
+      name: `${prefix}research.json`,
+      value: unwrap(d.researchRuns).map((r) => ({ ...r, cards: cards.filter((c) => c.run_id === r.id) })),
+    });
 
     // Files, in the order they are written.
     const logo = memory?.logo_path;

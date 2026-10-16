@@ -33,7 +33,8 @@ vi.mock("@/components/instagram/actions", () => ({
 
 import BrandPage from "@/app/(app)/brand/page";
 import Page from "@/app/(app)/connections/page";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import { saveConnection } from "@/lib/connections/service";
 import { createContact } from "@/lib/contacts/service";
 import type { MockDb } from "@/lib/db/mock";

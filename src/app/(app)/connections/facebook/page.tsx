@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { primaryButton, secondaryButton } from "@/components/ui";
+import { cardClass, pickCardClass, primaryButton, secondaryButton } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
 import { FB_PENDING_COOKIE } from "@/lib/connections/facebook";
 import { listPendingPages } from "@/lib/connections/oauth";
@@ -28,21 +28,21 @@ export default async function Page() {
   }
 
   return (
-    <section className="mx-auto max-w-xl space-y-4">
+    <section className="mx-auto w-full max-w-page-sm space-y-4">
       <div>
-        <h1 className="text-xl font-bold md:text-2xl">{t.pick.title}</h1>
-        <p className="text-stone-600">{t.pick.intro}</p>
+        <h1 className="text-section text-title">{t.pick.title}</h1>
+        <p className="mt-1 text-[14px] leading-5 text-desc">{t.pick.intro}</p>
       </div>
       {pages.length === 0 ? (
-        <p className="text-stone-700">{t.pick.none}</p>
+        <p className="text-[14px] leading-5 text-desc">{t.pick.none}</p>
       ) : (
-        <form action={chooseFacebookPageAction} className="space-y-3 rounded-2xl border border-stone-200 bg-white p-4">
+        <form action={chooseFacebookPageAction} className={`space-y-3 ${cardClass}`}>
           <fieldset className="space-y-2">
             <legend className="sr-only">{t.pick.title}</legend>
             {pages.map((p, i) => (
-              <label key={p.id} className="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border border-stone-300 px-3 py-2">
+              <label key={p.id} className={`${pickCardClass(i === 0)} items-center`}>
                 <input type="radio" name="page" value={p.id} defaultChecked={i === 0} required />
-                <span className="font-medium">{p.name}</span>
+                <span className="text-ui text-title">{p.name}</span>
               </label>
             ))}
           </fieldset>

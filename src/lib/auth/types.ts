@@ -3,6 +3,8 @@ export interface AuthUser {
   email: string | null;
   /** Only v1 owners have one; email sign-in does not set it. */
   phone: string | null;
+  /** The user_sessions row of this sign-in (the `sid` in the cookie). */
+  sessionId: string;
 }
 
 export type AuthErrorCode =

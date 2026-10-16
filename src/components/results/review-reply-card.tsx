@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { writeReviewReplyAction, type ReviewReplyActionResult } from "@/app/(app)/results/review-actions";
-import { errorClass, hintClass, inputClass, labelClass, primaryButton, secondaryButton } from "@/components/ui";
+import { alertClass, cardClass, errorClass, hintClass, inputClass, labelClass, primaryButton, secondaryButton } from "@/components/ui";
 import { fill, s } from "@/lib/i18n/strings";
 import { languageOptions } from "@/lib/setup/languages";
 
@@ -63,12 +63,12 @@ export function ReviewReplyCard() {
   };
 
   return (
-    <section aria-labelledby="review-title" className="space-y-3 rounded-lg border border-stone-200 bg-stone-50 p-4">
+    <section aria-labelledby="review-title" className={`space-y-4 ${cardClass}`}>
       <div>
-        <h2 id="review-title" className="font-semibold">
+        <h2 id="review-title" className="text-card-title text-title">
           {t.title}
         </h2>
-        <p className="text-sm text-stone-600">{t.intro}</p>
+        <p className="text-[13px] leading-[18px] text-desc">{t.intro}</p>
       </div>
 
       <div>
@@ -119,24 +119,24 @@ export function ReviewReplyCard() {
       {result && (
         <div className="space-y-3" aria-live="polite">
           {result.needsAttention && (
-            <p role="alert" className="rounded-lg border-2 border-amber-500 bg-amber-50 p-3 font-medium text-amber-900">
+            <p role="alert" className={`${alertClass("warn")} border-2 border-warn-tx`}>
               {result.attentionReason ? fill(t.attention, { reason: result.attentionReason }) : t.attentionNoReason}
             </p>
           )}
 
           {result.flags.length > 0 && (
-            <div className="rounded-lg border border-amber-400 bg-amber-50 p-3">
-              <h3 className="font-semibold text-amber-900">{t.flagsTitle}</h3>
-              <p className="text-sm text-amber-900">{t.flagsIntro}</p>
-              <ul className="mt-1 space-y-1 text-sm">
+            <div className={alertClass("warn")}>
+              <h3 className="text-ui text-warn-tx">{t.flagsTitle}</h3>
+              <p className="text-[13px] leading-[18px]">{t.flagsIntro}</p>
+              <ul className="mt-1 space-y-1 text-[13px] leading-[18px]">
                 {result.flags.map((f) => (
                   <li key={`${f.kind}:${f.text}`}>
-                    <span className="text-stone-700">{kindLabels[f.kind] ?? f.kind}: </span>
-                    <mark className="rounded bg-amber-200 px-1">{f.text}</mark>
+                    <span className="text-desc">{kindLabels[f.kind] ?? f.kind}: </span>
+                    <mark>{f.text}</mark>
                   </li>
                 ))}
               </ul>
-              <p className="mt-1 text-xs text-amber-900">{t.flagsNote}</p>
+              <p className="mt-1 text-note text-desc">{t.flagsNote}</p>
             </div>
           )}
 
@@ -165,7 +165,7 @@ export function ReviewReplyCard() {
               {pending ? t.writing : t.tryAgain}
             </button>
           </div>
-          <p role="status" className="min-h-5 text-sm text-stone-600">
+          <p role="status" className="min-h-5 text-[13px] leading-[18px] text-desc">
             {copy === "failed" ? t.copyFailed : ""}
           </p>
         </div>

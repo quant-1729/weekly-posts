@@ -64,7 +64,7 @@ export function VoiceAnswer({
     <div className="space-y-3">
       {message && (
         <div role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-amber-900">
-          {message.title && <p className="font-semibold">{message.title}</p>}
+          {message.title && <p className="font-medium">{message.title}</p>}
           <p className="text-sm">{message.body}</p>
         </div>
       )}

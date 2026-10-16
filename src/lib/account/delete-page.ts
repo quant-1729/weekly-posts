@@ -20,11 +20,11 @@ function shell(title: string, inner: string): string {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>${esc(title)}</title>
-<style>@media (min-width:768px){body{background:#fafaf9 !important}main{max-width:560px !important;min-height:0 !important;margin:10vh auto !important;padding:40px 48px !important;background:#ffffff;border:1px solid #e7e5e4;border-radius:16px}}</style>
+<style>@media (min-width:768px){body{background:#fbfaf9 !important}main{max-width:560px !important;min-height:0 !important;margin:10vh auto !important;padding:40px 48px !important;background:#ffffff;border:1px solid rgba(0,0,0,0.05);box-shadow:0 1px 3px rgba(0,0,0,0.04);border-radius:16px}}</style>
 </head>
-<body style="margin:0;background:#ffffff;color:#1c1917;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;">
+<body style="margin:0;background:#fbfaf9;color:#1d1d1c;font-family:Onest,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;">
 <main style="box-sizing:border-box;max-width:480px;min-height:100vh;margin:0 auto;padding:32px 20px;display:flex;flex-direction:column;justify-content:center;">
-<p style="margin:0 0 4px;font-size:24px;font-weight:700;color:#E4572E;">${esc(APP_NAME)}</p>
+<p style="margin:0 0 4px;font-size:16px;font-weight:600;color:#1d1d1c;">${esc(APP_NAME)}</p>
 ${inner}
 </main>
 </body>
@@ -39,19 +39,19 @@ export function deleteConfirmHtml(args: { token: string; nonce: string; name: st
     : "";
   return shell(
     c.title,
-    `<h1 style="margin:16px 0 8px;font-size:20px;font-weight:600;">${esc(c.title)}</h1>
-<p style="margin:0 0 12px;color:#57534e;">${esc(c.body)}</p>
-<p style="margin:0 0 20px;color:#57534e;">${esc(c.whatIsDeleted)}</p>
+    `<h1 style="margin:16px 0 8px;font-size:20px;line-height:28px;font-weight:500;">${esc(c.title)}</h1>
+<p style="margin:0 0 12px;color:#554f4c;">${esc(c.body)}</p>
+<p style="margin:0 0 20px;color:#554f4c;">${esc(c.whatIsDeleted)}</p>
 <form method="post" action="/account/delete">
 <input type="hidden" name="token" value="${esc(args.token)}">
 <input type="hidden" name="nonce" value="${esc(args.nonce)}">
 <label for="confirm_name" style="display:block;margin:0 0 4px;font-weight:600;">${esc(c.nameLabel)}</label>
-<p style="margin:0 0 8px;font-size:14px;color:#57534e;">${esc(fill(c.nameHint, { name: args.name }))}</p>
+<p style="margin:0 0 8px;font-size:14px;color:#554f4c;">${esc(fill(c.nameHint, { name: args.name }))}</p>
 <input id="confirm_name" name="confirm_name" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" required maxlength="200" style="box-sizing:border-box;width:100%;border:1px solid #d6d3d1;border-radius:8px;padding:12px;font-size:16px;margin:0 0 16px;">
 ${err}
-<button type="submit" style="width:100%;border:0;border-radius:8px;background:#b42318;color:#ffffff;font-size:18px;font-weight:600;padding:12px 16px;cursor:pointer;">${esc(c.button)}</button>
+<button type="submit" style="width:100%;border:0;border-radius:9999px;background:#b9241c;color:#ffffff;font-size:16px;font-weight:500;padding:12px 16px;cursor:pointer;">${esc(c.button)}</button>
 </form>
-<p style="margin:20px 0 0;"><a href="/brand" style="color:#57534e;">${esc(c.cancel)}</a></p>`,
+<p style="margin:20px 0 0;"><a href="/brand" style="color:#554f4c;">${esc(c.cancel)}</a></p>`,
   );
 }
 
@@ -60,9 +60,9 @@ export function deleteInvalidHtml(): string {
   const c = s.account.invalidPage;
   return shell(
     c.title,
-    `<h1 style="margin:16px 0 8px;font-size:20px;font-weight:600;">${esc(c.title)}</h1>
-<p style="margin:0 0 20px;color:#57534e;">${esc(c.body)}</p>
-<p style="margin:0;"><a href="/brand" style="color:#E4572E;">${esc(c.link)}</a></p>`,
+    `<h1 style="margin:16px 0 8px;font-size:20px;line-height:28px;font-weight:500;">${esc(c.title)}</h1>
+<p style="margin:0 0 20px;color:#554f4c;">${esc(c.body)}</p>
+<p style="margin:0;"><a href="/brand" style="color:#554f4c;">${esc(c.link)}</a></p>`,
   );
 }
 

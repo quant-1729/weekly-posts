@@ -5,6 +5,9 @@ export type QueueErrorCode =
   | 'not_found'
   | 'not_approved'
   | 'invalid_slot'
+  | 'too_soon'
+  | 'after_end'
+  | 'clash'
   | 'ended'
   | 'busy'
   | 'already_sent'
@@ -23,5 +26,8 @@ export const queueMessage = (code: QueueErrorCode): string => s.queue.errors[cod
 
 export type QueueFailure = { ok: false; code: QueueErrorCode; message: string };
 export type QueueResult<T = object> = ({ ok: true } & T) | QueueFailure;
+
+/** A failure with its own sentence (for example one that names the time it clashes with). */
+export const queueFailWith = (code: QueueErrorCode, message: string): QueueFailure => ({ ok: false, code, message });
 
 export const queueFail = (code: QueueErrorCode): QueueFailure => ({ ok: false, code, message: queueMessage(code) });

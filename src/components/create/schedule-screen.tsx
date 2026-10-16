@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { confirmScheduleAction, logShareAction, postNowBriefAction, slotOptionsForPostAction, type ScheduleActionResult } from "@/app/(app)/create/[briefId]/actions";
-import { errorClass, inputClass, primaryButton, secondaryButton } from "@/components/ui";
+import { alertClass, cardClass, errorClass, labelClass, linkButton, outlineButton, primaryButton, secondaryButton, smallButton } from "@/components/ui";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import type { ReviewPost } from "@/lib/create";
 import { fill, s } from "@/lib/i18n/strings";
 import { formatSlot } from "@/lib/queue/format";
@@ -12,7 +13,6 @@ import { SharePanel } from "./share-panel";
 
 const t = s.create.schedule;
 
-const smallButton = "min-h-11 rounded-lg border border-stone-300 bg-white px-4 py-2 text-base font-medium text-stone-800 disabled:opacity-50";
 
 type Options = { at: string; label: string }[];
 
@@ -27,6 +27,8 @@ export function ScheduleScreen({ briefId, initial, posts }: { briefId: string; i
   const [options, setOptions] = useState<Record<string, Options>>({});
   const [picked, setPicked] = useState<Record<string, string>>({});
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  // The instants the queue suggests per post: marked in the picker; any other time that is allowed can be picked too.
+  const allowedByPost = useMemo(() => Object.fromEntries(Object.entries(options).map(([id, list]) => [id, list.map((o) => o.at)])), [options]);
 
   async function run(name: string, fn: () => Promise<ScheduleActionResult>) {
     setBusy(name);
@@ -59,9 +61,9 @@ export function ScheduleScreen({ briefId, initial, posts }: { briefId: string; i
   const lines = step.lines;
   if (lines.length === 0 || !lines.some((l) => l.approved)) {
     return (
-      <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-4" data-schedule-empty>
+      <div className={`space-y-3 ${cardClass}`} data-schedule-empty>
         <p>{t.none}</p>
-        <Link href={`/create/${briefId}/review`} className={`${secondaryButton} inline-block text-center`}>
+        <Link href={`/create/${briefId}/review`} className={secondaryButton}>
           {t.backToReview}
         </Link>
       </div>
@@ -77,12 +79,12 @@ export function ScheduleScreen({ briefId, initial, posts }: { briefId: string; i
 
   return (
     <div className="space-y-4" data-schedule>
-      <p className="rounded-2xl border border-stone-200 bg-white p-4 font-medium" data-schedule-note>
+      <p className="text-[14px] leading-5 text-desc" data-schedule-note>
         {t.intro}
       </p>
 
       {message ? (
-        <p role={message.kind === "error" ? "alert" : "status"} className={message.kind === "error" ? errorClass : "text-sm font-medium text-green-800"} data-schedule-message>
+        <p role={message.kind === "error" ? "alert" : "status"} className={message.kind === "error" ? errorClass : "text-[13px] font-medium leading-[18px] text-ok-tx"} data-schedule-message>
           {message.text}
         </p>
       ) : null}
@@ -93,15 +95,15 @@ export function ScheduleScreen({ briefId, initial, posts }: { briefId: string; i
             const chosen = open[l.postId] ? picked[l.postId] : "";
             const when = chosen ? formatSlot(chosen, step.timezone) : l.proposedWhen;
             return (
-              <li key={l.postId} className="space-y-2 rounded-xl border border-stone-200 bg-white p-3 md:p-4" data-post-id={l.postId} data-channel={l.channel} data-proposal>
+              <li key={l.postId} className={`min-w-0 space-y-3 ${cardClass}`} data-post-id={l.postId} data-channel={l.channel} data-proposal>
                 {when ? (
-                  <p className="font-semibold" data-proposal-line>
+                  <p className="min-w-0 break-words text-[14px] leading-5 text-title" data-proposal-line>
                     {fill(t.line, { channel: l.channelLabel, when, mode: l.modeLine })}
                   </p>
                 ) : (
                   <div className="space-y-1" data-no-slot>
-                    <p className="font-semibold">{fill(t.noSlot, { channel: l.channelLabel, end: step.endsOn ? ` (${step.endsOn})` : "" })}</p>
-                    <p className="text-sm text-stone-600">{t.noSlotHelp}</p>
+                    <p className="text-[14px] leading-5 text-title">{fill(t.noSlot, { channel: l.channelLabel, end: step.endsOn ? ` (${step.endsOn})` : "" })}</p>
+                    <p className="text-[13px] leading-[18px] text-desc">{t.noSlotHelp}</p>
                   </div>
                 )}
                 {l.proposedAt ? (
@@ -110,16 +112,19 @@ export function ScheduleScreen({ briefId, initial, posts }: { briefId: string; i
                       {open[l.postId] ? t.pickClose : t.pickTime}
                     </button>
                     {open[l.postId] ? (
-                      <label className="block text-sm font-medium" data-slot-picker>
-                        {fill(t.pickLabel, { channel: l.channelLabel })}
-                        <select className={`${inputClass} mt-1`} value={picked[l.postId] ?? ""} onChange={(e) => setPicked({ ...picked, [l.postId]: e.target.value })}>
-                          {(options[l.postId] ?? []).map((o) => (
-                            <option key={o.at} value={o.at}>
-                              {o.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                      <div data-slot-picker>
+                        <p className={labelClass}>
+                          {fill(t.pickLabel, { channel: l.channelLabel })}
+                        </p>
+                        <DateTimePicker
+                          label={fill(t.pickLabel, { channel: l.channelLabel })}
+                          value={picked[l.postId] || null}
+                          onChange={(at) => setPicked({ ...picked, [l.postId]: at })}
+                          timezone={step.timezone}
+                          endsOn={step.endsOn}
+                          suggested={allowedByPost[l.postId] ?? []}
+                        />
+                      </div>
                     ) : null}
                   </div>
                 ) : null}
@@ -130,7 +135,7 @@ export function ScheduleScreen({ briefId, initial, posts }: { briefId: string; i
       ) : null}
 
       {waiting.length > 0 ? (
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2">
           {proposable.length > 0 ? (
             <button type="button" data-confirm data-tween-target="schedule-confirm" className={primaryButton} disabled={busy !== null} onClick={() => void run("confirm", () => confirmScheduleAction(briefId, overrides))}>
               {busy === "confirm" ? t.confirming : t.confirm}
@@ -143,9 +148,9 @@ export function ScheduleScreen({ briefId, initial, posts }: { briefId: string; i
       ) : null}
 
       {queued.length > 0 ? (
-        <section className="space-y-2 rounded-2xl border border-stone-200 bg-white p-4" aria-label={t.scheduledTitle} data-scheduled>
-          <h3 className="font-semibold">{t.scheduledTitle}</h3>
-          <ul className="space-y-1">
+        <section className={`space-y-3 ${cardClass}`} aria-label={t.scheduledTitle} data-scheduled>
+          <h3 className="text-card-title text-title">{t.scheduledTitle}</h3>
+          <ul className="space-y-2 text-[14px] leading-5">
             {queued.map((l) => (
               <li key={l.postId} data-queued-post={l.postId} data-queue-status={l.queued!.status}>
                 {l.queued!.status === "scheduled" || l.queued!.status === "publishing"
@@ -154,33 +159,38 @@ export function ScheduleScreen({ briefId, initial, posts }: { briefId: string; i
               </li>
             ))}
           </ul>
-          <Link href="/week" className={`${secondaryButton} inline-block text-center`}>
+          <Link href="/week" className={secondaryButton}>
             {t.seeQueue}
           </Link>
         </section>
       ) : null}
 
       {draft.length > 0 ? (
-        <section className="space-y-1 rounded-2xl border border-amber-300 bg-amber-50 p-4" data-not-approved>
-          <h3 className="font-semibold text-amber-900">{t.notApprovedTitle}</h3>
+        <section className={`space-y-1 ${alertClass("warn")}`} data-not-approved>
+          <h3 className="text-ui text-warn-tx">{t.notApprovedTitle}</h3>
           {draft.map((l) => (
-            <p key={l.postId} className="text-sm text-amber-900">
+            <p key={l.postId} className="text-[13px] leading-[18px]">
               {fill(t.notApproved, { channel: l.channelLabel })}
             </p>
           ))}
-          <Link href={`/create/${briefId}/review`} className="inline-block text-sm underline">
+          <Link href={`/create/${briefId}/review`} className={linkButton}>
             {t.backToReview}
           </Link>
         </section>
       ) : null}
 
       {approvedPosts.length > 0 ? (
-        <details className="rounded-2xl border border-stone-200 bg-white p-4">
-          <summary className="cursor-pointer font-medium">{t.shareNow}</summary>
+        <details className={cardClass}>
+          <summary className="flex min-h-6 cursor-pointer items-center justify-between gap-3 text-card-title text-title max-md:min-h-11">
+            {t.shareNow}
+            <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-desc" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </summary>
           <ul className="mt-3 space-y-4">
             {approvedPosts.map((p) => (
               <li key={p.id} className="space-y-3" data-post-id={p.id}>
-                <h3 className="font-semibold">{fill(s.create.review.postFor, { channel: p.label })}</h3>
+                <h3 className="text-ui text-title">{fill(s.create.review.postFor, { channel: p.label })}</h3>
                 <SharePanel postId={p.id} channel={p.channel} images={p.images} shareText={p.shareText} onLog={(kind, format) => void logShareAction(p.id, kind, format)} />
               </li>
             ))}
@@ -188,9 +198,11 @@ export function ScheduleScreen({ briefId, initial, posts }: { briefId: string; i
         </details>
       ) : null}
 
-      <Link href={`/create/${briefId}/review`} className={`${secondaryButton} inline-block text-center`}>
-        {t.backToReview}
-      </Link>
+      <div>
+        <Link href={`/create/${briefId}/review`} className={outlineButton}>
+          {t.backToReview}
+        </Link>
+      </div>
     </div>
   );
 }

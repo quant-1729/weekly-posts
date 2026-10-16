@@ -21,12 +21,15 @@ export function MascotCard({
   active,
   inPosts,
   colors,
+  hideTween = false,
 }: {
   brandId: string;
   reason: "regulated" | "formal" | "ok";
   active: { id: string; name: string } | null;
   inPosts: boolean;
   colors?: TweenColors;
+  /** The character gallery above shows the characters, so this card leaves its Tween drawing out. */
+  hideTween?: boolean;
 }) {
   const [on, setOn] = useState(inPosts);
   const [busy, setBusy] = useState(false);
@@ -47,7 +50,7 @@ export function MascotCard({
 
   const status = reason === "regulated" ? t.statusRegulated : reason === "formal" ? t.statusFormal : t.statusOk;
   const canSwitch = reason !== "regulated" && (reason === "ok" || active !== null);
-  const showTween = reason !== "regulated" || active !== null;
+  const showTween = !hideTween && (reason !== "regulated" || active !== null);
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">
@@ -58,7 +61,7 @@ export function MascotCard({
             dangerouslySetInnerHTML={{ __html: renderTween({ pose: "wave", colors, size: 160 }) }}
           />
         ) : null}
-        <p className="text-stone-700">{active ? fill(t.haveOne, { name: active.name }) : status}</p>
+        <p className="text-[14px] leading-5 text-sub">{active ? fill(t.haveOne, { name: active.name }) : status}</p>
       </div>
       {reason !== "regulated" || active ? (
         <Link href="/mascot" className={`${active ? secondaryButton : primaryButton} inline-block text-center`}>

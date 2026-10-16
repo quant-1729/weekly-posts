@@ -12,11 +12,13 @@ import { renderDesignDetailed } from './engine';
 import type { DesignInput, DesignResult } from './types';
 
 export * from './types';
+export * from './filter-presets';
+export { applyPostFilter, lookAt } from './filters';
 export { renderDesignDetailed, safeZoneIssues, candidateRecipes } from './engine';
 export type { DesignDetail } from './engine';
 export { designOptions, listLayouts } from './options';
 export type { LayoutInfo } from './options';
-export { needsCarousel, renderCarousel, splitIntoSlides } from './carousel';
+export { needsCarousel, renderCarousel, renderSlideSet, slideContents, slideRoleCandidates, splitIntoSlides } from './carousel';
 export { textLogoPng, textLogoSvg } from './text-logo';
 export type { TextLogoOptions } from './text-logo';
 export { THEMES, THEME_LIST, getTheme } from './themes';

@@ -242,7 +242,7 @@ export function FactsSection({
 
   return (
     <div className="space-y-5">
-      <p className="text-stone-600">{t.intro}</p>
+      <p className="text-[14px] leading-5 text-desc">{t.intro}</p>
 
       <div className="space-y-2 rounded-xl border border-stone-200 p-3">
         <label htmlFor="website-url" className={labelClass}>
@@ -269,11 +269,11 @@ export function FactsSection({
         </div>
       </div>
 
-      {facts.length === 0 && !adding && <p className="text-stone-600">{t.empty}</p>}
+      {facts.length === 0 && !adding && <p className="text-[14px] leading-5 text-desc">{t.empty}</p>}
 
       {byGroup.map(({ group, items }) => (
         <div key={group} className="space-y-2">
-          <h3 className="text-lg font-semibold">
+          <h3 className="text-card-title text-title">
             {t.groups[group]} <span className="text-sm font-normal text-stone-500">({items.length})</span>
           </h3>
           <ul className="space-y-2">

@@ -22,7 +22,7 @@ import { getDb } from '@/lib/db';
 import { fill, s } from '@/lib/i18n/strings';
 import { redactForBrand } from '@/lib/payments';
 import { POST_LANGUAGE_CODES } from '@/lib/setup/languages';
-import { DailyCapError, assertUnderDailyCap, failedCallUsd, recordUsage } from '@/lib/usage';
+import { DailyCapError, assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage } from '@/lib/usage';
 import { WeeklyCapError, assertUnderWeeklyCap } from '@/lib/usage/caps';
 import { currencyForCountry } from '@/lib/usps/currency';
 import { detailsFromForm, type FormValues } from '@/lib/usps/form';
@@ -303,11 +303,11 @@ export async function briefFromText(
       fixture: () => (typeof fixture === 'function' ? fixture(prompt) : fixture),
     });
     data = res.data;
-    await recordUsage(brandId, userId, 'brief_from_text', res.stats?.usd ?? 0);
+    await recordUsage(brandId, userId, 'brief_from_text', res.stats?.usd ?? 0, { model: res.stats?.model });
   } catch (err) {
     // A call that answered but did not validate still cost money (H-2).
     const lost = failedCallUsd(err);
-    if (lost > 0) await recordUsage(brandId, userId, 'brief_from_text', lost).catch(() => undefined);
+    if (lost > 0) await recordUsage(brandId, userId, 'brief_from_text', lost, { ok: false, model: failedCallModel(err) }).catch(() => undefined);
     console.warn(`[briefs] describe failed for brand ${brandId}: ${err instanceof AiError ? err.code : err instanceof Error ? err.name : 'error'}`);
     throw new BriefTextError('ai_failed');
   }

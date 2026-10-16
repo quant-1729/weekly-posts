@@ -70,10 +70,10 @@ export function VoiceCard({ brandId, voice, hasPastPosts }: { brandId: string; v
 
   return (
     <div className="space-y-3">
-      <h3 className="text-lg font-semibold">{t.title}</h3>
+      <h3 className="text-card-title text-title">{t.title}</h3>
 
       {voice.refreshing && <p className="text-sm text-stone-600">{t.updating}</p>}
-      {!voice.voiceDescription && !voice.refreshing && !hasPastPosts && <p className="text-stone-600">{t.empty}</p>}
+      {!voice.voiceDescription && !voice.refreshing && !hasPastPosts && <p className="text-[14px] leading-5 text-desc">{t.empty}</p>}
 
       <div>
         <label htmlFor="voice-description" className="mb-1 block font-medium">
@@ -172,7 +172,7 @@ export function VoiceCard({ brandId, voice, hasPastPosts }: { brandId: string; v
               <li key={w} className="flex items-center justify-between gap-2 rounded-lg border border-stone-200 px-3 py-2 text-sm">
                 <span>{w}</span>
                 <span className="flex shrink-0 gap-3">
-                  <button type="button" className="min-h-10 text-[#B93A15] underline" disabled={pending} onClick={() => addAvoid(w)}>
+                  <button type="button" className="min-h-10 text-coral-dark underline" disabled={pending} onClick={() => addAvoid(w)}>
                     {t.addToAvoid}
                   </button>
                   <button type="button" className="min-h-10 text-stone-600 underline" disabled={pending} onClick={() => dismissAvoid(w)}>

@@ -200,9 +200,39 @@ describe("ready needs a complete brief", () => {
     const draft = await createBrief(a.userId, a.brandId, { postType: "offer" }, { now: NOW });
     const err = await updateBrief(a.userId, a.brandId, draft.id, { status: "ready" }, { now: NOW }).catch((e) => e);
     expect(err).toBeInstanceOf(BriefIncompleteError);
-    expect((err as BriefIncompleteError).missing.map((m) => m.key)).toEqual(["primaryUsp", "dates", "cta"]);
+    expect((err as BriefIncompleteError).missing.map((m) => m.key)).toEqual(["description"]);
     expect((await getBrief(a.userId, a.brandId, draft.id))?.status).toBe("draft");
-    const ready = await updateBrief(a.userId, a.brandId, draft.id, { primaryUspId: discount.id, endsOn: "2026-10-31", cta: "visit", status: "ready" }, { now: NOW });
+    const ready = await updateBrief(a.userId, a.brandId, draft.id, { notes: "20% off all cakes till 31 October", status: "ready" }, { now: NOW });
     expect(ready.status).toBe("ready");
+  });
+});
+
+describe("extra post types", () => {
+  it("saves, reads back and defaults to none", async () => {
+    const plain = await createBrief(a.userId, a.brandId, { postType: "new_product" }, { now: NOW });
+    expect(plain.extraPostTypes).toEqual([]);
+    const both = await updateBrief(a.userId, a.brandId, plain.id, { extraPostTypes: ["offer", "event"] }, { now: NOW });
+    expect(both.extraPostTypes).toEqual(["offer", "event"]);
+    expect((await getBrief(a.userId, a.brandId, plain.id))?.extraPostTypes).toEqual(["offer", "event"]);
+    // an update that does not mention them keeps them
+    expect((await updateBrief(a.userId, a.brandId, plain.id, { notes: "hello" }, { now: NOW })).extraPostTypes).toEqual(["offer", "event"]);
+    expect((await updateBrief(a.userId, a.brandId, plain.id, { extraPostTypes: [] }, { now: NOW })).extraPostTypes).toEqual([]);
+  });
+
+  it("refuses unknown types, duplicates, the main type and more than 7", async () => {
+    const bad = (extraPostTypes: unknown, postType = "new_product") => createBrief(a.userId, a.brandId, { postType, extraPostTypes }, { now: NOW });
+    await expect(bad(["offer", "nonsense"])).rejects.toMatchObject({ fieldErrors: { extraPostTypes: "invalid" } });
+    await expect(bad("offer")).rejects.toMatchObject({ fieldErrors: { extraPostTypes: "invalid" } });
+    await expect(bad(["offer", "offer"])).rejects.toMatchObject({ fieldErrors: { extraPostTypes: "duplicate" } });
+    await expect(bad(["new_product", "offer"])).rejects.toMatchObject({ fieldErrors: { extraPostTypes: "includes_main" } });
+    await expect(bad(["offer", "event", "announcement", "occasion", "testimonial", "hiring", "brand", "new_product"])).rejects.toBeInstanceOf(BriefValidationError);
+    const seven = await bad(["offer", "event", "announcement", "occasion", "testimonial", "hiring", "brand"]);
+    expect(seven.extraPostTypes).toHaveLength(7);
+  });
+
+  it("moves a type out of the extras when it becomes the main type", async () => {
+    const b1 = await createBrief(a.userId, a.brandId, { postType: "new_product", extraPostTypes: ["offer"] }, { now: NOW });
+    const b2 = await updateBrief(a.userId, a.brandId, b1.id, { postType: "offer" }, { now: NOW });
+    expect(b2).toMatchObject({ postType: "offer", extraPostTypes: [] });
   });
 });

@@ -25,7 +25,8 @@ import {
   saveColorsAction,
   saveSettingsAction,
 } from "@/app/(app)/brand/actions";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import type { MockDb } from "@/lib/db/mock";
 import { s } from "@/lib/i18n/strings";
 import { listFacts } from "@/lib/memory/facts";

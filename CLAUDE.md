@@ -1,6 +1,6 @@
 # Weekly Posts (working name; was PostMitra)
 
-Design and posting assistant for small businesses worldwide: **details first, then design**. The owner (with or without a website, Instagram or YouTube) fills a short brief (USPs, contact blocks, QR, dates), gets on-brand post designs drawn by code, and the posts are scheduled and published one at a time after approval. Spec: `docs/6-prd-v3.md`. Approved change list: `docs/9-changes-v3.md`. Task list: `docs/8-build-plan-v3.md`. Earlier specs (`docs/6-prd-v2.md`, `docs/6-prd.md`) and plans are kept as history; v3 wins where they differ.
+Design and posting assistant for small businesses worldwide: **details first, then design**. The owner (with or without a website, Instagram or YouTube) fills a short brief (USPs, contact blocks, QR, dates), gets on-brand post designs drawn by code, and the posts are scheduled and published one at a time after approval. Spec: `docs/6-prd-v3.md`. Approved change list: `docs/9-changes-v3.md`. Approved next features (Ideas, Brand Face): `docs/10-plan-research-and-brand-face.md`, `docs/12-research-repos-and-proposal.md`. Task list: `docs/8-build-plan-v3.md`. Earlier specs (`docs/6-prd-v2.md`, `docs/6-prd.md`) and plans are kept as history; v3 wins where they differ.
 
 ## Stack
 
@@ -16,7 +16,7 @@ Next.js (App Router, TypeScript), desktop-first and responsive; Google Cloud: Ge
 
 ## Rules
 
-- AI images only as abstract backgrounds, never depicting the owner's products, premises or people. Never generate text inside AI images; render all text, logos and QR codes with code and Noto (or shipped open-licence) fonts.
+- AI images only as abstract backgrounds, never depicting the owner's products, premises or people. One exception (owner decision 2026-10-15): a Brand Face (illustrated character or realistic AI person) generated once, approved by the owner, and reused as a fixed pose set; never a real or famous person (only the consenting owner, from their own photos), never shown as a professional, customer or in a testimonial or before/after, realistic faces always labelled "AI" and never for health/finance brands. Never generate text inside AI images; render all text, logos and QR codes with code and Noto (or shipped open-licence) fonts.
 - Posts may only state prices, offers, dates, ratings, claims and contact details that come from the owner's brief or brand profile; anything else is flagged "please check".
 - Payment IDs (e.g. UPI) are typed by the owner only, confirmed by email before use, and never sent to, written, edited or suggested by AI. A rendered payment QR must decode to exactly the confirmed ID.
 - Nothing is published or delivered without the owner's approval (unless they turned on auto-approve for posts with no flags).

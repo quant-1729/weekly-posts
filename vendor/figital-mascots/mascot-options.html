@@ -1,0 +1,286 @@
+<meta charset="utf-8">
+<title>Figital Mascot Options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: summary table first, then one row-card per option (art left, findings right). Figital brand tokens. */
+:root {
+  --bg: #ffffff; --surface: #f3f6fa; --line: #e3e9f0; --ink: #17253b; --ink-2: #3a506b; --muted: #586b82;
+  --accent: #2c5f8f; --teal: #1f8f8b; --stage: #f3f6fa;
+  --good: #0f6b37; --good-bg: #e3f5ea; --mid: #8a5a00; --mid-bg: #fdf1d6; --bad: #a32118; --bad-bg: #fbe4e1;
+  --display: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif; --mono: "Geist Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1724; --surface: #162234; --line: #263650; --ink: #e8eef6; --ink-2: #b9c7d8; --muted: #8fa1b8;
+  --accent: #7fb2e0; --teal: #5ccfc9; --stage: #eef3f9;
+  --good: #8fe0b0; --good-bg: #123323; --mid: #f2c879; --mid-bg: #3a2c10; --bad: #f4a29a; --bad-bg: #3c1714; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1724; --surface: #162234; --line: #263650; --ink: #e8eef6; --ink-2: #b9c7d8; --muted: #8fa1b8;
+  --accent: #7fb2e0; --teal: #5ccfc9; --stage: #eef3f9;
+  --good: #8fe0b0; --good-bg: #123323; --mid: #f2c879; --mid-bg: #3a2c10; --bad: #f4a29a; --bad-bg: #3c1714; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--display); font-size: 16px; line-height: 1.6; padding-inline: 20px; padding-block: 0 80px; }
+.wrap { max-width: 1100px; margin: 0 auto; }
+.col { max-width: 720px; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h1 { font-weight: 300; font-size: clamp(36px, 5vw, 58px); line-height: 1.03; letter-spacing: -0.035em; }
+h2 { font-weight: 300; font-size: clamp(26px, 3.2vw, 38px); letter-spacing: -0.03em; line-height: 1.1; }
+p { margin: 0; }
+a { color: var(--accent); }
+.eyebrow { font: 500 12px var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--teal); }
+.lead { font-size: 19px; color: var(--ink-2); }
+section { padding-block: 56px 0; display: grid; gap: 24px; }
+header { padding-block: 56px 0; display: grid; gap: 18px; }
+.wordmark { font-weight: 600; font-size: 18px; letter-spacing: -0.02em; } .wordmark span { color: var(--teal); font-weight: 500; }
+.keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.key { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; display: grid; gap: 6px; }
+.key b { font-size: 17px; font-weight: 500; }
+.key p { color: var(--ink-2); font-size: 15px; }
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 15px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { font: 500 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+tr:last-child td { border-bottom: 0; }
+td:first-child a { color: var(--ink); font-weight: 500; text-decoration: none; }
+td:first-child a:hover { text-decoration: underline; }
+.pill { font: 500 12px var(--mono); padding: 3px 9px; border-radius: 999px; }
+.v-good .tag, .pill.v-good { background: var(--good-bg); color: var(--good); }
+.v-mid .tag, .pill.v-mid { background: var(--mid-bg); color: var(--mid); }
+.v-bad .tag, .pill.v-bad { background: var(--bad-bg); color: var(--bad); }
+.list { display: grid; gap: 18px; }
+.opt { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+@media (max-width: 680px) { .opt { grid-template-columns: 1fr; } .art { max-width: 320px; margin-inline: auto; width: 100%; } }
+.art { background: var(--stage); position: relative; display: grid; place-items: center; padding: 8px; }
+.art svg { width: 100%; height: auto; display: block; max-width: 260px; }
+.tag { position: absolute; top: 12px; left: 12px; font: 500 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; padding: 4px 9px; border-radius: 999px; }
+.v-bad .art svg { opacity: .55; }
+.txt { padding: 20px 24px 22px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.nm { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.nm h3 { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; }
+.nm span { color: var(--muted); font-size: 14px; }
+.idea { font-size: 17px; }
+.acts { color: var(--muted); font-size: 14.5px; }
+dl { margin: 4px 0 0; display: grid; grid-template-columns: 150px 1fr; gap: 6px 16px; font-size: 15px; }
+@media (max-width: 520px) { dl { grid-template-columns: 1fr; } dt { padding-top: 6px; } }
+dt { font: 500 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+dd { margin: 0; color: var(--ink-2); }
+dd b { color: var(--ink); font-weight: 600; }
+.src { font-size: 13px; color: var(--muted); }
+.vd { font-weight: 500; border-top: 1px solid var(--line); padding-top: 10px; }
+.names { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.name { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 4px; }
+.name b { font-size: 18px; font-weight: 500; }
+.name span { font-size: 14px; color: var(--ink-2); }
+.ask { background: var(--ink); color: var(--bg); border-radius: 20px; padding: 26px 28px; display: grid; gap: 10px; }
+.ask h3 { font-size: 22px; font-weight: 400; }
+.ask ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.note { font-size: 14px; color: var(--muted); }
+</style>
+<div class="wrap">
+  <header>
+    <div class="wordmark">Figital <span>LABS</span></div>
+    <p class="eyebrow">Mascot options · round 3 · with market check</p>
+    <h1>Ten object mascots, checked against the market</h1>
+    <p class="lead col">Every option is drawn as one complete character in the same style, so you compare ideas rather than drawing quality. For each, two agents searched for brands already using the object, the name, and any cultural or political meaning, on 14 October 2026.</p>
+  </header>
+
+  <section aria-labelledby="learned">
+    <h2 id="learned" class="col">What the check found</h2>
+    <div class="keys">
+      <div class="key"><b>The objects are open</b><p>None of the ten objects is an established brand mascot. No Indian healthtech (Practo, PharmEasy, Tata 1mg, Apollo 24|7, MediBuddy) has a character mascot at all; PharmEasy uses a celebrity.</p></div>
+      <div class="key"><b>The names are the problem</b><p>Seven of the ten names clash: with a direct competitor (Nudge AI), a health app (Disha), a clinical term (Baton), a political symbol (lantern), or a bad meaning (Gaanth = lump, Dabba = junk or illegal trading).</p></div>
+      <div class="key"><b>So choose in two steps</b><p>Pick the object first, then name it separately and run a trademark search. The working names below are only labels.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="sum">
+    <h2 id="sum" class="col">At a glance</h2>
+    <div class="tablebox"><table>
+      <thead><tr><th scope="col">Option</th><th scope="col">Object</th><th scope="col">Object used elsewhere</th><th scope="col">Name risk</th><th scope="col">Verdict</th></tr></thead>
+      <tbody><tr><td><a href="#nudge">Nudge</a></td><td>Sticky note</td><td>Clear</td><td>High</td><td><span class="pill v-good">Shortlist</span></td></tr><tr><td><a href="#chitthi">Chitthi</a></td><td>Letter</td><td>Mostly clear</td><td>Low</td><td><span class="pill v-good">Shortlist</span></td></tr><tr><td><a href="#dhaaga">Dhaaga</a></td><td>Thread spool</td><td>Clear</td><td>Low in health</td><td><span class="pill v-good">Shortlist</span></td></tr><tr><td><a href="#baton">Baton</a></td><td>Relay baton</td><td>Clear</td><td>High</td><td><span class="pill v-mid">Maybe</span></td></tr><tr><td><a href="#nishaan">Nishaan</a></td><td>Ribbon bookmark</td><td>Clear</td><td>High</td><td><span class="pill v-mid">Maybe</span></td></tr><tr><td><a href="#parchi">Parchi</a></td><td>OPD slip</td><td>Clear</td><td>Medium</td><td><span class="pill v-mid">Maybe</span></td></tr><tr><td><a href="#gaanth">Gaanth</a></td><td>Knotted cloth potli</td><td>Clear</td><td>High</td><td><span class="pill v-bad">Drop</span></td></tr><tr><td><a href="#dabba">Dabba</a></td><td>Steel tiffin</td><td>Clear</td><td>High</td><td><span class="pill v-bad">Drop</span></td></tr><tr><td><a href="#disha">Disha</a></td><td>Compass</td><td>Some</td><td>High</td><td><span class="pill v-bad">Drop</span></td></tr><tr><td><a href="#laltain">Laltain</a></td><td>Hurricane lantern</td><td>Clear</td><td>High</td><td><span class="pill v-bad">Drop</span></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="all">
+    <h2 id="all" class="col">Every option</h2>
+    <div class="list">
+      <article class="opt v-good" id="nudge" aria-labelledby="nudge-h">
+        <div class="art"><svg viewBox="0 0 240 260" role="img" aria-labelledby="nudge-t"><title id="nudge-t">Nudge, a sticky note</title><ellipse cx="120" cy="244" rx="46" ry="7" fill="#17253b" opacity=".12"/><path d="M100,186 L98,222 M140,186 L142,222" stroke="#17253b" stroke-width="5.5" stroke-linecap="round"/><ellipse cx="93" cy="225" rx="10" ry="5" fill="#17253b"/><ellipse cx="147" cy="225" rx="10" ry="5" fill="#17253b"/><g transform="rotate(-3 120 186)"><path d="M66,77 L182,77 L182,169 L160,191 L66,191 Z" fill="#17253b" opacity=".10"/><path d="M62,72 L178,72 L178,164 L156,186 L62,186 Z" fill="#FFD66B"/><path d="M62,72 L178,72 L178,90 L62,90 Z" fill="#F2C14E"/><path d="M70,150 H170 M70,168 H150" stroke="#E2B23A" stroke-width="1.2" opacity=".55"/><path d="M178,164 L156,186 L186,194 Z" fill="#FBE9A9" stroke="#E2B23A" stroke-width="1"/><rect x="74" y="96" width="15" height="15" rx="2.5" fill="none" stroke="#17253b" stroke-width="2.6"/><path d="M77.7,103.0 l4.5,5.4 l9.9,-11.7" stroke="#1FA59F" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="106" cy="126" rx="6" ry="8" fill="#17253b"/><circle cx="107.8" cy="123.2" r="2" fill="#ffffff"/><ellipse cx="140" cy="126" rx="6" ry="8" fill="#17253b"/><circle cx="141.8" cy="123.2" r="2" fill="#ffffff"/><path d="M115.0,144 Q123,152.0 131.0,144" stroke="#17253b" stroke-width="4" fill="none" stroke-linecap="round"/></g><path d="M64.0,138.0 L55.8,158.4 L45.8,175.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45.8" cy="175.7" r="6" fill="#17253b"/><path d="M176.0,138.0 L186.3,118.6 L188.4,98.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="188.4" cy="98.7" r="6" fill="#17253b"/></svg><span class="tag">Shortlist</span></div>
+        <div class="txt">
+          <div class="nm"><h3 id="nudge-h">Nudge</h3><span>Sticky note</span></div>
+          <p class="idea">The note every nurse station and billing desk runs on. It sticks to a task until its checkbox is ticked.</p>
+          <p class="acts">Checkbox ticks itself to celebrate · folded corner flicks like an ear · peels off a mini note to present.</p>
+          <dl>
+            <dt>Object used elsewhere?</dt><dd><b>Clear.</b> No brand uses a recurring sticky-note character. 3M's Post-it has none; a 2019 3M ad turned notes into an octopus once.</dd>
+            <dt>Name risk</dt><dd><b>High.</b> Nudge AI (US) sells an AI clinical scribe and an AI billing auditor, the same products as Figital. Healthkind Nudge (Canada) automates patient messages.</dd>
+            <dt>Watch</dt><dd>Microsoft's Clippy, the reviled Office paperclip helper, is the cautionary tale for any office-object assistant.</dd>
+          </dl>
+          <p class="src">Sources: <a href="https://www.getnudgeai.com" target="_blank" rel="noopener noreferrer">Nudge AI</a> · <a href="https://www.canhealth.com/2025/10/29/healthkind-nudge-automates-patient-communications/" target="_blank" rel="noopener noreferrer">Healthkind Nudge</a> · <a href="https://en.wikipedia.org/wiki/Office_Assistant" target="_blank" rel="noopener noreferrer">Clippy</a></p>
+          <p class="vd">Keep the sticky note, change the name.</p>
+        </div>
+      </article>
+      <article class="opt v-good" id="chitthi" aria-labelledby="chitthi-h">
+        <div class="art"><svg viewBox="0 0 240 260" role="img" aria-labelledby="chitthi-t"><title id="chitthi-t">Chitthi, a letter that always reaches the right desk</title><ellipse cx="120" cy="244" rx="52" ry="7" fill="#17253b" opacity=".12"/><path d="M102,182 L100,222 M138,182 L140,222" stroke="#17253b" stroke-width="5.5" stroke-linecap="round"/><ellipse cx="95" cy="225" rx="10" ry="5" fill="#17253b"/><ellipse cx="145" cy="225" rx="10" ry="5" fill="#17253b"/><rect x="78" y="58" width="84" height="56" rx="4" fill="#FFFFFF" stroke="#C9D6E6" stroke-width="1.5" transform="rotate(-4 120 86)"/><path d="M90,72 H132 M90,82 H146 M90,92 H124" stroke="#AFC0D4" stroke-width="2.4" stroke-linecap="round" transform="rotate(-4 120 86)"/><path d="M140.4,98.0 l4.0,4.8 l8.8,-10.4" stroke="#1A8C88" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M60,100 L120,62 L180,100 Z" fill="#E4ECF6" stroke="#C9D6E6" stroke-width="1.5" stroke-linejoin="round"/><rect x="60" y="96" width="120" height="88" rx="8" fill="#FFFFFF" stroke="#C9D6E6" stroke-width="1.5"/><path d="M62,182 L110,142 M178,182 L130,142" stroke="#D6E0EC" stroke-width="2"/><path d="M60,100 L120,140 L180,100" stroke="#C9D6E6" stroke-width="1.5" fill="none" stroke-linejoin="round"/><circle cx="160" cy="166" r="11" fill="#2BB5B0"/><path d="M157.2,166.0 l2.8,3.3 l6.1,-7.2" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="88" cy="134" r="5.5" fill="#F7A8A0" opacity=".75"/><circle cx="152" cy="134" r="5.5" fill="#F7A8A0" opacity=".75"/><ellipse cx="104" cy="122" rx="6" ry="8" fill="#17253b"/><circle cx="105.8" cy="119.2" r="2" fill="#ffffff"/><ellipse cx="136" cy="122" rx="6" ry="8" fill="#17253b"/><circle cx="137.8" cy="119.2" r="2" fill="#ffffff"/><path d="M113.0,140 Q120,147.0 127.0,140" stroke="#17253b" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M62.0,140.0 L53.8,160.4 L43.8,177.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="43.8" cy="177.7" r="6" fill="#17253b"/><path d="M178.0,140.0 L188.3,120.6 L190.4,100.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="190.4" cy="100.7" r="6" fill="#17253b"/></svg><span class="tag">Shortlist</span></div>
+        <div class="txt">
+          <div class="nm"><h3 id="chitthi-h">Chitthi</h3><span>Letter</span></div>
+          <p class="idea">A letter that always reaches the right desk. Fits how NotedAI routes each complaint to its department.</p>
+          <p class="acts">Flap opens to talk · folds into a paper plane to travel · the teal seal is its “done” mark.</p>
+          <dl>
+            <dt>Object used elsewhere?</dt><dd><b>Mostly clear.</b> No major brand uses an envelope character. India Post ran a mascot design contest (July–August 2026) and the winner isn't public yet; a letter design there would clash.</dd>
+            <dt>Name risk</dt><dd><b>Low.</b> Only small pen-pal projects (Chitthi Exchange). Nothing in health or software.</dd>
+            <dt>Watch</dt><dd>Watch the India Post mascot result before committing.</dd>
+          </dl>
+          <p class="src">Sources: <a href="https://www.ap7am.com/en/131635/india-post-launches-mascot-design-contest-with-rs-2-lakh-prize-pool" target="_blank" rel="noopener noreferrer">India Post contest</a> · <a href="https://homegrown.co.in/homegrown-explore/youve-got-mail-chitthi-exchange-is-bringing-back-snail-mail-and-penpal-tradition" target="_blank" rel="noopener noreferrer">Chitthi Exchange</a></p>
+          <p class="vd">Warm, Indian and open, pending India Post.</p>
+        </div>
+      </article>
+      <article class="opt v-good" id="dhaaga" aria-labelledby="dhaaga-h">
+        <div class="art"><svg viewBox="0 0 240 260" role="img" aria-labelledby="dhaaga-t"><title id="dhaaga-t">Dhaaga, a thread spool whose thread connects every step</title><ellipse cx="120" cy="244" rx="56" ry="7" fill="#17253b" opacity=".12"/><path d="M156,170 C190,180 200,214 176,226 C158,236 150,222 160,214" stroke="#2BB5B0" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M164.4,236.0 l4.0,4.8 l8.8,-10.4" stroke="#1A8C88" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="82" y="68" width="76" height="126" rx="6" fill="#2BB5B0"/><path d="M84,80 Q120,84 156,80" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,89 Q120,93 156,89" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,98 Q120,102 156,98" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,107 Q120,111 156,107" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,116 Q120,120 156,116" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,125 Q120,129 156,125" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,134 Q120,138 156,134" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,143 Q120,147 156,143" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,152 Q120,156 156,152" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,161 Q120,165 156,161" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,170 Q120,174 156,170" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,179 Q120,183 156,179" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><path d="M84,188 Q120,192 156,188" stroke="#1A8C88" stroke-width="1.6" fill="none" opacity=".55"/><rect x="70" y="52" width="100" height="20" rx="10" fill="#E8CFA6"/><rect x="70" y="190" width="100" height="20" rx="10" fill="#E8CFA6"/><rect x="70" y="64" width="100" height="6" rx="3" fill="#C9A97A" opacity=".6"/><rect x="70" y="202" width="100" height="6" rx="3" fill="#C9A97A" opacity=".6"/><ellipse cx="120" cy="58" rx="8" ry="3" fill="#C9A97A"/><path d="M104,208 L102,226 M136,208 L138,226" stroke="#17253b" stroke-width="5.5" stroke-linecap="round"/><ellipse cx="97" cy="229" rx="10" ry="5" fill="#17253b"/><ellipse cx="143" cy="229" rx="10" ry="5" fill="#17253b"/><circle cx="104" cy="116" r="10" fill="#ffffff"/><circle cx="105.2" cy="116.6" r="5.2" fill="#17253b"/><circle cx="107.2" cy="114.4" r="1.7" fill="#ffffff"/><circle cx="136" cy="116" r="10" fill="#ffffff"/><circle cx="137.2" cy="116.6" r="5.2" fill="#17253b"/><circle cx="139.2" cy="114.4" r="1.7" fill="#ffffff"/><path d="M111,137 Q120,147 129,137 Z" fill="#17253b"/><circle cx="90" cy="132" r="5.5" fill="#F7A8A0" opacity=".75"/><circle cx="150" cy="132" r="5.5" fill="#F7A8A0" opacity=".75"/><path d="M82.0,140.0 L73.8,160.4 L63.8,177.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="63.8" cy="177.7" r="6" fill="#17253b"/><path d="M158.0,140.0 L168.3,120.6 L170.4,100.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="170.4" cy="100.7" r="6" fill="#17253b"/></svg><span class="tag">Shortlist</span></div>
+        <div class="txt">
+          <div class="nm"><h3 id="dhaaga-h">Dhaaga</h3><span>Thread spool</span></div>
+          <p class="idea">A spool whose thread runs through every step of the patient journey, tying OP to IP.</p>
+          <p class="acts">Thread draws a path to point · winds itself up to think · ties a neat bow to celebrate.</p>
+          <dl>
+            <dt>Object used elsewhere?</dt><dd><b>Clear.</b> No spool mascot found in any industry.</dd>
+            <dt>Name risk</dt><dd><b>Low in health.</b> Used by Indian fashion and craft brands (Dhaaga Life, chikankari labels) and the film Sui Dhaaga; nothing in health or software.</dd>
+            <dt>Watch</dt><dd>Thread is sacred in Hinduism (janeu, kalava). Keep it teal, never red-and-yellow, and never worn on the wrist.</dd>
+          </dl>
+          <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Sui_Dhaaga" target="_blank" rel="noopener noreferrer">Sui Dhaaga</a> · <a href="https://en.wikipedia.org/wiki/Janeu_(sacred_thread)" target="_blank" rel="noopener noreferrer">Janeu</a></p>
+          <p class="vd">Open in health and tech; design around the sacred-thread look.</p>
+        </div>
+      </article>
+      <article class="opt v-mid" id="baton" aria-labelledby="baton-h">
+        <div class="art"><svg viewBox="0 0 240 260" role="img" aria-labelledby="baton-t"><title id="baton-t">Baton, the relay baton that is never dropped in a handover</title><ellipse cx="120" cy="244" rx="42" ry="7" fill="#17253b" opacity=".12"/><path d="M108,204 L106,224 M132,204 L134,224" stroke="#17253b" stroke-width="5.5" stroke-linecap="round"/><ellipse cx="101" cy="227" rx="10" ry="5" fill="#17253b"/><ellipse cx="139" cy="227" rx="10" ry="5" fill="#17253b"/><path d="M50,92 H76 M44,112 H76 M54,132 H76" stroke="#AFC0D4" stroke-width="3" stroke-linecap="round"/><rect x="90" y="40" width="60" height="168" rx="30" fill="#F2B33D"/><rect x="98" y="52" width="10" height="140" rx="5" fill="#FFD98A" opacity=".9"/><rect x="138" y="52" width="6" height="140" rx="3" fill="#C98A1B" opacity=".45"/><rect x="90" y="62" width="60" height="9" fill="#2BB5B0"/><rect x="90" y="176" width="60" height="9" fill="#2BB5B0"/><ellipse cx="110" cy="112" rx="5" ry="7" fill="#17253b"/><circle cx="111.8" cy="109.2" r="2" fill="#ffffff"/><ellipse cx="132" cy="112" rx="5" ry="7" fill="#17253b"/><circle cx="133.8" cy="109.2" r="2" fill="#ffffff"/><path d="M115.0,128 Q121,134.0 127.0,128" stroke="#17253b" stroke-width="3.4" fill="none" stroke-linecap="round"/><circle cx="100" cy="126" r="4.5" fill="#F7A8A0" opacity=".75"/><circle cx="142" cy="126" r="4.5" fill="#F7A8A0" opacity=".75"/><path d="M92.0,140.0 L83.8,160.4 L73.8,177.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="73.8" cy="177.7" r="6" fill="#17253b"/><path d="M148.0,140.0 L158.3,120.6 L160.4,100.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="160.4" cy="100.7" r="6" fill="#17253b"/></svg><span class="tag">Maybe</span></div>
+        <div class="txt">
+          <div class="nm"><h3 id="baton-h">Baton</h3><span>Relay baton</span></div>
+          <p class="idea">The baton nobody drops in a handover, the moment where most hospital steps are lost.</p>
+          <p class="acts">Runs in with speed lines · passes itself hand to hand · spins to celebrate.</p>
+          <dl>
+            <dt>Object used elsewhere?</dt><dd><b>Clear.</b> No baton mascot found.</dd>
+            <dt>Name risk</dt><dd><b>High.</b> “I-PASS the BATON” is the standard clinical handoff mnemonic, and Baton was a Johns Hopkins-linked handoff-software startup. Baton AI (US) does workflow automation.</dd>
+            <dt>Watch</dt><dd>Familiar to clinicians, which helps recognition but makes the name impossible to own.</dd>
+          </dl>
+          <p class="src">Sources: <a href="https://www.aha.org/center/project-firstline/teamstepps-video-toolkit/handoff" target="_blank" rel="noopener noreferrer">I-PASS the BATON</a> · <a href="https://builtin.com/job/founding-engineer-baton-ai/4460219" target="_blank" rel="noopener noreferrer">Baton AI</a></p>
+          <p class="vd">Good object, needs a new name; the plainest shape.</p>
+        </div>
+      </article>
+      <article class="opt v-mid" id="nishaan" aria-labelledby="nishaan-h">
+        <div class="art"><svg viewBox="0 0 240 260" role="img" aria-labelledby="nishaan-t"><title id="nishaan-t">Nishaan, a ribbon bookmark that keeps your place</title><ellipse cx="120" cy="244" rx="40" ry="7" fill="#17253b" opacity=".12"/><path d="M86,30 L154,30 L154,214 L120,188 L86,214 Z" fill="#2BB5B0"/><path d="M86,30 L154,30 L154,52 L86,52 Z" fill="#1A8C88"/><path d="M140,30 L154,30 L154,214 L140,203 Z" fill="#1A8C88" opacity=".35"/><path d="M106,140 l8,8 l16,-18" stroke="#ffffff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/><ellipse cx="86" cy="220" rx="11" ry="5.5" fill="#17253b"/><ellipse cx="154" cy="220" rx="11" ry="5.5" fill="#17253b"/><circle cx="106" cy="88" r="9.5" fill="#ffffff"/><circle cx="107.2" cy="88.6" r="4.9" fill="#17253b"/><circle cx="109.1" cy="86.5" r="1.6" fill="#ffffff"/><circle cx="134" cy="88" r="9.5" fill="#ffffff"/><circle cx="135.2" cy="88.6" r="4.9" fill="#17253b"/><circle cx="137.1" cy="86.5" r="1.6" fill="#ffffff"/><path d="M113.0,108 Q120,115.0 127.0,108" stroke="#17253b" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M120,30 C118,18 128,10 136,14" stroke="#F2B33D" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="138" cy="15" r="4.5" fill="#F2B33D"/><path d="M88.0,124.0 L79.8,144.4 L69.8,161.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="69.8" cy="161.7" r="6" fill="#17253b"/><path d="M152.0,124.0 L162.3,104.6 L164.4,84.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="164.4" cy="84.7" r="6" fill="#17253b"/></svg><span class="tag">Maybe</span></div>
+        <div class="txt">
+          <div class="nm"><h3 id="nishaan-h">Nishaan</h3><span>Ribbon bookmark</span></div>
+          <p class="idea">A bookmark that keeps your place in each patient's journey.</p>
+          <p class="acts">Its two tails are its legs · the top folds over to bow · the tick on its chest lights up when done.</p>
+          <dl>
+            <dt>Object used elsewhere?</dt><dd><b>Clear.</b> No bookmark mascot found; only read-later apps.</dd>
+            <dt>Name risk</dt><dd><b>High.</b> Nishaan also means scar (nishaan-e-zakhm), and Nishan Sahib is the Sikh holy flag.</dd>
+            <dt>Watch</dt><dd>Object is fine; the name is not, for a hospital.</dd>
+          </dl>
+          <p class="src">Sources: <a href="https://en.wikipedia.org/wiki/Nishan_Sahib" target="_blank" rel="noopener noreferrer">Nishan Sahib</a> · <a href="https://poetistic.com/dictionary/nishaan-e-zakhm?lang=en" target="_blank" rel="noopener noreferrer">nishaan-e-zakhm</a></p>
+          <p class="vd">Good object, new name needed; thin at 16 px.</p>
+        </div>
+      </article>
+      <article class="opt v-mid" id="parchi" aria-labelledby="parchi-h">
+        <div class="art"><svg viewBox="0 0 240 260" role="img" aria-labelledby="parchi-t"><title id="parchi-t">Parchi, the OPD slip that moves a patient between desks</title><ellipse cx="120" cy="244" rx="48" ry="7" fill="#17253b" opacity=".12"/><path d="M102,204 L100,224 M138,204 L140,224" stroke="#17253b" stroke-width="5.5" stroke-linecap="round"/><ellipse cx="95" cy="227" rx="10" ry="5" fill="#17253b"/><ellipse cx="145" cy="227" rx="10" ry="5" fill="#17253b"/><g transform="rotate(3 120 140)"><path d="M76,62 L80,56 L88,62 L96,56 L104,62 L112,56 L120,62 L128,56 L136,62 L144,56 L152,62 L160,56 L164,62 L164,206 L76,206 Z" fill="#FFFDF6" stroke="#D9E2EE" stroke-width="1.5" stroke-linejoin="round"/><rect x="76" y="66" width="88" height="18" fill="#2BB5B0"/><text x="84" y="79" font-family="Geist, Arial, sans-serif" font-size="10.5" font-weight="600" fill="#ffffff" letter-spacing="1.2">OPD SLIP</text><path d="M86,150 q6,-5 12,0 t12,0 t12,0 t12,0 M86,164 q6,-5 12,0 t12,0 t12,0 M86,178 q6,-5 12,0 t12,0" stroke="#AFC0D4" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="146" cy="184" r="13" fill="none" stroke="#1A8C88" stroke-width="2.5" opacity=".9"/><path d="M142.8,184.0 l3.0,3.6 l6.6,-7.8" stroke="#1A8C88" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="92" cy="124" r="5.5" fill="#F7A8A0" opacity=".75"/><circle cx="148" cy="124" r="5.5" fill="#F7A8A0" opacity=".75"/><ellipse cx="106" cy="108" rx="6" ry="8" fill="#17253b"/><circle cx="107.8" cy="105.2" r="2" fill="#ffffff"/><ellipse cx="134" cy="108" rx="6" ry="8" fill="#17253b"/><circle cx="135.8" cy="105.2" r="2" fill="#ffffff"/><path d="M113.0,126 Q120,133.0 127.0,126" stroke="#17253b" stroke-width="3.6" fill="none" stroke-linecap="round"/></g><path d="M78.0,140.0 L69.8,160.4 L59.8,177.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="59.8" cy="177.7" r="6" fill="#17253b"/><path d="M162.0,140.0 L172.3,120.6 L174.4,100.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="174.4" cy="100.7" r="6" fill="#17253b"/></svg><span class="tag">Maybe</span></div>
+        <div class="txt">
+          <div class="nm"><h3 id="parchi-h">Parchi</h3><span>OPD slip</span></div>
+          <p class="idea">The paper slip every Indian patient carries from desk to desk, as a character that knows where to go next.</p>
+          <p class="acts">Gets a teal stamp when a step is done · rolls up to think · flutters between desks.</p>
+          <dl>
+            <dt>Object used elsewhere?</dt><dd><b>Clear.</b> No prescription-slip character found; pharma mascots are blobs and organs.</dd>
+            <dt>Name risk</dt><dd><b>Medium.</b> Parchaa is a Delhi healthtech with hospital queue modules (unverified page). “Parchi” is also the exam cheat-chit.</dd>
+            <dt>Watch</dt><dd>The paper slip is what Hospital OS replaces, so celebrating it sends a mixed message.</dd>
+          </dl>
+          <p class="src">Sources: <a href="https://www.tribuneindia.com/2000/20001216/cth2.htm" target="_blank" rel="noopener noreferrer">Parchi as cheat chit</a></p>
+          <p class="vd">Very Indian-hospital, but celebrates the paper you want to remove.</p>
+        </div>
+      </article>
+      <article class="opt v-bad" id="gaanth" aria-labelledby="gaanth-h">
+        <div class="art"><svg viewBox="0 0 240 260" role="img" aria-labelledby="gaanth-t"><title id="gaanth-t">Gaanth, a cloth potli tied with a reminder knot</title><ellipse cx="120" cy="244" rx="50" ry="7" fill="#17253b" opacity=".12"/><ellipse cx="104" cy="226" rx="14" ry="7.5" fill="#17253b"/><ellipse cx="136" cy="226" rx="14" ry="7.5" fill="#17253b"/><defs><clipPath id="gaanth-b"><path d="M104,74 C70,86 52,128 56,172 C59,208 88,224 120,224 C152,224 181,208 184,172 C188,128 170,86 136,74 Z"/></clipPath></defs><path d="M104,74 C70,86 52,128 56,172 C59,208 88,224 120,224 C152,224 181,208 184,172 C188,128 170,86 136,74 Z" fill="#2BB5B0"/><g clip-path="url(#gaanth-b)" fill="#8FE0DB" opacity=".5"><circle cx="54" cy="92" r="2.3"/><circle cx="72" cy="92" r="2.3"/><circle cx="90" cy="92" r="2.3"/><circle cx="108" cy="92" r="2.3"/><circle cx="126" cy="92" r="2.3"/><circle cx="144" cy="92" r="2.3"/><circle cx="162" cy="92" r="2.3"/><circle cx="180" cy="92" r="2.3"/><circle cx="63" cy="109" r="2.3"/><circle cx="81" cy="109" r="2.3"/><circle cx="99" cy="109" r="2.3"/><circle cx="117" cy="109" r="2.3"/><circle cx="135" cy="109" r="2.3"/><circle cx="153" cy="109" r="2.3"/><circle cx="171" cy="109" r="2.3"/><circle cx="189" cy="109" r="2.3"/><circle cx="54" cy="126" r="2.3"/><circle cx="72" cy="126" r="2.3"/><circle cx="90" cy="126" r="2.3"/><circle cx="108" cy="126" r="2.3"/><circle cx="126" cy="126" r="2.3"/><circle cx="144" cy="126" r="2.3"/><circle cx="162" cy="126" r="2.3"/><circle cx="180" cy="126" r="2.3"/><circle cx="63" cy="143" r="2.3"/><circle cx="81" cy="143" r="2.3"/><circle cx="99" cy="143" r="2.3"/><circle cx="117" cy="143" r="2.3"/><circle cx="135" cy="143" r="2.3"/><circle cx="153" cy="143" r="2.3"/><circle cx="171" cy="143" r="2.3"/><circle cx="189" cy="143" r="2.3"/><circle cx="54" cy="160" r="2.3"/><circle cx="72" cy="160" r="2.3"/><circle cx="90" cy="160" r="2.3"/><circle cx="108" cy="160" r="2.3"/><circle cx="126" cy="160" r="2.3"/><circle cx="144" cy="160" r="2.3"/><circle cx="162" cy="160" r="2.3"/><circle cx="180" cy="160" r="2.3"/><circle cx="63" cy="177" r="2.3"/><circle cx="81" cy="177" r="2.3"/><circle cx="99" cy="177" r="2.3"/><circle cx="117" cy="177" r="2.3"/><circle cx="135" cy="177" r="2.3"/><circle cx="153" cy="177" r="2.3"/><circle cx="171" cy="177" r="2.3"/><circle cx="189" cy="177" r="2.3"/><circle cx="54" cy="194" r="2.3"/><circle cx="72" cy="194" r="2.3"/><circle cx="90" cy="194" r="2.3"/><circle cx="108" cy="194" r="2.3"/><circle cx="126" cy="194" r="2.3"/><circle cx="144" cy="194" r="2.3"/><circle cx="162" cy="194" r="2.3"/><circle cx="180" cy="194" r="2.3"/><circle cx="63" cy="211" r="2.3"/><circle cx="81" cy="211" r="2.3"/><circle cx="99" cy="211" r="2.3"/><circle cx="117" cy="211" r="2.3"/><circle cx="135" cy="211" r="2.3"/><circle cx="153" cy="211" r="2.3"/><circle cx="171" cy="211" r="2.3"/><circle cx="189" cy="211" r="2.3"/></g><path d="M162,96 C182,130 186,176 168,206 C178,170 176,128 156,92 Z" fill="#1A8C88" opacity=".35"/><path d="M100,76 C94,58 108,50 120,58 C132,50 146,58 140,76 Z" fill="#2BB5B0"/><path d="M108,60 L112,74 M120,57 L120,74 M132,60 L128,74" stroke="#1A8C88" stroke-width="2" stroke-linecap="round"/><g transform="translate(112 64) rotate(-12)"><path d="M0,0 C-8,-1 -16,-4 -21,-12" stroke="#1A8C88" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M-21,-12 C-30,-14 -34,-6 -30,0 C-26,-2 -22,-6 -21,-12 Z" fill="#1A8C88"/></g><g transform="translate(128 64) scale(-1 1) rotate(-12)"><path d="M0,0 C-8,-1 -16,-4 -21,-12" stroke="#1A8C88" stroke-width="12" fill="none" stroke-linecap="round"/><path d="M-21,-12 C-30,-14 -34,-6 -30,0 C-26,-2 -22,-6 -21,-12 Z" fill="#1A8C88"/></g><rect x="98" y="68" width="44" height="14" rx="7" fill="#F2B33D"/><path d="M106,75 h4 M116,75 h4 M126,75 h4" stroke="#C98A1B" stroke-width="2" stroke-linecap="round"/><circle cx="120" cy="66" r="8" fill="#F2B33D" stroke="#C98A1B" stroke-width="2"/><circle cx="86" cy="150" r="6.5" fill="#F7A8A0" opacity=".75"/><circle cx="154" cy="150" r="6.5" fill="#F7A8A0" opacity=".75"/><circle cx="102" cy="132" r="10.5" fill="#ffffff"/><circle cx="103.2" cy="132.6" r="5.5" fill="#17253b"/><circle cx="105.3" cy="130.3" r="1.8" fill="#ffffff"/><circle cx="138" cy="132" r="10.5" fill="#ffffff"/><circle cx="139.2" cy="132.6" r="5.5" fill="#17253b"/><circle cx="141.3" cy="130.3" r="1.8" fill="#ffffff"/><path d="M111,153 Q120,164 129,153 Z" fill="#17253b"/><path d="M66.0,160.0 L58.5,178.5 L49.5,194.1" stroke="#1A8C88" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="49.5" cy="194.1" r="9.5" fill="#2BB5B0"/><path d="M174.0,160.0 L183.4,142.3 L185.3,124.4" stroke="#1A8C88" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="185.3" cy="124.4" r="9.5" fill="#2BB5B0"/></svg><span class="tag">Drop</span></div>
+        <div class="txt">
+          <div class="nm"><h3 id="gaanth-h">Gaanth</h3><span>Knotted cloth potli</span></div>
+          <p class="idea">A cloth bundle tied with a reminder knot.</p>
+          <p class="acts">Knot ends perk, droop and curl into a “?” · loosens its knot to present.</p>
+          <dl>
+            <dt>Object used elsewhere?</dt><dd><b>Clear.</b> No knotted-bundle mascot found.</dd>
+            <dt>Name risk</dt><dd><b>High.</b> गाँठ also means a lump or tumour, which patients will hear in a hospital. Idioms link it to misused money, and “Gaanth” is a 2024 crime series about the Burari deaths.</dd>
+            <dt>Watch</dt><dd>The knot idea could survive under another name, but the story depends on the word.</dd>
+          </dl>
+          <p class="src">Sources: <a href="https://www.rekhtadictionary.com/meaning-of-guthlii" target="_blank" rel="noopener noreferrer">lump meaning</a> · <a href="https://en.wikipedia.org/wiki/Gaanth_Chapter_1:_Jamnaa_Paar" target="_blank" rel="noopener noreferrer">Gaanth series</a></p>
+          <p class="vd">The lump meaning rules it out for hospitals.</p>
+        </div>
+      </article>
+      <article class="opt v-bad" id="dabba" aria-labelledby="dabba-h">
+        <div class="art"><svg viewBox="0 0 240 260" role="img" aria-labelledby="dabba-t"><title id="dabba-t">Dabba, a three-tier tiffin, one tier per pillar</title><ellipse cx="120" cy="244" rx="54" ry="7" fill="#17253b" opacity=".12"/><path d="M104,218 L102,230 M136,218 L138,230" stroke="#17253b" stroke-width="5.5" stroke-linecap="round"/><ellipse cx="97" cy="233" rx="10" ry="5" fill="#17253b"/><ellipse cx="143" cy="233" rx="10" ry="5" fill="#17253b"/><path d="M80,104 C80,40 160,40 160,104" stroke="#8C9AAC" stroke-width="7" fill="none" stroke-linecap="round"/><rect x="112" y="40" width="16" height="10" rx="4" fill="#8C9AAC"/><ellipse cx="120" cy="92" rx="48" ry="9" fill="#A3B1C2"/><rect x="70" y="96" width="100" height="40" rx="10" fill="#CBD5E0"/><rect x="76" y="100" width="12" height="30" rx="6" fill="#EEF2F7" opacity=".9"/><rect x="156" y="100" width="8" height="30" rx="4" fill="#A3B1C2" opacity=".7"/><rect x="68" y="94" width="104" height="7" rx="3.5" fill="#2BB5B0"/><rect x="70" y="138" width="100" height="40" rx="10" fill="#CBD5E0"/><rect x="76" y="142" width="12" height="30" rx="6" fill="#EEF2F7" opacity=".9"/><rect x="156" y="142" width="8" height="30" rx="4" fill="#A3B1C2" opacity=".7"/><rect x="68" y="136" width="104" height="7" rx="3.5" fill="#F2B33D"/><rect x="70" y="180" width="100" height="40" rx="10" fill="#CBD5E0"/><rect x="76" y="184" width="12" height="30" rx="6" fill="#EEF2F7" opacity=".9"/><rect x="156" y="184" width="8" height="30" rx="4" fill="#A3B1C2" opacity=".7"/><rect x="68" y="178" width="104" height="7" rx="3.5" fill="#17253b"/><ellipse cx="106" cy="114" rx="5.5" ry="7.5" fill="#17253b"/><circle cx="107.8" cy="111.2" r="2" fill="#ffffff"/><ellipse cx="134" cy="114" rx="5.5" ry="7.5" fill="#17253b"/><circle cx="135.8" cy="111.2" r="2" fill="#ffffff"/><path d="M114.0,128 Q120,134.0 126.0,128" stroke="#17253b" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M70.0,154.0 L61.8,174.4 L51.8,191.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="51.8" cy="191.7" r="6" fill="#17253b"/><path d="M170.0,154.0 L180.3,134.6 L182.4,114.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="182.4" cy="114.7" r="6" fill="#17253b"/></svg><span class="tag">Drop</span></div>
+        <div class="txt">
+          <div class="nm"><h3 id="dabba-h">Dabba</h3><span>Steel tiffin</span></div>
+          <p class="idea">Three tiers for three pillars, delivered like the dabbawalas deliver lunch.</p>
+          <p class="acts">Tiers slide open to show modules · lid pops to celebrate.</p>
+          <dl>
+            <dt>Object used elsewhere?</dt><dd><b>Clear.</b> No tiffin character; dabbawalas appear in ads as people.</dd>
+            <dt>Name risk</dt><dd><b>High.</b> “Dabba trading” is illegal stock trading (NSE advisory, July 2026), and “dabba” is slang for junk. Dabba by Wonder and Wifi Dabba use the name.</dd>
+            <dt>Watch</dt><dd>Food and delivery cliché, with no link to care.</dd>
+          </dl>
+          <p class="src">Sources: <a href="https://www.businesstoday.in/markets/stocks/story/nse-issues-investor-advisory-against-dabba-illegal-trading-services-what-it-means-540885-2026-07-04" target="_blank" rel="noopener noreferrer">Dabba trading</a> · <a href="https://njbiz.com/wonder-dabba-indian-food-concept-parsippany" target="_blank" rel="noopener noreferrer">Dabba by Wonder</a></p>
+          <p class="vd">Name carries illegal-trading and junk meanings.</p>
+        </div>
+      </article>
+      <article class="opt v-bad" id="disha" aria-labelledby="disha-h">
+        <div class="art"><svg viewBox="0 0 240 260" role="img" aria-labelledby="disha-t"><title id="disha-t">Disha, a compass whose needle points to the next step</title><ellipse cx="120" cy="244" rx="52" ry="7" fill="#17253b" opacity=".12"/><path d="M104,206 L102,224 M136,206 L138,224" stroke="#17253b" stroke-width="5.5" stroke-linecap="round"/><ellipse cx="97" cy="227" rx="10" ry="5" fill="#17253b"/><ellipse cx="143" cy="227" rx="10" ry="5" fill="#17253b"/><circle cx="120" cy="66" r="11" fill="none" stroke="#F2B33D" stroke-width="6"/><rect x="112" y="72" width="16" height="10" rx="3" fill="#C98A1B"/><circle cx="120" cy="140" r="68" fill="#17253b"/><circle cx="120" cy="140" r="60" fill="#F7FAFD"/><line x1="120.0" y1="88.0" x2="120.0" y2="82.0" stroke="#AFC0D4" stroke-width="3" stroke-linecap="round"/><line x1="146.0" y1="95.0" x2="149.0" y2="89.8" stroke="#AFC0D4" stroke-width="1.5" stroke-linecap="round"/><line x1="165.0" y1="114.0" x2="170.2" y2="111.0" stroke="#AFC0D4" stroke-width="1.5" stroke-linecap="round"/><line x1="172.0" y1="140.0" x2="178.0" y2="140.0" stroke="#AFC0D4" stroke-width="3" stroke-linecap="round"/><line x1="165.0" y1="166.0" x2="170.2" y2="169.0" stroke="#AFC0D4" stroke-width="1.5" stroke-linecap="round"/><line x1="146.0" y1="185.0" x2="149.0" y2="190.2" stroke="#AFC0D4" stroke-width="1.5" stroke-linecap="round"/><line x1="120.0" y1="192.0" x2="120.0" y2="198.0" stroke="#AFC0D4" stroke-width="3" stroke-linecap="round"/><line x1="94.0" y1="185.0" x2="91.0" y2="190.2" stroke="#AFC0D4" stroke-width="1.5" stroke-linecap="round"/><line x1="75.0" y1="166.0" x2="69.8" y2="169.0" stroke="#AFC0D4" stroke-width="1.5" stroke-linecap="round"/><line x1="68.0" y1="140.0" x2="62.0" y2="140.0" stroke="#AFC0D4" stroke-width="3" stroke-linecap="round"/><line x1="75.0" y1="114.0" x2="69.8" y2="111.0" stroke="#AFC0D4" stroke-width="1.5" stroke-linecap="round"/><line x1="94.0" y1="95.0" x2="91.0" y2="89.8" stroke="#AFC0D4" stroke-width="1.5" stroke-linecap="round"/><text x="120" y="98" text-anchor="middle" font-family="Geist, Arial, sans-serif" font-size="12" font-weight="600" fill="#17253b">N</text><g transform="rotate(38 120 112)"><path d="M120,90 L126,112 L120,116 L114,112 Z" fill="#2BB5B0"/><path d="M120,134 L126,112 L120,116 L114,112 Z" fill="#AFC0D4"/></g><circle cx="120" cy="113" r="3.5" fill="#17253b"/><circle cx="92" cy="158" r="5.5" fill="#F7A8A0" opacity=".75"/><circle cx="148" cy="158" r="5.5" fill="#F7A8A0" opacity=".75"/><ellipse cx="104" cy="146" rx="5.5" ry="7.5" fill="#17253b"/><circle cx="105.8" cy="143.2" r="2" fill="#ffffff"/><ellipse cx="136" cy="146" rx="5.5" ry="7.5" fill="#17253b"/><circle cx="137.8" cy="143.2" r="2" fill="#ffffff"/><path d="M113.0,164 Q120,171.0 127.0,164" stroke="#17253b" stroke-width="3.6" fill="none" stroke-linecap="round"/><path d="M54.0,152.0 L45.8,172.4 L35.8,189.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="35.8" cy="189.7" r="6" fill="#17253b"/><path d="M186.0,152.0 L196.3,132.6 L198.4,112.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="198.4" cy="112.7" r="6" fill="#17253b"/></svg><span class="tag">Drop</span></div>
+        <div class="txt">
+          <div class="nm"><h3 id="disha-h">Disha</h3><span>Compass</span></div>
+          <p class="idea">A compass whose needle points to the next step.</p>
+          <p class="acts">Needle spins to think · points with needle and arm together.</p>
+          <dl>
+            <dt>Object used elsewhere?</dt><dd><b>Some.</b> No compass mascot confirmed, but compass logos are common (Noom uses one).</dd>
+            <dt>Name risk</dt><dd><b>High.</b> Disha is an Indian AI health-coach app (Series A, September 2026), AIIMS Delhi's navigation app, and Dishika is a government AI chatbot mascot.</dd>
+            <dt>Watch</dt><dd>Directly clashes with Indian healthtech.</dd>
+          </dl>
+          <p class="src">Sources: <a href="https://www.newskart.com/disha-raises-5-3m-series-a-to-build-ai-health-coaching-for-india/" target="_blank" rel="noopener noreferrer">Disha AI Health Coach</a> · <a href="https://medicaldialogues.in/news/health/hospital-diagnostics/aiims-delhi-launches-disha-app-for-seamless-navigation-155249" target="_blank" rel="noopener noreferrer">AIIMS Disha</a></p>
+          <p class="vd">Name is taken in Indian health AI.</p>
+        </div>
+      </article>
+      <article class="opt v-bad" id="laltain" aria-labelledby="laltain-h">
+        <div class="art"><svg viewBox="0 0 240 260" role="img" aria-labelledby="laltain-t"><title id="laltain-t">Laltain, a hand lantern that lights the next step</title><ellipse cx="120" cy="244" rx="50" ry="7" fill="#17253b" opacity=".12"/><path d="M104,214 L102,228 M136,214 L138,228" stroke="#17253b" stroke-width="5.5" stroke-linecap="round"/><ellipse cx="97" cy="231" rx="10" ry="5" fill="#17253b"/><ellipse cx="143" cy="231" rx="10" ry="5" fill="#17253b"/><path d="M84,74 C84,28 156,28 156,74" stroke="#17253b" stroke-width="5" fill="none" stroke-linecap="round"/><rect x="92" y="64" width="56" height="16" rx="6" fill="#17253b"/><path d="M96,80 C66,100 66,170 96,190 H144 C174,170 174,100 144,80 Z" fill="#FFF1C2" stroke="#E7C772" stroke-width="2"/><ellipse cx="120" cy="134" rx="34" ry="42" fill="#FFD66B" opacity=".55"/><path d="M120,92 C112,104 114,112 120,116 C126,112 128,104 120,92 Z" fill="#C98A1B"/><path d="M96,84 V188 M144,84 V188" stroke="#17253b" stroke-width="3" opacity=".7"/><rect x="84" y="188" width="72" height="26" rx="8" fill="#2BB5B0"/><rect x="84" y="196" width="72" height="5" fill="#1A8C88"/><ellipse cx="108" cy="140" rx="5.5" ry="7.5" fill="#17253b"/><circle cx="109.8" cy="137.2" r="2" fill="#ffffff"/><ellipse cx="132" cy="140" rx="5.5" ry="7.5" fill="#17253b"/><circle cx="133.8" cy="137.2" r="2" fill="#ffffff"/><path d="M114.0,156 Q120,162.0 126.0,156" stroke="#17253b" stroke-width="3.4" fill="none" stroke-linecap="round"/><path d="M74.0,140.0 L65.8,160.4 L55.8,177.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="55.8" cy="177.7" r="6" fill="#17253b"/><path d="M166.0,140.0 L176.3,120.6 L178.4,100.7" stroke="#17253b" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="178.4" cy="100.7" r="6" fill="#17253b"/></svg><span class="tag">Drop</span></div>
+        <div class="txt">
+          <div class="nm"><h3 id="laltain-h">Laltain</h3><span>Hurricane lantern</span></div>
+          <p class="idea">An old hand lantern that lights the next step.</p>
+          <p class="acts">Glows brighter when something is done · dims to sleep.</p>
+          <dl>
+            <dt>Object used elsewhere?</dt><dd><b>Clear.</b> No brand mascot found.</dd>
+            <dt>Name risk</dt><dd><b>High.</b> The hurricane lamp is the RJD party's reserved election symbol in Bihar and Jharkhand. Lantern (US) is a care-navigation health benefit.</dd>
+            <dt>Watch</dt><dd>A political symbol is a non-starter for an enterprise brand.</dd>
+          </dl>
+          <p class="src">Sources: <a href="http://ceoelection.bihar.gov.in/pdf/562023PPSE.pdf" target="_blank" rel="noopener noreferrer">ECI notification</a> · <a href="https://en.wikipedia.org/wiki/Rashtriya_Janata_Dal" target="_blank" rel="noopener noreferrer">RJD</a></p>
+          <p class="vd">Political symbol.</p>
+        </div>
+      </article></div>
+  </section>
+
+  <section aria-labelledby="rename">
+    <div class="col" style="display:grid;gap:10px">
+      <h2 id="rename">If you keep the sticky note: names to check</h2>
+      <p class="lead">You liked the note. The object is open, but “Nudge” belongs to an AI scribe and billing-audit company. These are starting points for a trademark and meaning check, not cleared names.</p>
+    </div>
+    <div class="names">
+      <div class="name"><b>Yaadi</b><span>From yaad, memory; a yaadi is a list. Says “I remember” in Hindi and Marathi.</span></div>
+      <div class="name"><b>Tikku</b><span>From “tick”, in the style of an affectionate Hindi nickname. Says done.</span></div>
+      <div class="name"><b>Chipku</b><span>Hindi slang for something that sticks to you. Playful; may read as clingy.</span></div>
+      <div class="name"><b>Pinnu</b><span>The note pinned until done. Friendly, pan-Indian.</span></div>
+    </div>
+    <p class="note">Each still needs: a trademark search in India (classes 9, 42 and 44), a check of app stores and health startups, and a read by speakers of the main regional languages.</p>
+  </section>
+
+  <section aria-labelledby="next">
+    <div class="ask">
+      <h3 id="next">My recommendation</h3>
+      <p>Take three objects forward: the sticky note (your favourite), the letter and the thread spool. All three are open as objects and carry the follow-through story; only the letter's name is low risk as it stands. Drop the potli, tiffin, compass and lantern because of their names or symbols.</p>
+      <ol>
+        <li>Which objects go forward? I suggest note, letter and spool.</li>
+        <li>Should I prototype them fully (all poses, in use on the site and social posts) like the last round?</li>
+        <li>Do you want a naming round with a trademark check before or after the art?</li>
+      </ol>
+    </div>
+    <p class="note">The SVG for each option is saved in <code>mascot/options/</code>. Research covered the open web on 14 October 2026; absence of a match means none was found, not that none exists, and a formal trademark search is still needed.</p>
+  </section>
+</div>

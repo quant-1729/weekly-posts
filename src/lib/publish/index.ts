@@ -66,7 +66,8 @@ export function createPublisher(deps: PublisherDeps = {}): PublishQueueItem {
 
       const storage = deps.storage ?? getStorage();
       token = await readToken({ id: conn.id, brandId, provider });
-      const caption = composeCaption(post.caption, post.hashtags, provider === "instagram" ? undefined : 8000, provider === "instagram" ? undefined : 30);
+      // A realistic AI person on the picture: the caption ends with the AI disclosure line (Graph has no API field for the label).
+      const caption = composeCaption(post.caption, post.hashtags, provider === "instagram" ? undefined : 8000, provider === "instagram" ? undefined : 30, { aiDisclosure: post.aiFace });
       const isCarousel = loaded.slides.length >= 2;
 
       if (provider === "instagram") {

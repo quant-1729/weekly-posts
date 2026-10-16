@@ -79,7 +79,7 @@ export function PastPosts({ brandId, initialPosts }: { brandId: string; initialP
   return (
     <div className="space-y-3">
       <div>
-        <h3 className="text-lg font-semibold">{t.title}</h3>
+        <h3 className="text-card-title text-title">{t.title}</h3>
         <p className={hintClass}>{t.hint}</p>
       </div>
 
@@ -132,7 +132,7 @@ export function PastPosts({ brandId, initialPosts }: { brandId: string; initialP
       )}
 
       {posts.length === 0 ? (
-        <p className="text-stone-600">{t.empty}</p>
+        <p className="text-[14px] leading-5 text-desc">{t.empty}</p>
       ) : (
         <ul className="space-y-3">
           {posts.map((p) => (

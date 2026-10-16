@@ -63,16 +63,28 @@ function postedBlock(ctx: LinkContext, st: Status): string {
 async function actionsHtml(ctx: LinkContext, post: DeliveryPost, st: Status): Promise<string> {
   if (st.status === 'posted') return postedBlock(ctx, st);
   if (st.status !== 'approved') return '';
-  const text = shareTextFor({ channel: post.channel, caption: post.caption, cta: post.cta, hashtags: post.hashtags, postCode: post.postCode }, getEnv().appUrl);
+  const text = shareTextFor({ channel: post.channel, caption: post.caption, cta: post.cta, hashtags: post.hashtags, postCode: post.postCode, aiFace: post.aiFace }, getEnv().appUrl);
   const main = post.formats[0];
   const story = post.formats.find((f) => f === 'vertical' && f !== main);
   const srcs = Object.fromEntries(await Promise.all(post.formats.map(async (f) => [f, await imgSrc(ctx, post.id, f, true)] as const)));
+  // A carousel: Share sends every slide in order, and each slide can be downloaded.
+  const slideSrcs = main ? await Promise.all(post.slideIds.slice(0, 10).map((id) => imgSrc(ctx, id, main, true))) : [];
+  const slideNames = slideSrcs.map((_, i) => filename(post.channel, `slide-${i + 1}`));
+  const carousel = slideSrcs.length > 1;
   const shareBtn = (format: DesignFormat, label: string, o: { story?: boolean; primary?: boolean }) =>
     `<button type="button" data-share-btn data-url="${esc(srcs[format])}" data-filename="${esc(filename(post.channel, format))}" data-format="${format}"${o.story ? ' data-story="1"' : ''}${o.primary ? ' data-default="1"' : ''} style="${buttonStyle(o.primary ? 'primary' : 'secondary')}margin:0 0 12px;">${esc(label)}</button>`;
+  const shareAllBtn = `<button type="button" data-share-btn data-urls="${esc(slideSrcs.join(' '))}" data-filenames="${esc(slideNames.join(' '))}" data-url="${esc(slideSrcs[0] ?? '')}" data-filename="${esc(slideNames[0] ?? '')}" data-format="${main}" data-default="1" style="${buttonStyle('primary')}margin:0 0 12px;">${esc(fill(rp.shareAll, { n: slideSrcs.length }))}</button>`;
   const shareBlock = main
-    ? `<div hidden data-needs-share>${shareBtn(main, t.share, { primary: true })}${story ? shareBtn(story, t.shareStory, { story: true }) : ''}<p hidden data-ios-hint style="${SMALL_NOTE}">${esc(t.iosHint)}</p></div>`
+    ? `<div hidden data-needs-share>${carousel ? shareAllBtn : shareBtn(main, t.share, { primary: true })}${story && !carousel ? shareBtn(story, t.shareStory, { story: true }) : ''}<p hidden data-ios-hint style="${SMALL_NOTE}">${esc(t.iosHint)}</p></div>`
     : '';
-  const downloads = post.formats.length
+  const slideLinks = carousel
+    ? `<div data-no-share><p style="${SMALL_NOTE}">${esc(rp.slidesLabel)}</p>${slideSrcs
+        .map((u, i) => `<a href="${esc(u)}" download="${esc(slideNames[i])}" data-download-link data-format="${main}" style="${buttonStyle(i === 0 ? 'primary' : 'secondary')}margin:0 8px 12px 0;">${esc(fill(rp.downloadSlide, { n: i + 1 }))}</a>`)
+        .join('')}</div>`
+    : '';
+  const downloads = carousel
+    ? slideLinks
+    : post.formats.length
     ? `<div data-no-share>${post.formats
         .map(
           (f) =>

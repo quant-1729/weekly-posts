@@ -5,7 +5,7 @@
 import { generateJson } from '@/lib/ai/client';
 import { STYLE_READ_PROMPT_VERSION, STYLE_READ_SYSTEM, buildStyleReadUser } from '@/lib/ai/prompts/v3';
 import { styleReadJsonSchema, styleReadSchema, type StyleRead } from '@/lib/ai/schemas-v3';
-import { assertUnderDailyCap, failedCallUsd, recordUsage } from '@/lib/usage';
+import { assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage } from '@/lib/usage';
 import { assertUnderWeeklyCap } from '@/lib/usage/caps';
 import { styleCopy } from './copy';
 import { suggestKitDetailed, type KitSource, type KitSuggestion } from './kit';
@@ -120,11 +120,11 @@ export async function readStyle(args: { userId: string; brandId: string }, deps:
     });
   } catch (e) {
     const cost = failedCallUsd(e);
-    if (cost > 0) await recordUsage(brandId, userId, 'style_read', cost);
+    if (cost > 0) await recordUsage(brandId, userId, 'style_read', cost, { ok: false, model: failedCallModel(e) });
     throw e;
   }
   const usd = result.stats?.usd ?? 0;
-  await recordUsage(brandId, userId, 'style_read', usd);
+  await recordUsage(brandId, userId, 'style_read', usd, { model: result.stats?.model });
 
   const source: KitSource = samples.websiteColors.length > 0 ? 'mixed' : 'instagram';
   const suggestion = suggestKitDetailed(result.data, context.kit, source);

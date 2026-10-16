@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { refreshConnections } from "@/lib/connections/refresh";
 import { getEnv } from "@/lib/env";
+import { purgeOldSessionData } from "@/lib/sessions";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -21,5 +22,10 @@ function authorised(req: NextRequest): boolean {
 export async function GET(req: NextRequest) {
   if (!authorised(req)) return Response.json({ ok: false, code: "unauthorized" }, { status: 401 });
   const summary = await refreshConnections();
-  return Response.json({ ok: true, ...summary });
+  // Retention (12 months): old sign-in sessions and activity events. A failure here must not hide the refresh result.
+  const purged = await purgeOldSessionData().catch((e: unknown) => {
+    console.error("[cron] purge failed", (e as Error)?.name ?? e);
+    return null;
+  });
+  return Response.json({ ok: true, ...summary, purged });
 }

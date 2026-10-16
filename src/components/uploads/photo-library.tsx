@@ -64,7 +64,7 @@ export function PhotoLibrary({ brandId, initialPhotos }: { brandId: string; init
   return (
     <div className="space-y-3">
       <div>
-        <h3 className="text-lg font-semibold">{t.title}</h3>
+        <h3 className="text-card-title text-title">{t.title}</h3>
         <p className={hintClass}>{t.hint}</p>
       </div>
 
@@ -93,7 +93,7 @@ export function PhotoLibrary({ brandId, initialPhotos }: { brandId: string; init
       )}
 
       {photos.length === 0 ? (
-        <p className="text-stone-600">{t.empty}</p>
+        <p className="text-[14px] leading-5 text-desc">{t.empty}</p>
       ) : (
         <ul className="grid grid-cols-2 gap-3">
           {photos.map((p) => (

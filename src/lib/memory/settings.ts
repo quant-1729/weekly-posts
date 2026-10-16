@@ -6,6 +6,7 @@
 import { regulatedGroup, type RegulatedGroup } from "@/lib/ai/regulated";
 import { BrandAccessError, requireBrandMember } from "@/lib/brand/current";
 import { getDb, type Tx } from "@/lib/db";
+import { enforceFaceRules } from "@/lib/faces/service";
 import { storeEligibility } from "@/lib/mascot/eligibility";
 import { s } from "@/lib/i18n/strings";
 import { isIsoCountry } from "@/lib/setup/countries";
@@ -204,6 +205,8 @@ export async function saveSettings(userId: string, brandId: string, raw: unknown
     if (eligibility.reason === "regulated") {
       await tx.query("update public.brand_memory set mascot_in_posts = false where brand_id = $1 and mascot_in_posts", [brandId]);
     }
+    // Brand Face: a mascot that is no longer allowed, and a realistic AI person for a health, finance, legal or alcohol brand, go off.
+    await enforceFaceRules(tx, brandId, a.regulated ?? regulatedGroup(a.what_sell), eligibility.reason !== "regulated");
 
     await syncSetupFact(tx, {
       brandId,

@@ -109,15 +109,16 @@ export function createShareKit(env: ShareEnv) {
 
   /**
    * Copies the caption (started first, not awaited, so the tap is still fresh), then opens the
-   * share sheet with the picture and the text.
+   * share sheet with the picture (or, for a carousel, all its pictures in order) and the text.
    */
-  const share = async (file: File, text: string): Promise<ShareOutcome> => {
+  const share = async (picture: File | File[], text: string): Promise<ShareOutcome> => {
+    const files = Array.isArray(picture) ? picture : [picture];
     const copying = copyText(text);
-    if (typeof nav.share !== 'function' || typeof nav.canShare !== 'function' || !nav.canShare({ files: [file] })) {
+    if (typeof nav.share !== 'function' || typeof nav.canShare !== 'function' || !nav.canShare({ files })) {
       return { kind: 'unsupported', copied: await copying };
     }
     try {
-      await nav.share({ files: [file], text });
+      await nav.share({ files, text });
       return { kind: 'shared', copied: await copying };
     } catch (err) {
       const name = err && typeof err === 'object' && 'name' in err ? String((err as { name: unknown }).name) : 'Error';
@@ -207,16 +208,24 @@ export function bindShareDom(createKit: (env: ShareEnv) => ShareKit, win: any, t
     each(root, '[data-ios-hint]', (el: any) => (el.hidden = !(canShare && kit.isIos())));
 
     const files: Record<string, Promise<File | null>> = {};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const fileFor = (btn: any): Promise<File | null> => {
-      const url = btn.getAttribute('data-url');
+    const one = (url: string, name: string): Promise<File | null> => {
       if (!files[url]) {
-        files[url] = kit.prepare(url, btn.getAttribute('data-filename')).then((f) => {
+        files[url] = kit.prepare(url, name).then((f) => {
           if (!f) delete files[url];
           return f;
         });
       }
       return files[url];
+    };
+    // A button shares one picture (data-url) or, for a carousel, all its slides in order (data-urls and data-filenames, space and newline separated).
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const fileFor = (btn: any): Promise<File | File[] | null> => {
+      const urls = (btn.getAttribute('data-urls') || '').split(' ').filter(Boolean);
+      if (urls.length > 1) {
+        const names = (btn.getAttribute('data-filenames') || '').split(' ');
+        return Promise.all(urls.map((u: string, i: number) => one(u, names[i] || 'slide-' + (i + 1) + '.png'))).then((list) => (list.every((f) => f) ? (list as File[]) : null));
+      }
+      return one(btn.getAttribute('data-url'), btn.getAttribute('data-filename'));
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

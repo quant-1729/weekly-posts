@@ -26,10 +26,10 @@ export default async function Page({ params }: PageProps<"/review/[postId]">) {
   if (data.status === "failed" || data.status === "generating" || data.outputs.length === 0) {
     const failed = data.status !== "generating";
     return (
-      <section className="space-y-4">
-        <h1 className="text-xl font-bold">{failed ? s.review.failedTitle : s.review.generatingTitle}</h1>
-        <p className="text-stone-600">{failed ? s.review.failedBody : s.review.generatingBody}</p>
-        <Link href="/create" className={`${primaryButton} inline-block text-center`}>
+      <section className="mx-auto w-full max-w-page-sm space-y-3">
+        <h1 className="text-section text-title">{failed ? s.review.failedTitle : s.review.generatingTitle}</h1>
+        <p className="text-[14px] leading-5 text-desc">{failed ? s.review.failedBody : s.review.generatingBody}</p>
+        <Link href="/create" className={primaryButton}>
           {s.review.makeAnother}
         </Link>
       </section>
@@ -37,17 +37,17 @@ export default async function Page({ params }: PageProps<"/review/[postId]">) {
   }
 
   return (
-    <section className="space-y-4">
+    <section className="mx-auto w-full max-w-page-lg space-y-4">
       <div>
-        <h1 className="text-xl font-bold md:text-2xl">{s.review.title}</h1>
-        <p className="text-stone-600">
-          {s.review.language}: <span className="font-medium">{s.review.languageNames[data.language]}</span>
+        <h1 className="sr-only">{s.review.title}</h1>
+        <p className="text-[14px] leading-5 text-desc">
+          {s.review.language}: <span className="text-title">{s.review.languageNames[data.language]}</span>
         </p>
       </div>
 
       <OutputCards initial={data.outputs} />
 
-      <Link href="/create" className={`${primaryButton} inline-block text-center`}>
+      <Link href="/create" className={primaryButton}>
         {s.review.makeAnother}
       </Link>
     </section>

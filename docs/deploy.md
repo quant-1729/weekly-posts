@@ -9,7 +9,7 @@ Run the commands in Google Cloud Shell (it has `gcloud` already signed in) or in
 | Piece | Service | Notes |
 |---|---|---|
 | The website and API | **Cloud Run** (one service, `weekly-posts`) | Docker image built by Cloud Build, stored in Artifact Registry |
-| Scheduled jobs | **Cloud Scheduler** (four jobs) | Call `/api/cron/weekly`, `/api/cron/reminders`, `/api/cron/queue` (hourly) and `/api/cron/connections` (daily) with `CRON_SECRET`. Replaces Vercel Cron |
+| Scheduled jobs | **Cloud Scheduler** (six jobs) | Call `/api/cron/weekly`, `/api/cron/reminders`, `/api/cron/queue`, `/api/cron/insights` (hourly), `/api/cron/connections` (daily) and `/api/cron/research` (Mondays 06:00-09:00) with `CRON_SECRET`. Replaces Vercel Cron |
 | Files (logos, photos, renders, mascots) | **Cloud Storage** (five private buckets) | `STORAGE_BACKEND=gcs`. Supabase Storage still works if you set `STORAGE_BACKEND=supabase` |
 | Database and sign-in | **Supabase** (unchanged) | Sydney, so the app runs in Sydney too |
 | Captions, plans, checks | **Gemini on Vertex AI** | Same Google Cloud project |
@@ -260,16 +260,18 @@ export CRON_SECRET='the same value as the CRON_SECRET secret'     # read it with
 bash scripts/gcp/scheduler.sh
 ```
 
-It creates (or updates, so it is safe to run again) four jobs in `australia-southeast1`:
+It creates (or updates, so it is safe to run again) six jobs in `australia-southeast1`:
 
 | Job | Schedule (UTC) | Calls |
 |---|---|---|
 | `weekly-posts-weekly` | `0 * * * *` (every hour on the hour) | `GET /api/cron/weekly` |
 | `weekly-posts-reminders` | `30 * * * *` (every hour at half past) | `GET /api/cron/reminders` |
 | `weekly-posts-queue` | `15 * * * *` (every hour at quarter past) | `GET /api/cron/queue`: publishes or emails each queued post whose time has come |
+| `weekly-posts-insights` | `45 * * * *` (every hour at quarter to) | `GET /api/cron/insights`: reads how each published Instagram and Facebook post did (about 24 h, 72 h and 7 days after posting) into `post_metrics`; posts already measured are skipped, so a late or repeated call is harmless. Needs the insights permissions on the connection (docs/meta-app-review-insights.md); without them it skips that brand |
 | `weekly-posts-connections` | `15 3 * * *` (every day at 03:15) | `GET /api/cron/connections`: renews Instagram tokens that end within 10 days; an expired connection emails the owner once |
+| `weekly-posts-research` | `0 6-9 * * 1` (Mondays, hourly 06:00-09:00 UTC; up to 48 brands) | `GET /api/cron/research`: weekly trend research (Ideas) for brands that have it on and have finished setup; at most one weekly run per brand per week, so a late or repeated call skips brands that already ran. Each run is costed (about $0.35) under the brand's own $0.50 weekly research budget. The route allows 300 s and runs 3 brands at a time, at most 12 per call; brands left over wait for the next call or the owner's "Research now" |
 
-Both send `Authorization: Bearer $CRON_SECRET`, which is exactly what the four routes check. The weekly job waits up to 330 seconds for an answer and is not retried (the next hour picks up what is still due). Check them in the console under **Cloud Scheduler**, or run one now:
+Both send `Authorization: Bearer $CRON_SECRET`, which is exactly what the six routes check. The weekly job waits up to 330 seconds for an answer and is not retried (the next hour picks up what is still due). Check them in the console under **Cloud Scheduler**, or run one now:
 
 ```bash
 gcloud scheduler jobs run weekly-posts-reminders --location=$REGION
@@ -278,6 +280,14 @@ gcloud scheduler jobs run weekly-posts-reminders --location=$REGION
 `vercel.json` is still in the repo and does no harm; **Cloud Run is the primary target**. Do not run both Vercel Cron and Cloud Scheduler against production at the same time: the work is safe to repeat but sends extra calls.
 
 If you ever change `CRON_SECRET`, run `scripts/gcp/scheduler.sh` again so the jobs use the new value.
+
+### Sign-in sessions, device location and retention (ADM-2)
+
+- Every sign-in writes a `user_sessions` row (device type, browser, OS, approximate city and country, a keyed hash of the IP; **never the IP itself**). The admin dashboard lists them and can sign a device out. Activity goes to `app_events`.
+- City and country come from the **DB-IP "IP to City Lite"** database, looked up offline. The Dockerfile downloads it at build time (`scripts/fetch-geoip.mjs`; build argument `GEOIP_MONTH=YYYY-MM` pins the month, blank = the current month, falling back to the two months before; a failed download only logs and the build goes on) and sets `GEOIP_DB_PATH=/app/geoip/dbip-city-lite.mmdb`. Without the file, city and country are simply empty. The file is about 127 MB and is read into memory, so give the Cloud Run instance at least 1 GiB. Rebuild the image to refresh the data (DB-IP publishes monthly).
+- The licence is CC BY 4.0: "IP geolocation by DB-IP" must stay visible in the privacy text (`/terms`) and the admin dashboard.
+- **Retention is 12 months.** The daily `/api/cron/connections` job deletes `user_sessions` that were revoked or last seen more than 12 months ago, and `app_events` older than 12 months (the response reports `purged`).
+- Sessions made before this change have no `sid` in their cookie, so everyone signs in once more after the first deploy.
 
 ## 8. Logs and health
 

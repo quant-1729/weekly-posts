@@ -1,0 +1,1980 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FBFAF9">
+<title>Weekly Posts: Fish-style theme prototype</title>
+<!-- DS-1 design prototype. Static, no build step. Sample data only (Corner Bakery, Bengaluru). Nothing here is wired to the real app. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+/* ===== Tokens (docs/design/11-theme-fish-style.md) ===== */
+:root{
+  --font:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari","Noto Sans Arabic",sans-serif;
+  /* warm-neutral greys */
+  --g99:#FBFAF9;--g98:#FAF7F7;--g96:#F6F0EC;--g94:#F0EAE7;--g90:#E5DCD9;--g80:#D0C4C0;--g75:#C4B7B4;
+  --g60:#9F928E;--g45:#7A6F6B;--g30:#554F4C;--g20:#3E3B3A;--g15:#333130;--g6:#1D1D1C;--g4:#161616;--white:#fff;
+  /* translucent fills */
+  --fill-active:rgba(96,0,0,.03);--fill-group:rgba(96,0,0,.016);
+  --border-light:rgba(96,32,0,.063);--border-input:rgba(73,21,0,.192);--border-input-hover:rgba(38,9,0,.44);--border-card:rgba(0,0,0,.05);
+  --fill-secondary:rgba(96,32,0,.063);--fill-secondary-hover:rgba(102,31,0,.1);
+  /* accent */
+  --coral:#E4572E;--coral-dark:#B93A15;--coral-tint:#FDF3EF;--coral-50:#FEF7F5;
+  /* status */
+  --ok-bg:#EBF9F6;--ok-bd:#CCF0E7;--ok-tx:#13725C;
+  --warn-bg:#FFF6E5;--warn-bd:#FFE3B2;--warn-tx:#C2670C;
+  --err-bg:#FFEFEB;--err-bd:#FDD0C6;--err-tx:#B9241C;
+  --info-bg:#F0F7FF;--info-bd:#CCE5FF;--info-tx:#1D7BD8;
+  --new-bg:#FFEFEB;--new-tx:#F54B45;
+  /* text roles */
+  --t-title:var(--g4);--t-body:var(--g6);--t-sub:var(--g30);--t-desc:var(--g45);--t-help:var(--g60);
+  /* shape + shadow */
+  --r-card:16px;--r-block:20px;--r-select:24px;--r-pill:9999px;--r-toggle:10px;
+  --sh-card:0 1px 3px rgba(0,0,0,.04);
+  --sh-dialog:0 12px 32px -4px rgba(0,0,0,.08),0 0 1px rgba(0,0,0,.1);
+  --sh-tab:0 1px 2px rgba(0,0,0,.05);
+  --sh-float:0 6px 20px -4px rgba(0,0,0,.12),0 0 1px rgba(0,0,0,.14);
+  --sidebar-w:224px;--topbar-h:52px;
+  --focus:#E4572E;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:400 16px/24px var(--font);color:var(--t-body);background:var(--g99);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+h1,h2,h3,h4,p,ul,ol,figure,dl,dd{margin:0}
+ul,ol{padding:0;list-style:none}
+svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+svg.i.sm{width:16px;height:16px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* type scale */
+.t-page{font:500 14px/20px var(--font);color:var(--t-title)}
+.t-banner{font:700 20px/28px var(--font);color:var(--t-title)}
+.t-dialog{font:500 20px/28px var(--font);color:var(--t-title)}
+.t-section,h2.sec{font:400 18px/26px var(--font);letter-spacing:.18px;color:var(--t-title)}
+.t-card{font:500 16px/24px var(--font);color:var(--t-title)}
+.t-body{font:400 16px/24px var(--font)}
+.t-ui{font:500 14px/20px var(--font);color:var(--t-sub)}
+.t-desc,.hint{font:400 12px/16px var(--font);color:var(--t-desc)}
+.t-group{font:500 12px/16px var(--font);color:var(--t-help)}
+.t-badge{font:500 11px/14px var(--font)}
+h1.h-page{font:500 20px/28px var(--font);color:var(--t-title)}
+.lede{font:400 14px/20px var(--font);color:var(--t-desc);margin-top:4px}
+.hint{font-size:13px;line-height:18px}
+.desc{color:var(--t-desc)}
+.helper{color:var(--t-help)}
+.num{font-variant-numeric:tabular-nums}
+
+/* layout helpers */
+.row{display:flex;align-items:center;gap:12px}
+.row.top{align-items:flex-start}
+.wrap{flex-wrap:wrap}
+.between{justify-content:space-between}
+.end{justify-content:flex-end}
+.grow{flex:1;min-width:0}
+.stack{display:flex;flex-direction:column;gap:16px}
+.stack.s8{gap:8px}.stack.s12{gap:12px}.stack.s24{gap:24px}
+.gap4{gap:4px}.gap8{gap:8px}
+.mt4{margin-top:4px}.mt8{margin-top:8px}.mt12{margin-top:12px}.mt16{margin-top:16px}.mt24{margin-top:24px}.mt32{margin-top:32px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(var(--cols,1),minmax(0,1fr))}
+.g2{--cols:2}.g3{--cols:3}.g4{--cols:4}.g5{--cols:5}.g6{--cols:6}
+.g8{gap:8px}.g12{gap:12px}
+.split{display:grid;gap:24px;grid-template-columns:minmax(0,1fr) 320px}
+.sep{border:0;border-top:1px solid var(--g94);margin:16px 0}
+
+/* ===== App frame ===== */
+.stage{min-height:100%}
+.frame{position:relative;display:flex;width:100%;height:100vh;height:100dvh;background:var(--g99);overflow:hidden;container-type:inline-size;container-name:app}
+body.phone{background:#E9E1DD}
+body.phone .frame{width:375px;height:min(812px,calc(100dvh - 32px));margin:16px auto;border-radius:40px;box-shadow:0 0 0 8px var(--g6),0 20px 60px rgba(0,0,0,.25)}
+.sidebar{width:var(--sidebar-w);flex:none;display:flex;flex-direction:column;padding-bottom:12px;overflow-y:auto;transition:margin-left .2s ease,transform .2s ease}
+.frame.sb-collapsed .sidebar{margin-left:calc(-1 * var(--sidebar-w))}
+.sb-brand{height:var(--topbar-h);flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;text-decoration:none;font:600 15px/20px var(--font);color:var(--t-title)}
+.mark{width:24px;height:24px;border-radius:8px;background:var(--coral);display:grid;place-items:center;color:#fff;flex:none}
+.mark svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.sb-block{margin:4px 8px 8px;padding:4px;border-radius:var(--r-block);background:var(--fill-group);display:flex;flex-direction:column;gap:2px}
+.sb-nav{display:flex;flex-direction:column;gap:2px;padding:0 8px}
+.sb-item{display:flex;align-items:center;gap:8px;height:36px;padding:0 8px;border-radius:var(--r-pill);color:var(--g30);font:500 14px/20px var(--font);text-decoration:none;border:0;background:none;width:100%;text-align:left;cursor:pointer}
+.sb-item:hover{background:var(--fill-active)}
+.sb-item[aria-current="page"]{background:var(--fill-active);color:var(--t-title)}
+.sb-item.primary{background:var(--white);box-shadow:var(--sh-tab);color:var(--t-title)}
+.sb-item.primary .i{color:var(--coral)}
+.sb-item.primary:hover{background:var(--g98)}
+.sb-item .tag{margin-left:auto}
+.sb-item[aria-disabled="true"]{color:var(--g60)}
+.sb-label{padding:16px 16px 4px;font:500 12px/16px var(--font);color:var(--t-help)}
+.sb-grow{flex:1}
+.sb-foot{padding:0 8px}
+.plan{display:flex;align-items:center;gap:8px;width:100%;padding:6px 12px 6px 6px;border-radius:var(--r-pill);background:var(--white);border:1px solid var(--border-card);box-shadow:var(--sh-card);text-align:left;cursor:pointer}
+.plan:hover{background:var(--g98)}
+.plan b{display:block;font:500 14px/18px var(--font);color:var(--t-title)}
+.plan small{display:block;font:400 12px/14px var(--font);color:var(--t-desc)}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--coral-tint);color:var(--coral-dark);display:grid;place-items:center;font:600 11px/1 var(--font);flex:none;letter-spacing:.02em}
+.avatar.sm{width:24px;height:24px;font-size:10px}
+.avatar.lg{width:40px;height:40px;font-size:13px}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column;position:relative}
+.topbar{height:var(--topbar-h);flex:none;display:flex;align-items:center;gap:4px;padding:8px 12px 8px 8px}
+.topbar .title{margin-left:4px}
+.topbar .spacer{flex:1}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:0;background:transparent;color:var(--g30);display:inline-grid;place-items:center;cursor:pointer;flex:none}
+.icon-btn:hover{background:var(--fill-active)}
+.icon-btn.round{background:var(--white);border:1px solid var(--border-card);box-shadow:var(--sh-card)}
+.acct-wrap{position:relative}
+.acct{display:flex;align-items:center;gap:8px;height:36px;padding:0 10px 0 5px;border-radius:var(--r-pill);background:var(--white);border:1px solid var(--border-card);box-shadow:var(--sh-card);cursor:pointer;font:500 14px/20px var(--font);color:var(--t-sub)}
+.acct:hover{background:var(--g98)}
+.menu-pop{position:absolute;right:0;top:42px;min-width:200px;background:var(--white);border-radius:16px;box-shadow:var(--sh-dialog);padding:6px;z-index:50;border:1px solid var(--border-card)}
+.menu-pop a,.menu-pop button{display:flex;align-items:center;gap:8px;width:100%;height:36px;padding:0 10px;border:0;background:none;border-radius:10px;font:500 14px/20px var(--font);color:var(--g30);text-decoration:none;cursor:pointer;text-align:left}
+.menu-pop a:hover,.menu-pop button:hover{background:var(--fill-active);color:var(--t-title)}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 24px 0;scroll-behavior:smooth}
+.page{max-width:1600px;margin:0 auto;padding-bottom:48px}
+.page.w720{max-width:720px}.page.w880{max-width:880px}.page.w1040{max-width:1040px}.page.w1200{max-width:1200px}
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:8px 0 24px}
+.scrim{display:none;position:absolute;inset:0;background:rgba(22,22,22,.3);z-index:35}
+
+/* floating Ask Tween */
+.tween{position:absolute;right:20px;bottom:20px;z-index:30;display:flex;align-items:center;gap:8px;height:40px;padding:0 16px 0 8px;border-radius:var(--r-pill);background:var(--white);border:1px solid var(--border-card);box-shadow:var(--sh-float);font:500 14px/20px var(--font);color:var(--t-title);cursor:pointer}
+.tween:hover{background:var(--g98)}
+.tween .tw{width:26px;height:26px;flex:none}
+.frame[data-foot] .tween{bottom:84px}
+
+/* bottom nav (phone) */
+.bnav{display:none;position:absolute;left:0;right:0;bottom:0;height:60px;background:var(--g99);border-top:1px solid var(--g94);z-index:25;padding:0 8px}
+.bnav ul{display:grid;grid-template-columns:repeat(4,1fr);height:100%}
+.bnav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--g45);text-decoration:none;font:500 11px/14px var(--font)}
+.bnav a .pillw{width:48px;height:28px;border-radius:var(--r-pill);display:grid;place-items:center}
+.bnav a[aria-current="page"]{color:var(--t-title)}
+.bnav a[aria-current="page"] .pillw{background:var(--fill-active)}
+.bnav a[aria-current="page"] .i{color:var(--coral)}
+
+/* chrome modes */
+.frame[data-chrome="none"] .sidebar,.frame[data-chrome="none"] .topbar,.frame[data-chrome="none"] .bnav,.frame[data-chrome="none"] .tween{display:none}
+.frame[data-chrome="none"] .scroll{padding-top:0}
+
+/* ===== Cards, buttons, forms ===== */
+.card{background:var(--white);border:1px solid var(--border-card);border-radius:var(--r-card);box-shadow:var(--sh-card);padding:16px}
+.card.lg{padding:24px}
+.card.flat{box-shadow:none}
+.card.dashed{background:transparent;border:1px dashed var(--g80);box-shadow:none}
+.card-title{font:500 16px/24px var(--font);color:var(--t-title)}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
+.card-title + .hint{margin-top:2px}
+.card .body{margin-top:12px}
+.well{background:var(--g99);border:1px solid var(--g94);border-radius:12px;padding:12px}
+.well.warm{background:var(--g96);border-color:transparent}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 16px;border-radius:var(--r-pill);border:0;font:500 14px/20px var(--font);cursor:pointer;text-decoration:none;white-space:nowrap;transition:background .15s,border-color .15s}
+.btn.lg{height:40px}
+.btn.sm{height:30px;padding:0 12px;font-size:13px}
+.btn.block{width:100%}
+.btn-primary{background:var(--g6);color:#fff}
+.btn-primary:hover,.btn-primary.is-hover{background:var(--g15)}
+.btn-primary:active,.btn-primary.is-active{background:var(--g20)}
+.btn-primary:disabled,.btn-primary[aria-disabled="true"]{background:var(--g75);cursor:not-allowed}
+.btn-secondary{background:var(--fill-secondary);color:var(--t-title)}
+.btn-secondary:hover,.btn-secondary.is-hover{background:var(--fill-secondary-hover)}
+.btn-secondary:disabled{color:var(--g75);cursor:not-allowed;background:var(--fill-active)}
+.btn-outline{background:transparent;color:var(--t-sub);box-shadow:inset 0 0 0 1px var(--border-input)}
+.btn-outline:hover,.btn-outline.is-hover{background:var(--fill-active)}
+.btn-outline:disabled{color:var(--g75);cursor:not-allowed;box-shadow:inset 0 0 0 1px var(--border-light)}
+.btn-ghost{background:transparent;color:var(--t-sub)}
+.btn-ghost:hover,.btn-ghost.is-hover{background:var(--fill-active)}
+.btn-ghost:disabled{color:var(--g75);cursor:not-allowed}
+.btn-danger{background:transparent;color:var(--err-tx);box-shadow:inset 0 0 0 1px var(--err-bd)}
+.btn-danger:hover{background:var(--err-bg)}
+.link{background:none;border:0;padding:0;font:500 14px/20px var(--font);color:var(--t-sub);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.link:hover{color:var(--t-title)}
+.link.danger{color:var(--err-tx)}
+.link.coral{color:var(--coral-dark)}
+
+label.lbl,.lbl{display:block;font:500 14px/20px var(--font);color:var(--t-title);margin-bottom:6px}
+.field + .field{margin-top:16px}
+.input,.select,.textarea{display:block;width:100%;background:var(--white);border:1px solid var(--border-input);border-radius:16px;padding:0 14px;height:40px;font:400 14px/20px var(--font);color:var(--t-body);transition:border-color .15s}
+.input::placeholder,.textarea::placeholder{color:var(--t-help)}
+.textarea{height:auto;min-height:96px;padding:10px 14px;resize:vertical;line-height:22px}
+.input:hover,.select:hover,.textarea:hover,.input.is-hover{border-color:var(--border-input-hover)}
+.input:focus,.select:focus,.textarea:focus,.input.is-focus{border-color:var(--g6)}
+.input.is-focus{outline:2px solid var(--focus);outline-offset:2px}
+.input.is-error,.input[aria-invalid="true"],.textarea[aria-invalid="true"]{border-color:var(--err-tx)}
+.input:disabled,.select:disabled{background:var(--g96);color:var(--g60);cursor:not-allowed}
+.select{appearance:none;border-radius:var(--r-select);padding-right:38px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23554F4C' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
+.err{font:400 13px/18px var(--font);color:var(--err-tx);margin-top:4px;display:flex;align-items:center;gap:6px}
+.ok-text{color:var(--ok-tx);font:500 13px/18px var(--font);display:flex;align-items:center;gap:6px}
+.input-wrap{position:relative}
+.input-wrap .mic{position:absolute;right:6px;top:4px}
+.input-wrap .input{padding-right:46px}
+.ta-wrap{position:relative}
+.ta-wrap .textarea{padding-bottom:48px}
+.ta-wrap .mic{position:absolute;right:10px;bottom:10px}
+.mic{width:32px;height:32px;border-radius:50%;border:0;background:var(--coral-tint);color:var(--coral-dark);display:inline-grid;place-items:center;cursor:pointer}
+.mic:hover{background:#FBE5DC}
+.mic .i{width:18px;height:18px}
+
+input[type=checkbox]:not(.sw),input[type=radio]{appearance:none;-webkit-appearance:none;width:18px;height:18px;margin:1px 0 0;flex:none;background:var(--white);border:1.5px solid var(--g75);cursor:pointer;display:inline-grid;place-content:center}
+input[type=checkbox]:not(.sw){border-radius:6px}
+input[type=radio]{border-radius:50%}
+input[type=checkbox]:not(.sw):checked{background:var(--g6) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/12px no-repeat;border-color:var(--g6)}
+input[type=radio]::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--coral);transform:scale(0);transition:transform .12s}
+input[type=radio]:checked{border-color:var(--coral)}
+input[type=radio]:checked::before{transform:scale(1)}
+input:disabled{cursor:not-allowed;opacity:.55}
+.check{display:flex;gap:10px;align-items:flex-start;font:400 14px/20px var(--font);color:var(--t-body);cursor:pointer}
+.check small{display:block;font:400 12px/16px var(--font);color:var(--t-desc);margin-top:2px}
+.sw{appearance:none;-webkit-appearance:none;width:36px;height:20px;border-radius:99px;background:var(--g80);position:relative;cursor:pointer;flex:none;transition:background .15s;margin:0}
+.sw::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.sw:checked{background:var(--g6)}
+.sw:checked::after{transform:translateX(16px)}
+
+.pick{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--border-input);border-radius:16px;background:var(--white);cursor:pointer;position:relative}
+.pick:hover{border-color:var(--border-input-hover)}
+.pick:has(input:checked){border-color:var(--coral);background:var(--coral-tint);box-shadow:0 0 0 1px var(--coral)}
+.pick:has(input:focus-visible){outline:2px solid var(--focus);outline-offset:2px}
+.pick:has(input:disabled){background:var(--g99);border-color:var(--border-light);cursor:not-allowed}
+.pick:has(input:disabled) b{color:var(--g60)}
+.pick b{display:block;font:500 14px/20px var(--font);color:var(--t-title)}
+.pick small{display:block;font:400 12px/16px var(--font);color:var(--t-desc);margin-top:2px}
+
+.chip{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:var(--r-pill);border:1px solid var(--border-input);background:var(--white);color:var(--g30);font:500 14px/20px var(--font);cursor:pointer;transition:background .15s}
+.chip:hover,.chip.is-hover{background:var(--g98)}
+.chip[aria-pressed="true"]{background:var(--g6);border-color:var(--g6);color:#fff}
+.chip:disabled{color:var(--g75);border-color:var(--border-light);cursor:not-allowed;background:transparent}
+.chip.two{height:auto;padding:8px 16px;border-radius:20px;text-align:left;flex-direction:column;align-items:flex-start;gap:0}
+.chip.two small{font:400 12px/16px var(--font);opacity:.8}
+.chip.sm{height:30px;padding:0 12px;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+
+.seg{display:inline-flex;padding:2px;border-radius:var(--r-pill);background:var(--fill-active);border:1px solid var(--border-light)}
+.seg button{border:0;background:transparent;height:30px;padding:0 14px;border-radius:var(--r-pill);font:500 14px/20px var(--font);color:var(--t-desc);cursor:pointer}
+.seg button:hover{color:var(--t-title)}
+.seg button[aria-selected="true"],.seg button[aria-pressed="true"]{background:var(--white);color:var(--t-title);box-shadow:var(--sh-tab)}
+.seg.block{display:flex}.seg.block button{flex:1}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:var(--r-pill);font:500 11px/14px var(--font);white-space:nowrap;background:var(--g96);color:var(--g30)}
+.badge.ok{background:var(--ok-bg);color:var(--ok-tx)}
+.badge.warn{background:var(--warn-bg);color:#9A5009}
+.badge.err{background:var(--err-bg);color:var(--err-tx)}
+.badge.info{background:var(--info-bg);color:#1A68B8}
+.badge.new{background:var(--new-bg);color:#D93631;padding:1px 6px}
+.badge.coral{background:var(--coral-tint);color:var(--coral-dark)}
+.badge.outline{background:transparent;box-shadow:inset 0 0 0 1px var(--border-light)}
+.badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.tag{font:500 11px/14px var(--font);padding:1px 6px;border-radius:var(--r-pill);background:var(--new-bg);color:#D93631}
+
+.alert{display:flex;gap:12px;padding:12px 14px;border-radius:14px;border:1px solid;font:400 14px/20px var(--font);color:var(--g30)}
+.alert .i{margin-top:0}
+.alert b{display:block;font-weight:500}
+.alert p{margin-top:2px}
+.alert.ok{background:var(--ok-bg);border-color:var(--ok-bd)}.alert.ok .i,.alert.ok b{color:var(--ok-tx)}
+.alert.warn{background:var(--warn-bg);border-color:var(--warn-bd)}.alert.warn .i,.alert.warn b{color:var(--warn-tx)}
+.alert.err{background:var(--err-bg);border-color:var(--err-bd)}.alert.err .i,.alert.err b{color:var(--err-tx)}
+.alert.info{background:var(--info-bg);border-color:var(--info-bd)}.alert.info .i,.alert.info b{color:var(--info-tx)}
+.alert.grey{background:var(--g96);border-color:transparent}
+mark{background:#FFE3B2;color:inherit;border-radius:4px;padding:0 3px}
+
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font:400 14px/20px var(--font)}
+th{text-align:left;font:500 12px/16px var(--font);color:var(--t-desc);padding:8px 12px;border-bottom:1px solid var(--g94);white-space:nowrap}
+td{padding:12px;border-bottom:1px solid var(--g94);vertical-align:middle}
+tbody tr:hover{background:var(--g98)}
+tr.bad td{background:var(--err-bg)}
+.stat{background:var(--g99);border:1px solid var(--g94);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font:500 24px/32px var(--font);color:var(--t-title);font-variant-numeric:tabular-nums}
+.stat span{font:400 12px/16px var(--font);color:var(--t-desc)}
+.list>li{padding:12px 0;border-top:1px solid var(--g94)}
+.list>li:first-child{border-top:0;padding-top:4px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-size:14px}
+
+details.card>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;font:500 16px/24px var(--font);color:var(--t-title);border-radius:8px}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary .i{transition:transform .2s;color:var(--g45)}
+details.card[open]>summary .i{transform:rotate(180deg)}
+details.card>.inside{margin-top:12px}
+.menu{position:relative;display:inline-block}
+.menu>summary{list-style:none;cursor:pointer}
+.menu>summary::-webkit-details-marker{display:none}
+.menu .menu-pop{top:36px}
+
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 24px;padding:0;list-style:none}
+.steps li{display:flex;align-items:center;gap:8px;height:40px;padding:0 12px;border-radius:var(--r-pill);background:var(--g96);color:var(--g30);font:500 14px/20px var(--font);min-width:0}
+.steps li .n{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.7);display:grid;place-items:center;font:600 11px/1 var(--font);flex:none}
+.steps li.done{background:var(--coral-tint);color:var(--coral-dark)}
+.steps li.done .n{background:var(--coral);color:#fff}
+.steps li.cur{background:var(--g6);color:#fff}
+.steps li.cur .n{background:#fff;color:var(--g6)}
+.steps li .lbl2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps a{display:contents;text-decoration:none;color:inherit}
+
+.foot{position:sticky;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px;padding:12px 0;background:var(--g99);box-shadow:0 -14px 14px -6px var(--g99);z-index:5}
+.foot .save{display:flex;align-items:center;gap:6px;font:400 13px/18px var(--font);color:var(--t-desc)}
+.foot .save .i{color:var(--ok-tx);width:16px;height:16px}
+.foot .btns{display:flex;gap:8px}
+
+/* progress */
+.bar{height:8px;border-radius:99px;background:var(--g96);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:99px;background:var(--coral)}
+
+/* ===== Home ===== */
+.fcard{display:flex;align-items:stretch;justify-content:space-between;gap:8px;min-height:120px;padding:16px;text-decoration:none;position:relative;overflow:hidden}
+.fcard:hover{background:var(--g98)}
+.fcard .tx{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0}
+.fcard .tx span{font:400 12px/16px var(--font);color:var(--t-desc);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.fcard svg.art{width:84px;height:88px;flex:none;align-self:center}
+.qtool{display:flex;align-items:center;gap:12px;padding:8px;border-radius:var(--r-pill);border:0;background:none;text-decoration:none;font:500 16px/20px var(--font);color:var(--t-title);cursor:pointer;text-align:left}
+.qtool:hover{background:var(--g98)}
+.qtool .well{width:44px;height:44px;border-radius:50%;background:var(--g96);border:0;color:var(--g30);display:grid;place-items:center;padding:0;flex:none}
+.hero{border-radius:var(--r-card);background:linear-gradient(100deg,#FCE6DC 0%,#F9EDE6 45%,#F6F0EC 100%);padding:28px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;overflow:hidden;position:relative;min-height:156px}
+.hero h2{font:700 20px/28px var(--font);color:var(--t-title);letter-spacing:0}
+.hero p{font:400 14px/20px var(--font);color:var(--g30);margin:4px 0 16px}
+.hero .art{flex:none;width:260px;height:120px;position:relative}
+.hero .art .post{position:absolute;width:104px;right:60px;top:-4px;transform:rotate(-6deg);box-shadow:0 8px 20px rgba(0,0,0,.14)}
+.hero .art .post+.post{right:-6px;top:22px;transform:rotate(7deg)}
+.recent .post{border-radius:12px}
+.pcard{display:flex;flex-direction:column;gap:10px;text-decoration:none}
+.pcard .cap{font:500 14px/20px var(--font);color:var(--t-title)}
+.pcard .meta{font:400 12px/16px var(--font);color:var(--t-desc);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tip{display:flex;gap:12px;align-items:flex-start}
+.tip .well{width:32px;height:32px;border-radius:50%;background:var(--g96);border:0;display:grid;place-items:center;color:var(--g30);padding:0;flex:none}
+.tip b{display:block;font:500 14px/20px var(--font);color:var(--t-title)}
+.tip span{font:400 12px/16px var(--font);color:var(--t-desc)}
+
+/* ===== post mockups (code-drawn designs) ===== */
+.post{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;container-type:inline-size;display:flex;flex-direction:column;justify-content:flex-end;padding:0;background:var(--pbg,#FFF3E0);color:var(--pfg,#3B2417);box-shadow:0 0 0 1px rgba(0,0,0,.06);font-family:var(--font);width:100%}
+.post.ar-story{aspect-ratio:9/16}.post.ar-wide{aspect-ratio:1.91}.post.ar-port{aspect-ratio:4/5}
+.post::before{content:"";position:absolute;width:62%;aspect-ratio:1;border-radius:50%;right:-16%;top:-11%;background:var(--psh1,#FBD9BF)}
+.post::after{content:"";position:absolute;width:26%;aspect-ratio:1;border-radius:50%;left:-9%;bottom:22%;background:var(--psh2,#FFE2A8)}
+.post>*{position:relative;z-index:1}
+.post .p-brand{position:absolute;top:7cqw;left:8cqw;display:flex;align-items:center;gap:2cqw;font:600 4.2cqw/1 var(--font);letter-spacing:.02em}
+.post .p-brand i{width:5.2cqw;height:5.2cqw;border-radius:1.5cqw;background:var(--pac,#E4572E)}
+.post .p-head{font:700 10.6cqw/1.06 var(--font);letter-spacing:-.01em;margin:0 8cqw}
+.post .p-head:last-child,.post .p-sub:last-child{margin-bottom:8cqw}
+.post .p-sub{font:400 4.6cqw/1.3 var(--font);margin:2.4cqw 8cqw 0;opacity:.88}
+.post .p-cta{align-self:flex-start;margin:4.6cqw 8cqw 8cqw;background:var(--pac,#E4572E);color:var(--pctx,#fff);border-radius:99px;font:600 4.2cqw/1 var(--font);padding:2.6cqw 4.8cqw}
+.post .p-qr{position:absolute;right:7cqw;bottom:7cqw;width:17cqw;height:17cqw;background:#fff;border-radius:2cqw;padding:1.4cqw;z-index:2}
+.post .p-qr svg{width:100%;height:100%;display:block}
+.post .p-photo{position:absolute;z-index:0;left:0;right:0;top:0;height:50%;background:repeating-linear-gradient(135deg,rgba(0,0,0,.035) 0 8px,rgba(0,0,0,.075) 8px 16px),#E8D3C2;display:grid;place-items:center;font:500 3.6cqw/1 var(--font);color:rgba(60,36,20,.6)}
+.post.t-bold{--pbg:#E4572E;--pfg:#fff;--psh1:rgba(255,255,255,.16);--psh2:rgba(0,0,0,.12);--pac:#1D1D1C}
+.post.t-dark{--pbg:#222831;--pfg:#F5F5F5;--psh1:#2E3642;--psh2:#3A2F18;--pac:#D4A017;--pctx:#1D1D1C}
+.post.t-green{--pbg:#F1F8E9;--pfg:#173A22;--psh1:#D8EBC3;--psh2:#FFE9A8;--pac:#1B7F3B}
+.post.photo-top{justify-content:flex-end}
+.photo{aspect-ratio:1;border-radius:12px;background:repeating-linear-gradient(135deg,rgba(0,0,0,.03) 0 8px,rgba(0,0,0,.07) 8px 16px),var(--ph,#E8D3C2);position:relative;overflow:hidden;display:block}
+.photo.h2{--ph:#D9C3AE}.photo.h3{--ph:#EAD9C8}.photo.h4{--ph:#C9B49F}
+.photo-pick{position:relative;border:0;padding:0;background:none;border-radius:12px;cursor:pointer;display:block;width:100%}
+.photo-pick[aria-pressed="true"]{outline:2px solid var(--coral);outline-offset:2px}
+.photo-pick[aria-pressed="true"]::after{content:"";position:absolute;right:6px;top:6px;width:20px;height:20px;border-radius:50%;background:var(--coral) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/12px no-repeat}
+
+/* record bar */
+.rec{display:flex;align-items:center;gap:10px;background:var(--err-bg);border:1px solid var(--err-bd);border-radius:16px;padding:8px 10px}
+.rec .levels{display:flex;align-items:center;gap:3px;height:24px;flex:1}
+.rec .levels span{display:block;width:3px;height:6px;border-radius:2px;background:var(--err-tx);animation:lv 1s ease-in-out infinite}
+.rec .levels span:nth-child(3n){animation-delay:.2s}.rec .levels span:nth-child(3n+1){animation-delay:.5s}.rec .levels span:nth-child(4n){animation-delay:.35s}
+@keyframes lv{0%,100%{height:5px}50%{height:22px}}
+.rec .time{font:500 14px/20px var(--font);color:var(--err-tx);font-variant-numeric:tabular-nums}
+.rec .ico{width:32px;height:32px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;flex:none}
+.rec .ico.x{background:#fff;color:var(--err-tx)}
+.rec .ico.v{background:var(--coral);color:#fff}
+.ta-wrap .rec{position:absolute;left:8px;right:8px;bottom:8px;top:8px;border-radius:12px;align-items:center}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--g90);border-top-color:var(--g6);animation:sp .8s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* queue items */
+.item{display:flex;gap:12px}
+.item .th{width:80px;flex:none}
+.item .bd{min-width:0;flex:1}
+.item h3{font:500 14px/20px var(--font);color:var(--t-title);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.item .when{font:400 13px/18px var(--font);color:var(--t-desc);margin-top:2px}
+.item .hl{font:500 14px/20px var(--font);color:var(--t-body);margin-top:4px}
+.item .acts{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;margin-left:-12px}
+.dayh{font:500 12px/16px var(--font);letter-spacing:.06em;text-transform:uppercase;color:var(--t-desc);margin:20px 0 8px}
+.pal{display:block;width:100%;padding:10px;border-radius:14px;border:1px solid var(--border-input);background:var(--white);cursor:pointer;text-align:left}
+.pal[aria-pressed="true"]{border-color:var(--coral);box-shadow:0 0 0 1px var(--coral);background:var(--coral-tint)}
+.pal .sw3{display:flex;height:22px;border-radius:8px;overflow:hidden;margin-bottom:6px}
+.pal .sw3 i{flex:1}
+.pal span{font:500 13px/18px var(--font);color:var(--t-title)}
+.sq{width:28px;height:28px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);display:inline-block;flex:none}
+.themecard{border:1px solid var(--border-input);border-radius:14px;padding:10px;background:var(--white)}
+.themecard .pv{aspect-ratio:16/9;border-radius:8px;margin-bottom:8px}
+.themecard b{display:block;font:500 13px/18px var(--font);color:var(--t-title)}
+.themecard small{font:400 12px/16px var(--font);color:var(--t-desc)}
+.pill-x{display:inline-flex;align-items:center;gap:4px;padding:4px 6px 4px 12px;border-radius:99px;background:var(--g96);font:500 13px/18px var(--font);color:var(--g30)}
+.pill-x button{border:0;background:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--g45)}
+.pill-x button:hover{background:var(--g90)}
+.navpills{position:sticky;top:0;z-index:10;display:flex;gap:6px;overflow-x:auto;padding:8px 0;margin:-8px 0 16px;background:linear-gradient(to bottom,var(--g99) 80%,rgba(251,250,249,0));scrollbar-width:none}
+.navpills::-webkit-scrollbar{display:none}
+.navpills button{flex:none;height:32px;padding:0 14px;border-radius:99px;border:0;background:transparent;font:500 14px/20px var(--font);color:var(--g45);cursor:pointer}
+.navpills button:hover{background:var(--fill-active)}
+.navpills button[aria-current="true"]{background:var(--g6);color:#fff}
+.sect{scroll-margin-top:64px}
+.chart{display:flex;align-items:flex-end;gap:10px;height:160px;padding-top:8px;border-bottom:1px solid var(--g94)}
+.chart .b{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%}
+.chart .b i{display:block;width:100%;max-width:44px;border-radius:8px 8px 4px 4px;background:var(--g90)}
+.chart .b.hi i{background:var(--coral)}
+.chart .b span{font:500 12px/16px var(--font);color:var(--t-desc)}
+.axis{display:flex;gap:10px;margin-top:6px}.axis span{flex:1;text-align:center;font:400 12px/16px var(--font);color:var(--t-desc)}
+.mini{display:flex;height:8px;gap:2px;align-items:center}.mini i{display:block;height:8px;border-radius:4px}
+.swatch{border-radius:14px;overflow:hidden;border:1px solid var(--border-card);background:var(--white)}
+.swatch .c{height:64px}
+.swatch .m{padding:8px 10px}
+.swatch b{display:block;font:500 13px/18px var(--font);color:var(--t-title)}
+.swatch code{font:500 12px/16px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--t-desc)}
+.hist-cards{display:none}
+.is-hover-note{font:400 12px/16px var(--font);color:var(--t-desc)}
+.demo{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.demo>small{font:400 12px/16px var(--font);color:var(--t-desc)}
+
+/* overlay + toast */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.6);display:grid;place-items:center;z-index:60;padding:16px}
+.dialog{width:100%;max-width:400px;background:var(--white);border-radius:16px;padding:24px;box-shadow:var(--sh-dialog),inset 0 0 0 .5px var(--border-input)}
+.dialog p{font:400 16px/24px var(--font);color:var(--t-desc);margin-top:4px}
+.dialog .btns{display:flex;gap:8px;justify-content:flex-end;margin-top:24px}
+.toast{position:absolute;left:50%;bottom:80px;transform:translateX(-50%);background:var(--g6);color:#fff;padding:8px 16px;border-radius:99px;font:500 14px/20px var(--font);z-index:70;box-shadow:var(--sh-float);max-width:90%;text-align:center}
+
+/* prototype control (outside the frame) */
+.proto{position:fixed;left:12px;bottom:76px;z-index:100;font:500 13px/18px var(--font)}
+body.phone .proto{bottom:16px}
+.proto>button{display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:99px;border:1px solid var(--border-input);background:#fff;box-shadow:var(--sh-float);cursor:pointer;font:500 13px/18px var(--font);color:var(--g30)}
+.proto .dot{width:8px;height:8px;border-radius:50%;background:var(--coral)}
+.proto .panel{position:absolute;left:0;bottom:40px;width:236px;background:#fff;border-radius:16px;box-shadow:var(--sh-dialog);padding:12px;border:1px solid var(--border-card)}
+.proto .panel label{display:block;margin:10px 0 4px;font:500 12px/16px var(--font);color:var(--g45)}
+.proto .panel .select{height:36px;font-size:13px}
+
+/* ===== Responsive (container = the app frame, so the phone preview behaves like a real phone) ===== */
+@container app (max-width:1099px){
+  .g4{--cols:2}.g5{--cols:3}.g6{--cols:3}
+  .split{grid-template-columns:minmax(0,1fr)}
+  .hero .art{width:200px}
+}
+@container app (max-width:767px){
+  .g2,.g3,.g4{--cols:1}.g5{--cols:2}.g6{--cols:2}
+  .g2.keep,.g3.keep{--cols:2}
+  .g3.keep3{--cols:3}
+  .sidebar{position:absolute;z-index:40;top:0;bottom:0;left:0;width:272px;background:var(--g99);box-shadow:var(--sh-dialog);transform:translateX(-104%);margin-left:0!important;padding-top:0}
+  .frame.drawer-open .sidebar{transform:none}
+  .frame.drawer-open .scrim{display:block}
+  .main{padding-bottom:60px}
+  .frame[data-chrome="none"] .main{padding-bottom:0}
+  .bnav{display:block}
+  .scroll{padding:4px 16px 0}
+  .topbar{padding:8px 12px 8px 8px}
+  .acct .nm,.acct .chev,.topbar .hide-phone{display:none}
+  .acct{padding:0 5px}
+  .page-head{flex-direction:column;gap:12px;margin-bottom:16px}
+  .tween{right:12px;bottom:72px;padding:0 8px;height:44px;width:44px;justify-content:center}
+  .tween span{display:none}
+  .frame[data-foot] .tween{bottom:140px}
+  .steps{gap:4px;margin-bottom:16px}
+  .steps li{padding:0;justify-content:center;height:36px}
+  .steps li:not(.cur) .lbl2{display:none}
+  .steps{display:flex}
+  .steps li{flex:0 0 36px}
+  .steps li.cur{flex:1;padding:0 12px;justify-content:flex-start}
+  .hero{flex-direction:column;align-items:flex-start;padding:20px}
+  .hero .art{display:none}
+  .foot{flex-wrap:wrap}
+  .foot .btns{width:100%;justify-content:flex-end}
+  .hist-table{display:none}.hist-cards{display:grid;gap:12px}
+  .item .th{width:64px}
+  .dialog{padding:20px}
+  .hide-narrow{display:none!important}
+  .qtool{border-radius:16px}
+  .card.lg{padding:16px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.auth{width:100%;max-width:480px;padding:40px}
+.center-page{min-height:100%;display:grid;place-items:center;padding:24px 0}
+.card.fromdesc{border-color:var(--info-bd);box-shadow:0 0 0 3px var(--info-bg)}
+.steps .n svg{width:12px;height:12px;stroke-width:3}
+.pagebrand{display:flex;align-items:center;justify-content:space-between;height:52px}
+.pagebrand a.nm{display:flex;align-items:center;gap:8px;text-decoration:none;font:600 15px/20px var(--font);color:var(--t-title)}
+.art-row{display:flex;gap:12px;align-items:center}
+.small{font:400 13px/18px var(--font)}
+.w-full{width:100%}
+.note-amber{font:400 12px/16px var(--font);color:var(--warn-tx);margin-top:4px;display:flex;gap:4px;align-items:center}
+.centered{text-align:center}
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:32px 16px}
+.empty .well{width:48px;height:48px;border-radius:50%;background:var(--g96);border:0;display:grid;place-items:center;color:var(--g45);padding:0}
+.empty b{font:500 16px/24px var(--font);color:var(--t-title)}
+.empty span{font:400 14px/20px var(--font);color:var(--t-desc)}
+.chan{display:inline-flex;align-items:center;gap:6px}
+.logo-box{width:96px;height:96px;border-radius:16px;background:var(--g96);display:grid;place-items:center;color:var(--g45);font:500 12px/16px var(--font);text-align:center;overflow:hidden}
+.qrbox{background:#fff;border:1px solid var(--border-card);border-radius:12px;padding:8px;width:112px;height:112px}
+.qrbox svg{width:100%;height:100%;display:block}
+@container app (max-width:767px){
+  .auth{padding:24px}
+  .g4.keep{--cols:2}
+  .kv{grid-template-columns:1fr}
+}
+.opt{transition:box-shadow .15s,border-color .15s}
+.opt.sel{border-color:var(--coral);box-shadow:0 0 0 1px var(--coral)}
+.qr-wrap:not(:has(#qr-link:checked)) .qr-link-panel{display:none}
+.alert strong{font-weight:500}
+.alert.ok strong{color:var(--ok-tx)}
+.fact{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}
+.fact .acts-r{display:flex;gap:12px;flex:none;flex-wrap:wrap;justify-content:flex-end}
+.v{font:500 14px/20px var(--font);color:var(--t-title)}
+.kpi{font:500 28px/36px var(--font);color:var(--t-title);margin:4px 0 4px;font-variant-numeric:tabular-nums}
+.stateful[data-state="off"] [data-on]{display:none!important}
+.stateful[data-state="on"] [data-off]{display:none!important}
+.themecard{font:inherit}
+.themecard .pv{aspect-ratio:16/9;border-radius:8px;margin-bottom:8px}
+.themecard b{display:block;font:500 13px/18px var(--font);color:var(--t-title)}
+.themecard small{display:block;font:400 12px/16px var(--font);color:var(--t-desc)}
+.hist-cards a.card:hover{background:var(--g98)}
+code{font:500 12px/16px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--g96);padding:1px 6px;border-radius:6px}
+@container app (max-width:767px){
+  .hist-cards{display:grid;gap:12px}
+  .navpills{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
+  .fact{flex-direction:column}
+  .fact .acts-r{justify-content:flex-start}
+}
+.fcard .tx .card-title{font:500 16px/24px var(--font);color:var(--t-title);display:block;-webkit-line-clamp:unset}
+.post .p-photo + .p-brand{color:#3B2417}
+.frame[data-chrome="none"] .scroll{display:flex;flex-direction:column}
+#s-login{flex:1;display:flex}
+#s-login[hidden]{display:none}
+#s-login .center-page{flex:1;width:100%}
+/* ---- v2: minimal Home composer ---- */
+.home-top{margin-top:clamp(8px,5vh,48px)}
+.greet{font:500 14px/20px var(--font);color:var(--t-desc)}
+.composer{position:relative;background:var(--white);border:1px solid var(--border-input);border-radius:24px;box-shadow:0 2px 10px rgba(0,0,0,.04);margin-top:10px;transition:border-color .15s}
+.composer:hover{border-color:var(--border-input-hover)}
+.composer:focus-within{border-color:var(--g6);outline:2px solid var(--focus);outline-offset:2px}
+.composer textarea{display:block;width:100%;min-height:132px;border:0;background:transparent;resize:none;padding:20px 20px 64px;font:400 16px/24px var(--font);color:var(--t-body);outline:none;border-radius:24px}
+.composer textarea::placeholder{color:var(--t-help)}
+.comp-actions{position:absolute;right:12px;bottom:12px;display:flex;gap:8px;align-items:center}
+.composer .mic{width:36px;height:36px}
+.send{width:36px;height:36px;border-radius:50%;border:0;background:var(--g6);color:#fff;display:grid;place-items:center;cursor:pointer}
+.send:hover{background:var(--g15)}
+.send:disabled{background:var(--g75);cursor:not-allowed}
+.composer .rec{position:absolute;left:12px;right:12px;bottom:12px;border-radius:20px}
+.composer .rec[hidden],.comp-actions[hidden]{display:none}
+.listen-ov{position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:center;gap:8px;height:48px;padding:0 14px;background:var(--g96);border-radius:16px;font:400 14px/20px var(--font);color:var(--t-desc)}
+.ta-wrap .listen-ov{left:8px;right:8px;top:8px;bottom:8px;height:auto}
+.try{margin-top:12px;font:400 13px/18px var(--font);color:var(--t-desc)}
+.try button{background:none;border:0;padding:0;font:inherit;color:var(--t-desc);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.try button:hover{color:var(--t-title)}
+.hero{min-height:0;padding:16px 20px;gap:16px}
+.hero p{margin:2px 0 0}
+@container app (max-width:767px){
+  .hero{flex-direction:row;align-items:center;padding:16px}
+  .hero h2{font-size:17px;line-height:24px}
+  .home-top{margin-top:8px}
+  .composer textarea{min-height:120px}
+}
+@container app (max-width:767px){ .foot{flex-wrap:nowrap} .foot .btns{width:auto} }
+
+.sb-navwrap{display:flex;flex-direction:column;flex:1;min-height:0}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+<defs>
+<symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3.5"/><path d="M4 10h16M9 3v4M15 3v4"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"/></symbol>
+<symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20v-9M12 20V5M19 20v-6"/></symbol>
+<symbol id="i-history" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.6-5.9M4 4v4h4M12 8v4l3 2"/></symbol>
+<symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16c1.2 0 1.8-.8 1.8-1.7 0-1.2-1-1.5-1-2.6 0-.9.7-1.5 1.6-1.5H16a4 4 0 0 0 4-4c0-3.5-3.6-6.2-8-6.2z"/><circle cx="8" cy="11" r=".9"/><circle cx="12" cy="8" r=".9"/><circle cx="16" cy="10.5" r=".9"/></symbol>
+<symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3A4 4 0 0 0 11 18.7l1-1"/></symbol>
+<symbol id="i-face" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14c1 1.5 2.2 2.2 3.5 2.2s2.5-.7 3.5-2.2M9 9.5h.01M15 9.5h.01"/></symbol>
+<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+<symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 1 1 3.6 2.4c-.7.4-1.1.9-1.1 1.8M12 17h.01"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 3.5 5.5 3.5 9S14.5 18.5 12 21c-2.5-2.5-3.5-5.5-3.5-9S9.5 5.5 12 3z"/></symbol>
+<symbol id="i-sidebar" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3.5"/><path d="M9.5 4.5v15"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+<symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3.5"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-4.5 4 3.5 3-2.5 4 3.5"/></symbol>
+<symbol id="i-qr" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.2"/><rect x="14" y="4" width="6" height="6" rx="1.2"/><rect x="4" y="14" width="6" height="6" rx="1.2"/><path d="M14 14h2.5v2.5H14zM20 14v.01M14 20v.01M17.5 19H20v1"/></symbol>
+<symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></symbol>
+<symbol id="i-mail" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="3.5"/><path d="M4 8l8 5.5L20 8"/></symbol>
+<symbol id="i-phone" viewBox="0 0 24 24"><path d="M6 4h3l1.5 4-2 1.3a10 10 0 0 0 5.2 5.2L15 12.5l4 1.5v3a2 2 0 0 1-2 2A13 13 0 0 1 4 6a2 2 0 0 1 2-2z"/></symbol>
+<symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 18l1-3.2A7.5 7.5 0 1 1 9 17.4z"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s6-5.4 6-10.5a6 6 0 1 0-12 0C6 15.6 12 21 12 21z"/><circle cx="12" cy="10.5" r="2"/></symbol>
+<symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4l9 16H3zM12 10v4M12 17.2h.01"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+<symbol id="i-checkc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="3"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16zM13.5 6.5l4 4"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></symbol>
+<symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></symbol>
+<symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></symbol>
+<symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 5H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h4M15 8l4 4-4 4M19 12H9"/></symbol>
+<symbol id="i-insta" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><path d="M16.8 7.2h.01"/></symbol>
+<symbol id="i-fb" viewBox="0 0 24 24"><path d="M14 8h2V4.5h-2.5A3.5 3.5 0 0 0 10 8v2H8v3.5h2V20h3.5v-6.5H16l.5-3.5h-3V8.5a.5.5 0 0 1 .5-.5z"/></symbol>
+<symbol id="i-yt" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="4"/><path d="M10.5 9.5v5l4.2-2.5z"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14-4L4 9M4 4v5h5M4 13a8 8 0 0 0 14 4l2-2M20 20v-5h-5"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 4l2.5 5 5.5.8-4 3.9.9 5.5-4.9-2.6-4.9 2.6.9-5.5-4-3.9 5.5-.8z"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12l16-8-6 16-2.5-6.5z"/></symbol>
+<symbol id="i-layout" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3.5"/><path d="M4 10h16M10 10v10"/></symbol>
+<symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16v-5a6 6 0 1 1 12 0v5l1.5 2h-15zM10 21h4"/></symbol>
+<symbol id="i-wand" viewBox="0 0 24 24"><path d="M5 19L15 9M13 7l4 4M17 3v3M15.5 4.5h3M20 13v2M19 14h2"/></symbol>
+<symbol id="i-move" viewBox="0 0 24 24"><path d="M5 12h14M9 8l-4 4 4 4M15 8l4 4-4 4"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h14"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+<!-- Tween: our own simple blob drawing, Tween blue -->
+<symbol id="tween" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#2B4CFF"/><circle cx="11.5" cy="14" r="2.4" fill="#fff"/><circle cx="20.5" cy="14" r="2.4" fill="#fff"/><circle cx="12" cy="14.3" r="1.1" fill="#0b1c30"/><circle cx="21" cy="14.3" r="1.1" fill="#0b1c30"/><path d="M11 20.2c1.4 1.6 3 2.3 5 2.3s3.6-.7 5-2.3" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/><path d="M5.5 22.5c3 3.6 7 5 10.5 5 3.8 0 7.6-1.7 10.5-5" fill="none" stroke="#E4572E" stroke-width="2.6" stroke-linecap="round" opacity=".95"/></symbol>
+</defs>
+</svg>
+
+<div class="stage">
+<div class="frame" id="frame" data-chrome="app">
+
+<aside class="sidebar" id="sidebar" aria-label="Sidebar">
+  <a class="sb-brand" href="#home"><span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h9"/></svg></span>Weekly Posts</a>
+  <nav class="sb-navwrap" aria-label="Main navigation">
+    <div class="sb-block">
+      <a class="sb-item primary" href="#details" data-nav="create"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Create a post</a>
+      <a class="sb-item" href="#queue" data-nav="queue"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg>Queue</a>
+    </div>
+    <div class="sb-nav">
+      <a class="sb-item" href="#home" data-nav="home"><svg class="i" aria-hidden="true"><use href="#i-home"/></svg>Home</a>
+      <a class="sb-item" href="#results" data-nav="results"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg>Results</a>
+      <a class="sb-item" href="#history" data-nav="history"><svg class="i" aria-hidden="true"><use href="#i-history"/></svg>History</a>
+      <div class="sb-label">Brand</div>
+      <a class="sb-item" href="#brand" data-nav="brand"><svg class="i" aria-hidden="true"><use href="#i-palette"/></svg>Brand</a>
+      <a class="sb-item" href="#connections" data-nav="connections"><svg class="i" aria-hidden="true"><use href="#i-link"/></svg>Connections</a>
+    </div>
+    <div class="sb-grow"></div>
+  </nav>
+</aside>
+<div class="scrim" id="scrim"></div>
+
+<div class="main">
+  <header class="topbar">
+    <button class="icon-btn" id="toggle" type="button" aria-label="Toggle sidebar" aria-controls="sidebar" aria-expanded="true"><svg class="i" aria-hidden="true"><use href="#i-sidebar"/></svg></button>
+    <span class="t-page title" id="topTitle">Home</span>
+    <span class="spacer"></span>
+    <div class="acct-wrap">
+      <button class="acct" id="acct" type="button" aria-haspopup="menu" aria-expanded="false"><span class="avatar sm">MK</span><span class="nm">Meera K.</span><svg class="i sm chev" aria-hidden="true"><use href="#i-down"/></svg></button>
+      <div class="menu-pop" id="acctMenu" role="menu" hidden>
+                <a role="menuitem" href="#setup"><svg class="i" aria-hidden="true"><use href="#i-sparkle"/></svg>Setup wizard</a>
+        <a role="menuitem" href="#theme"><svg class="i" aria-hidden="true"><use href="#i-palette"/></svg>Theme tokens</a>
+        <a role="menuitem" href="#admin"><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>Admin dashboard</a>
+        <a role="menuitem" href="#login"><svg class="i" aria-hidden="true"><use href="#i-logout"/></svg>Sign out</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="scroll" id="scroll" tabindex="-1">
+
+
+<!-- =============== 1. HOME =============== -->
+<section class="screen" id="s-home" data-title="Home" aria-labelledby="h-home" hidden>
+<div class="page w880">
+  <h1 class="sr-only" id="h-home">Home</h1>
+  <div class="home-top">
+    <p class="greet">Good morning, Corner Bakery</p>
+    <form class="composer" id="composer" onsubmit="return false">
+      <label class="sr-only" for="hTa">Describe the post you want</label>
+      <textarea id="hTa" rows="3" placeholder="Describe the post you want..."></textarea>
+      <div class="comp-actions" id="hActions">
+        <button class="mic" id="hMic" type="button" aria-label="Speak your post"><svg class="i" aria-hidden="true"><use href="#i-mic"/></svg></button>
+        <button class="send" id="hSend" type="submit" aria-label="Create the post from my description" disabled><svg class="i" aria-hidden="true"><use href="#i-up"/></svg></button>
+      </div>
+      <div class="rec" id="hRec" hidden>
+        <button class="ico x" type="button" id="hCancel" aria-label="Cancel the recording"><svg class="i sm" aria-hidden="true"><use href="#i-x"/></svg></button>
+        <div class="levels" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <span class="time" id="hTime" role="timer">0:00</span>
+        <button class="ico v" type="button" id="hDone" aria-label="Done, use my words"><svg class="i sm" aria-hidden="true"><use href="#i-check"/></svg></button>
+      </div>
+      <div class="listen-ov" id="hListen" role="status" hidden><span class="spin" aria-hidden="true"></span>Listening...</div>
+    </form>
+    <p class="try">For example: <button type="button" data-fill="20% off all cakes this weekend. Call us to order.">20% off all cakes this weekend</button> <span aria-hidden="true">·</span> <button type="button" data-fill="New sourdough loaves every morning from 7 am.">New sourdough from 7 am</button></p>
+  </div>
+
+  <div class="hero mt32">
+    <div>
+      <h2>Your next post goes out Friday 10:00</h2>
+      <p>Weekend cake sale, on Instagram.</p>
+    </div>
+    <a class="btn btn-primary" href="#queue">Open queue</a>
+  </div>
+
+  <div class="row between wrap mt32">
+    <h2 class="sec">Recent posts</h2>
+    <div class="seg" role="tablist" aria-label="Preview state of Recent posts">
+      <button type="button" role="tab" aria-selected="true" data-recent="posts">With posts</button>
+      <button type="button" role="tab" aria-selected="false" data-recent="empty">Empty state</button>
+    </div>
+  </div>
+  <div class="grid g3 mt12 recent" id="recent-list">
+    <a class="pcard" href="#review">
+      <div class="post"><span class="p-brand"><i></i>Corner Bakery</span><h4 class="p-head">20% off all cakes this weekend</h4><p class="p-sub">Saturday and Sunday only</p><span class="p-cta">Call us to order</span></div>
+      <div><div class="cap">Weekend cake sale</div><div class="meta"><span class="chan"><svg class="i sm" aria-hidden="true"><use href="#i-insta"/></svg>Instagram</span><span class="badge info">Scheduled</span></div></div>
+    </a>
+    <a class="pcard" href="#review">
+      <div class="post t-bold"><span class="p-brand"><i></i>Corner Bakery</span><h4 class="p-head">Fresh sourdough every morning</h4><p class="p-sub">Out of the oven by 7 am</p><span class="p-cta">Visit us</span></div>
+      <div><div class="cap">Sourdough mornings</div><div class="meta"><span class="chan"><svg class="i sm" aria-hidden="true"><use href="#i-fb"/></svg>Facebook</span><span class="badge ok">Published</span></div></div>
+    </a>
+    <a class="pcard" href="#review">
+      <div class="post t-dark"><span class="p-brand"><i></i>Corner Bakery</span><h4 class="p-head">Eggless cakes, made to order</h4><p class="p-sub">Order two days ahead</p><span class="p-cta">Order now</span></div>
+      <div><div class="cap">Eggless cakes</div><div class="meta"><span class="chan"><svg class="i sm" aria-hidden="true"><use href="#i-insta"/></svg>Instagram</span><span class="badge warn">Needs approval</span></div></div>
+    </a>
+  </div>
+  <div class="card dashed mt12" id="recent-empty" hidden>
+    <div class="empty">
+      <b>No posts yet</b><span>Your posts will show here once you make one.</span>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- =============== 2. LOGIN =============== -->
+<section class="screen" id="s-login" data-title="Sign in" data-chrome="none" aria-labelledby="h-login" hidden>
+<div class="center-page">
+  <div class="card auth">
+    <div class="row gap8"><span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h9"/></svg></span><span class="t-card">Weekly Posts</span></div>
+    <div id="login-1">
+      <h1 class="t-dialog mt24" id="h-login">Sign in with your email</h1>
+      <form class="mt24" onsubmit="return false">
+        <div class="field">
+          <label class="lbl" for="login-email">Email address</label>
+          <input class="input" id="login-email" type="email" placeholder="you@example.com" value="meera@cornerbakery.in" autocomplete="email">
+          <p class="hint mt4">We email you a link. No password needed.</p>
+        </div>
+        <label class="check mt16"><input type="checkbox" id="consent"><span>We store your email and business details to make your posts. You can delete your data any time in settings. <a href="#soon" data-toast="Terms and privacy are not part of this prototype.">Terms and privacy</a></span></label>
+        <button class="btn btn-primary lg block mt24" id="sendLink" type="button" disabled>Send me a link</button>
+      </form>
+    </div>
+    <div id="login-2" hidden>
+      <h1 class="t-dialog mt24">Check your inbox</h1>
+      <p class="mt8">We sent a sign-in link to <b>meera@cornerbakery.in</b>. It works once and expires in 15 minutes.</p>
+      <p class="hint mt8">Nothing there? Look in your spam or promotions folder.</p>
+      <button class="btn btn-secondary lg block mt24" type="button" disabled>You can send it again in 42 seconds</button>
+      <p class="ok-text mt12"><svg class="i sm" aria-hidden="true"><use href="#i-checkc"/></svg>A new link is on its way.</p>
+      <div class="mt24"><button class="link" type="button" id="diffEmail">Use a different email</button></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- =============== 3. SETUP =============== -->
+<section class="screen" id="s-setup" data-title="Setup" data-chrome="none" aria-labelledby="h-setup" hidden>
+<div class="page w720">
+  <div class="pagebrand"><a class="nm" href="#home"><span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h9"/></svg></span>Weekly Posts</a><a class="link" href="#login">Sign out</a></div>
+  <div class="card lg mt8">
+    <div class="bar" role="progressbar" aria-valuemin="1" aria-valuemax="14" aria-valuenow="9" aria-label="Setup progress"><i style="width:64%"></i></div>
+    <p class="hint mt8">Step 9 of 14</p>
+    <h1 class="t-dialog mt8" id="h-setup">What do customers like about you?</h1>
+    <p class="hint mt8" style="font-size:14px;line-height:20px">Add one to three short lines, in your own words. They can appear on your posts.</p>
+    <div class="mt24">
+      <div class="field"><label class="lbl" for="like1">Line 1</label>
+        <div class="input-wrap"><input class="input" id="like1" placeholder="e.g. Friendly service" value="Made fresh every day"><button class="mic" type="button" aria-label="Speak your answer" data-mic-setup><svg class="i" aria-hidden="true"><use href="#i-mic"/></svg></button></div>
+      </div>
+      <div class="field"><label class="lbl" for="like2">Line 2</label><input class="input" id="like2" placeholder="e.g. Friendly service"></div>
+      <div class="field"><label class="lbl" for="like3">Line 3</label><input class="input" id="like3" placeholder="e.g. Friendly service"></div>
+    </div>
+    <div class="mt24">
+      <p class="lbl">Tap an example to add it</p>
+      <div class="chips" id="likeChips">
+        <button class="chip" type="button">Made fresh every day</button>
+        <button class="chip" type="button">Friendly service</button>
+        <button class="chip" type="button">Simple, tasty food</button>
+        <button class="chip" type="button">Made with care</button>
+      </div>
+    </div>
+    <div class="row between mt32 wrap">
+      <button class="btn btn-outline" type="button" data-toast="Back: the prototype shows one setup step only.">Back</button>
+      <div class="row gap8"><button class="btn btn-ghost" type="button" data-toast="Skip: the prototype shows one setup step only.">Skip</button><a class="btn btn-primary" href="#home">Next</a></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- =============== 4. CREATE: DETAILS =============== -->
+<section class="screen" id="s-details" data-title="Create a post" aria-labelledby="h-details" hidden>
+<div class="page w720">
+  <ol class="steps" aria-label="Steps to a finished post">
+    <li class="cur" aria-current="step"><span class="n">1</span><span class="lbl2">Details</span></li>
+    <li><span class="n">2</span><span class="lbl2">On the post</span></li>
+    <li><span class="n">3</span><span class="lbl2">Design</span></li>
+    <li><span class="n">4</span><span class="lbl2">Review</span></li>
+    <li><span class="n">5</span><span class="lbl2">Schedule</span></li>
+  </ol>
+  <div class="stack">
+    <section class="card" aria-labelledby="c-describe">
+      <h1 class="sr-only" id="h-details">Create a post</h1>
+      <p class="lbl" id="c-describe" style="margin:0">Describe what kind of post you want.</p>
+      <div class="ta-wrap mt8" id="describe">
+        <textarea class="textarea" id="desc-ta" aria-label="Describe your post" placeholder="For example: 20% off all cakes this weekend. Call us to order.">20% off all cakes this weekend. Call us to order.</textarea>
+        <button class="mic" id="micBtn" type="button" aria-label="Speak your post"><svg class="i" aria-hidden="true"><use href="#i-mic"/></svg></button>
+        <div class="rec" id="recBar" hidden>
+          <button class="ico x" type="button" id="recCancel" aria-label="Cancel the recording"><svg class="i sm" aria-hidden="true"><use href="#i-x"/></svg></button>
+          <div class="levels" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          <span class="time" id="recTime" role="timer">0:00</span>
+          <button class="ico v" type="button" id="recDone" aria-label="Done, use my words"><svg class="i sm" aria-hidden="true"><use href="#i-check"/></svg></button>
+        </div>
+        <div class="listen-ov" id="listen" role="status" hidden><span class="spin" aria-hidden="true"></span>Listening...</div>
+      </div>
+      <div class="row mt12 wrap">
+        <button class="btn btn-primary" id="fillBtn" type="button"><svg class="i" aria-hidden="true"><use href="#i-wand"/></svg>Fill in the details</button>
+        <span class="ok-text" id="fillNote" role="status"></span>
+      </div>
+      <div class="alert warn mt12" id="stillBox" hidden>
+        <svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>
+        <div><b>Still to decide</b><ul style="list-style:disc;padding-left:18px;margin-top:4px"><li>Which cakes are included in the offer?</li><li>Until what date does the offer run?</li></ul></div>
+      </div>
+    </section>
+    <section class="card fromdesc" aria-labelledby="c-type">
+      <div class="card-head"><h2 class="card-title" id="c-type">What kind of post is this?</h2><span class="badge info">From your description</span></div>
+      <p class="hint">Pick one.</p>
+      <div class="grid g2 mt12" style="gap:8px" role="radiogroup" aria-labelledby="c-type">
+        <label class="pick"><input type="radio" name="ptype" checked><span><b>Offer or discount</b><small>A deal with a price or a date</small></span></label>
+        <label class="pick"><input type="radio" name="ptype"><span><b>New product or service</b><small>Something new to show</small></span></label>
+        <label class="pick"><input type="radio" name="ptype"><span><b>Event</b><small>Something happening on a date</small></span></label>
+        <label class="pick"><input type="radio" name="ptype"><span><b>Announcement</b><small>Opening, closing, holiday hours</small></span></label>
+        <label class="pick"><input type="radio" name="ptype"><span><b>Festival or occasion</b><small>A greeting for a special day</small></span></label>
+        <label class="pick"><input type="radio" name="ptype"><span><b>Review or testimonial</b><small>A customer's kind words</small></span></label>
+        <label class="pick"><input type="radio" name="ptype"><span><b>Hiring</b><small>A job to fill</small></span></label>
+        <label class="pick"><input type="radio" name="ptype"><span><b>General brand post</b><small>Say hello to your customers</small></span></label>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="c-photo">
+      <h2 class="card-title" id="c-photo">Supporting photo or design</h2>
+      <p class="hint">Add a photo or a design for this post, or go without one.</p>
+      <label class="pick mt12"><input type="radio" name="photo" id="no-photo"><span><b>No photo (design only)</b><small>A clean typographic design</small></span></label>
+      <div class="grid g4 keep mt12" style="gap:12px" role="group" aria-label="Your photo library">
+        <div><button class="photo-pick" type="button" aria-pressed="true" aria-label="Photo 1, chocolate cake"><span class="photo"></span></button></div>
+        <div><button class="photo-pick" type="button" aria-pressed="false" aria-label="Photo 2, cupcakes"><span class="photo h2"></span></button></div>
+        <div><button class="photo-pick" type="button" aria-pressed="false" aria-label="Photo 3, shop front"><span class="photo h3"></span></button></div>
+        <div><button class="photo-pick" type="button" aria-pressed="false" aria-label="Photo 4, bread"><span class="photo h4"></span></button><p class="note-amber"><svg class="i sm" aria-hidden="true"><use href="#i-alert"/></svg>This photo may be dark or blurry.</p></div>
+      </div>
+      <button class="btn btn-secondary mt12" type="button"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>Upload a photo</button>
+    </section>
+
+    <section class="card" aria-labelledby="c-lang">
+      <h2 class="card-title" id="c-lang">Post language</h2>
+      <p class="hint">The language the words on the post are written in.</p>
+      <label class="sr-only" for="lang">Post language</label>
+      <select class="select mt12" id="lang"><option>English</option><option>हिंदी (Hindi)</option><option>Hinglish</option><option>ಕನ್ನಡ (Kannada)</option><option>தமிழ் (Tamil)</option><option>मराठी (Marathi)</option></select>
+    </section>
+
+    <section class="card" aria-labelledby="c-where">
+      <h2 class="card-title" id="c-where">Where will it be posted?</h2>
+      <p class="hint">We make the right sizes for each.</p>
+      <div class="chips mt12">
+        <button class="chip" type="button" aria-pressed="true">Instagram</button>
+        <button class="chip" type="button" aria-pressed="true">Facebook</button>
+        <button class="chip" type="button" aria-pressed="false">WhatsApp</button>
+        <button class="chip" type="button" aria-pressed="false">YouTube</button>
+        <button class="chip" type="button" aria-pressed="false">LinkedIn</button>
+        <button class="chip" type="button" aria-pressed="false">Google Business</button>
+      </div>
+    </section>
+  </div>
+  <div class="foot">
+    <span class="save" role="status"><svg class="i" aria-hidden="true"><use href="#i-checkc"/></svg>Draft saved</span>
+    <div class="btns"><a class="btn btn-primary" href="#onpost">Next</a></div>
+  </div>
+</div>
+</section>
+
+<!-- =============== 5. CREATE: ON THE POST =============== -->
+<section class="screen" id="s-onpost" data-title="Create a post" aria-labelledby="h-onpost" hidden>
+<div class="page w720">
+  <ol class="steps" aria-label="Steps to a finished post">
+    <li class="done"><span class="n"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lbl2">Details</span></li>
+    <li class="cur" aria-current="step"><span class="n">2</span><span class="lbl2">On the post</span></li>
+    <li><span class="n">3</span><span class="lbl2">Design</span></li>
+    <li><span class="n">4</span><span class="lbl2">Review</span></li>
+    <li><span class="n">5</span><span class="lbl2">Schedule</span></li>
+  </ol>
+  <h1 class="t-section" id="h-onpost">What to show on the post</h1>
+  <div class="chips mt16" role="group" aria-label="Contact details on the post">
+    <button class="chip two" type="button" aria-pressed="true">Logo<small>Your logo</small></button>
+    <button class="chip two" type="button" aria-pressed="true">Phone<small>+91 80 4000 1234</small></button>
+    <button class="chip two" type="button" aria-pressed="false">WhatsApp<small>+91 98450 12345</small></button>
+    <button class="chip two" type="button" aria-pressed="true">Website<small>cornerbakery.in</small></button>
+    <button class="chip two" type="button" aria-pressed="false">Email<small>hello@cornerbakery.in</small></button>
+    <button class="chip two" type="button" aria-pressed="false">Address<small>12 Church Street, Bengaluru</small></button>
+    <button class="chip two" type="button" aria-pressed="false">Opening hours<small>Mon to Sat, 8 am to 8 pm</small></button>
+    <button class="chip two" type="button" aria-pressed="true">Instagram<small>@cornerbakery</small></button>
+  </div>
+  <p class="mt12"><a class="link" href="#brand">Add more on your Brand page</a></p>
+
+  <section class="card mt24" aria-labelledby="c-qr">
+    <h2 class="card-title" id="c-qr">QR code</h2>
+    <p class="hint">Only if you want one. We never add a QR code you did not ask for.</p>
+    <div class="qr-wrap">
+      <div class="grid g3 mt12" style="gap:8px" role="radiogroup" aria-labelledby="c-qr">
+        <label class="pick"><input type="radio" name="qr" id="qr-none"><span><b>No QR code</b></span></label>
+        <label class="pick"><input type="radio" name="qr" id="qr-link" checked><span><b>A link</b><small>Scans are counted. Label on the post: "Scan to visit".</small></span></label>
+        <label class="pick"><input type="radio" name="qr" id="qr-pay" disabled><span><b>Payment</b><small>Payment QR codes need a confirmed payment ID.</small></span></label>
+      </div>
+      <p class="mt8"><a class="link" href="#brand">Set up a payment QR on your Brand page</a></p>
+      <div class="qr-link-panel mt16">
+        <div class="grid g2" style="gap:16px">
+          <div><label class="lbl" for="qr-dest">Where should it go?</label><select class="select" id="qr-dest"><option>My website</option><option>WhatsApp chat</option><option>Google Maps</option><option>Booking page</option><option>Another link</option></select></div>
+          <div><label class="lbl" for="qr-url">Link</label><input class="input" id="qr-url" placeholder="https://" value="https://cornerbakery.in/cakes"></div>
+        </div>
+        <p class="ok-text mt8" role="status"><svg class="i sm" aria-hidden="true"><use href="#i-checkc"/></svg>This link can be used.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <span class="save" role="status"><svg class="i" aria-hidden="true"><use href="#i-checkc"/></svg>Draft saved</span>
+    <div class="btns"><a class="btn btn-outline" href="#details">Back</a><a class="btn btn-primary" href="#design">Next: Design</a></div>
+  </div>
+</div>
+</section>
+
+
+<!-- =============== 6. CREATE: DESIGN =============== -->
+<section class="screen" id="s-design" data-title="Create a post" aria-labelledby="h-design" hidden>
+<div class="page w1040">
+  <ol class="steps" aria-label="Steps to a finished post">
+    <li class="done"><span class="n"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lbl2">Details</span></li>
+    <li class="done"><span class="n"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lbl2">On the post</span></li>
+    <li class="cur" aria-current="step"><span class="n">3</span><span class="lbl2">Design</span></li>
+    <li><span class="n">4</span><span class="lbl2">Review</span></li>
+    <li><span class="n">5</span><span class="lbl2">Schedule</span></li>
+  </ol>
+  <h1 class="sr-only" id="h-design">Design</h1>
+  <p class="lede" style="margin-top:0">Pick the look you like best. Everything on the post comes from your details.</p>
+  <div class="alert ok mt16"><svg class="i" aria-hidden="true"><use href="#i-checkc"/></svg><p><strong>Nothing to check.</strong> Every figure and claim comes from your details.</p></div>
+
+  <div class="grid g3 mt16" id="opts">
+    <section class="card opt sel" aria-labelledby="o1">
+      <div class="post"><span class="p-brand"><i></i>Corner Bakery</span><h4 class="p-head">20% off all cakes this weekend</h4><p class="p-sub">Saturday and Sunday only</p><span class="p-cta">Call us to order</span></div>
+      <div class="row between mt12"><h2 class="card-title" id="o1">Option 1</h2></div>
+      <p class="ok-text mt4"><svg class="i sm" aria-hidden="true"><use href="#i-check"/></svg>Everything fits.</p>
+      <button class="btn btn-primary sm block mt12" type="button" data-opt="1" aria-pressed="true">Selected</button>
+    </section>
+    <section class="card opt" aria-labelledby="o2">
+      <div class="post t-bold"><div class="p-photo">Your photo</div><span class="p-brand" style="z-index:2"><i></i>Corner Bakery</span><h4 class="p-head" style="font-size:9.6cqw">20% off all cakes</h4><p class="p-sub">This weekend only</p><span class="p-cta">+91 80 4000 1234</span></div>
+      <div class="row between mt12"><h2 class="card-title" id="o2">Option 2</h2></div>
+      <p class="ok-text mt4"><svg class="i sm" aria-hidden="true"><use href="#i-check"/></svg>Everything fits.</p>
+      <button class="btn btn-outline sm block mt12" type="button" data-opt="2" aria-pressed="false">Choose this one</button>
+    </section>
+    <section class="card opt" aria-labelledby="o3">
+      <div class="post t-dark"><span class="p-brand"><i></i>Corner Bakery</span><h4 class="p-head">20% off all cakes</h4><p class="p-sub">Saturday and Sunday</p><span class="p-cta">Scan to visit</span><div class="p-qr"><svg data-qr="cake" viewBox="0 0 21 21" shape-rendering="crispEdges" aria-hidden="true"></svg></div></div>
+      <div class="row between mt12"><h2 class="card-title" id="o3">Option 3</h2></div>
+      <p class="note-amber" style="font-size:13px;line-height:18px;margin-top:4px"><svg class="i sm" aria-hidden="true"><use href="#i-alert"/></svg>No room for: Opening hours</p>
+      <button class="btn btn-outline sm block mt12" type="button" data-opt="3" aria-pressed="false">Choose this one</button>
+    </section>
+  </div>
+  <p class="hint mt12">We will draw: square (1080 x 1080), story (1080 x 1920), wide (1200 x 630).</p>
+
+  <div class="grid g2 mt24" style="align-items:start">
+    <section class="card" aria-labelledby="c-quick">
+      <h2 class="card-title" id="c-quick">Quick edits</h2>
+      <div class="field mt12">
+        <p class="lbl">Layout</p>
+        <div class="row gap8 wrap"><button class="btn btn-outline sm" type="button" data-layout="-1">Previous layout</button><button class="btn btn-outline sm" type="button" data-layout="1">Next layout</button></div>
+        <p class="hint mt8" id="layoutName" aria-live="polite">Layout 2 of 6: Big headline</p>
+      </div>
+      <div class="field"><label class="lbl" for="colours">Colours</label><select class="select" id="colours"><option>Brand colour</option><option>Light</option><option>Dark</option><option>Accent</option></select></div>
+      <div class="field">
+        <p class="lbl">Photo</p>
+        <p class="hint">Photos come from your library. We never draw your products or people.</p>
+        <div class="grid g3 keep3 mt8" style="gap:8px">
+          <button class="photo-pick" type="button" aria-pressed="true" aria-label="Photo 1"><span class="photo"></span></button>
+          <button class="photo-pick" type="button" aria-pressed="false" aria-label="Photo 2"><span class="photo h2"></span></button>
+          <button class="photo-pick" type="button" aria-pressed="false" aria-label="Photo 3"><span class="photo h3"></span></button>
+        </div>
+        <button class="chip sm mt8" type="button" aria-pressed="false">No photo (design only)</button>
+      </div>
+      <div class="field">
+        <p class="lbl">Show on the post</p>
+        <p class="hint">Switch lines on or off. This changes your details for this post.</p>
+        <div class="stack s8 mt8">
+          <label class="check"><input type="checkbox" checked><span>Phone<small>+91 80 4000 1234</small></span></label>
+          <label class="check"><input type="checkbox" checked><span>Website<small>cornerbakery.in</small></span></label>
+          <label class="check"><input type="checkbox" disabled><span>Email<small>Not added yet</small></span></label>
+        </div>
+      </div>
+    </section>
+    <section class="card" aria-labelledby="c-words">
+      <h2 class="card-title" id="c-words">Words</h2>
+      <p class="hint">Change any words. We check them against your details again when you save.</p>
+      <div class="field mt12"><label class="lbl" for="w-head">Headline (up to 7 words)</label><input class="input" id="w-head" value="20% off all cakes this weekend"></div>
+      <div class="field"><label class="lbl" for="w-sub">Second line (up to 14 words)</label><input class="input" id="w-sub" value="Saturday and Sunday only"></div>
+      <div class="field"><label class="lbl" for="w-btn">Button text (up to 25 characters)</label><input class="input" id="w-btn" value="Call us to order"></div>
+      <div class="field"><label class="lbl" for="w-cap">Caption for Instagram</label><textarea class="textarea" id="w-cap">20% off all cakes this weekend! Call us on +91 80 4000 1234 to order.</textarea></div>
+      <div class="field"><label class="lbl" for="w-tags">Hashtags</label><input class="input" id="w-tags" value="#cornerbakery #bengalurubakery #cakes"></div>
+      <div class="row mt16 wrap"><button class="btn btn-secondary" type="button" data-reveal="#savedNote">Save and check</button><span class="ok-text" id="savedNote" role="status" hidden><svg class="i sm" aria-hidden="true"><use href="#i-check"/></svg>Saved. We checked the words again.</span></div>
+    </section>
+  </div>
+
+  <div class="foot">
+    <span></span>
+    <div class="btns"><a class="btn btn-outline" href="#onpost">Back to the details</a><a class="btn btn-primary" href="#review">Use this design</a></div>
+  </div>
+</div>
+</section>
+
+<!-- =============== 7. CREATE: REVIEW =============== -->
+<section class="screen" id="s-review" data-title="Create a post" aria-labelledby="h-review" hidden>
+<div class="page w880">
+  <ol class="steps" aria-label="Steps to a finished post">
+    <li class="done"><span class="n"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lbl2">Details</span></li>
+    <li class="done"><span class="n"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lbl2">On the post</span></li>
+    <li class="done"><span class="n"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lbl2">Design</span></li>
+    <li class="cur" aria-current="step"><span class="n">4</span><span class="lbl2">Review</span></li>
+    <li><span class="n">5</span><span class="lbl2">Schedule</span></li>
+  </ol>
+  <h1 class="sr-only" id="h-review">Review</h1>
+  <p class="lede" style="margin-top:0">Check each post. Approve it when everything is right; nothing is shared until you do.</p>
+
+  <section class="card lg mt16" id="rv" aria-labelledby="rv-title">
+    <h2 class="sr-only" id="rv-title">Instagram post</h2>
+    <div class="row top" style="gap:20px;flex-wrap:wrap">
+      <div style="flex:1 1 240px;max-width:320px">
+        <div class="post"><span class="p-brand"><i></i>Corner Bakery</span><h4 class="p-head">20% off all cakes this weekend</h4><p class="p-sub">Saturday and Sunday only</p><span class="p-cta">Call us to order</span></div>
+      </div>
+      <div style="flex:2 1 280px;min-width:0">
+        <div class="row between wrap"><div class="seg" role="tablist" aria-label="Channel caption">
+          <button type="button" role="tab" aria-selected="true" data-panel="cap-ig" data-title="Instagram post">Instagram</button>
+          <button type="button" role="tab" aria-selected="false" data-panel="cap-fb" data-title="Facebook post">Facebook</button>
+        </div><span class="badge warn" id="rv-status">Needs your approval</span></div>
+        <div class="mt16" id="cap-ig" role="tabpanel">
+          <p class="lbl">Caption</p>
+          <p style="font-size:14px;line-height:22px">20% off all cakes this weekend! Our eggless cakes are <mark>baked fresh every morning</mark>. Call us on +91 80 4000 1234 to order.</p>
+          <p class="small desc mt8">#cornerbakery #bengalurubakery #cakes</p>
+        </div>
+        <div class="mt16" id="cap-fb" role="tabpanel" hidden>
+          <p class="lbl">Caption</p>
+          <p style="font-size:14px;line-height:22px">Weekend cake sale at Corner Bakery. Take 20% off all cakes on Saturday and Sunday. Call us on +91 80 4000 1234 to order.</p>
+          <p class="small desc mt8">#cornerbakery #cakes</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert warn mt16" id="flagBox">
+      <svg class="i" aria-hidden="true"><use href="#i-alert"/></svg>
+      <div style="flex:1;min-width:0">
+        <b>Please check</b>
+        <p>We could not find these in your brand details. Keep only what is true.</p>
+        <ul class="stack s8 mt12" id="flags">
+          <li class="well" style="background:#fff" data-flag>
+            <p class="small"><b style="display:inline;color:var(--t-title)">Claim</b> · In caption: <mark>baked fresh every morning</mark></p>
+            <div class="row gap8 wrap mt8"><button class="btn btn-primary sm" type="button" data-resolve="Confirmed as true">This is true</button><button class="btn btn-outline sm" type="button" data-resolve="Removed from the caption">Remove</button><span class="small desc" data-result></span></div>
+          </li>
+          <li class="well" style="background:#fff" data-flag>
+            <p class="small"><b style="display:inline;color:var(--t-title)">Date</b> · In headline: <mark>this weekend</mark></p>
+            <div class="row gap8 wrap mt8"><button class="btn btn-primary sm" type="button" data-resolve="Confirmed as true">This is true</button><button class="btn btn-outline sm" type="button" data-resolve="Opened for editing">Edit</button><span class="small desc" data-result></span></div>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt16" id="rv-act">
+      <div class="row gap8 wrap"><button class="btn btn-primary lg" type="button" id="approveBtn" disabled>Approve this post</button></div>
+      <p class="hint mt8" id="approveHint">You can approve once you have answered every item above.</p>
+    </div>
+    <div class="well warm mt16" id="rv-after" hidden>
+      <p class="card-title">Share this post</p>
+      <div class="row gap8 wrap mt12"><button class="btn btn-primary" type="button" data-toast="Downloading the square picture (prototype)."><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download square</button><button class="btn btn-secondary" type="button" data-toast="Caption copied (prototype)."><svg class="i" aria-hidden="true"><use href="#i-copy"/></svg>Copy caption</button><button class="btn btn-ghost" type="button" id="undoApprove">Undo approval</button></div>
+    </div>
+  </section>
+
+  <div class="foot">
+    <span class="grow"></span>
+    <div class="btns"><a class="btn btn-outline" href="#design">Back to the design</a><a class="btn btn-secondary" id="nextSched" href="#schedule">Next: Schedule</a></div>
+  </div>
+</div>
+</section>
+
+<!-- =============== 8. CREATE: SCHEDULE =============== -->
+<section class="screen" id="s-schedule" data-title="Create a post" aria-labelledby="h-schedule" hidden>
+<div class="page w720">
+  <ol class="steps" aria-label="Steps to a finished post">
+    <li class="done"><span class="n"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lbl2">Details</span></li>
+    <li class="done"><span class="n"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lbl2">On the post</span></li>
+    <li class="done"><span class="n"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lbl2">Design</span></li>
+    <li class="done"><span class="n"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg></span><span class="lbl2">Review</span></li>
+    <li class="cur" aria-current="step"><span class="n">5</span><span class="lbl2">Schedule</span></li>
+  </ol>
+  <h1 class="sr-only" id="h-schedule">Schedule</h1>
+  <p class="lede" style="margin-top:0">Here is when each post goes out. Nothing is posted until you confirm.</p>
+
+  <div id="sched-propose">
+    <div class="stack s12 mt16">
+      <div class="card">
+        <div class="row between wrap">
+          <p class="row gap8"><svg class="i" aria-hidden="true"><use href="#i-insta"/></svg><span>Instagram: Fri 17 Oct, 10:00 · We'll publish it</span></p>
+          <button class="btn btn-outline sm" type="button" data-pick="#pick-ig">Pick another time</button>
+        </div>
+        <div id="pick-ig" class="mt12" hidden><label class="lbl" for="t-ig">Time for Instagram</label><select class="select" id="t-ig"><option>Fri 17 Oct, 10:00 (suggested)</option><option>Sat 18 Oct, 09:00</option><option>Mon 20 Oct, 10:00</option></select></div>
+      </div>
+      <div class="card">
+        <div class="row between wrap">
+          <p class="row gap8"><svg class="i" aria-hidden="true"><use href="#i-fb"/></svg><span>Facebook: Fri 17 Oct, 10:30 · We'll email it to you</span></p>
+          <button class="btn btn-outline sm" type="button" data-pick="#pick-fb">Pick another time</button>
+        </div>
+        <div id="pick-fb" class="mt12" hidden><label class="lbl" for="t-fb">Time for Facebook</label><select class="select" id="t-fb"><option>Fri 17 Oct, 10:30 (suggested)</option><option>Sat 18 Oct, 09:30</option></select></div>
+      </div>
+    </div>
+    <div class="row gap8 wrap mt24"><button class="btn btn-primary lg" type="button" id="confirmSched">Confirm</button><button class="btn btn-secondary lg" type="button" data-toast="Post now: sending (prototype).">Post now</button></div>
+  </div>
+
+  <div id="sched-done" hidden>
+    <div class="card mt16">
+      <h2 class="card-title">Scheduled</h2>
+      <ul class="stack s8 mt12"><li class="row gap8"><svg class="i" aria-hidden="true"><use href="#i-insta"/></svg>Instagram: Fri 17 Oct, 10:00 · We'll publish it</li><li class="row gap8"><svg class="i" aria-hidden="true"><use href="#i-fb"/></svg>Facebook: Fri 17 Oct, 10:30 · We'll email it to you</li></ul>
+      <div class="row gap8 mt16"><a class="btn btn-secondary" href="#queue">See the Queue</a></div>
+    </div>
+  </div>
+
+  <div class="mt24"><a class="btn btn-outline" href="#review">Back to the review</a></div>
+</div>
+</section>
+
+<!-- =============== 9. QUEUE =============== -->
+<section class="screen" id="s-queue" data-title="Queue" aria-labelledby="h-queue" hidden>
+<div class="page w1200">
+  <h1 class="sr-only" id="h-queue">Queue</h1>
+
+  <div class="alert warn mb16" id="pausedBanner" role="status" hidden style="margin-bottom:16px"><svg class="i" aria-hidden="true"><use href="#i-pause"/></svg><p>The queue is paused. Nothing is sent until you switch it back on in the settings.</p></div>
+
+  <section class="card" aria-labelledby="c-checkin">
+    <div class="row between wrap" style="gap:16px">
+      <div><h2 class="card-title" id="c-checkin">Did last week's posts bring enquiries?</h2><p class="hint">For the week of 6 Oct</p></div>
+      <div class="seg" role="group" aria-label="Enquiries last week" id="checkin"><button type="button" aria-pressed="false">None</button><button type="button" aria-pressed="false">A few</button><button type="button" aria-pressed="false">Many</button></div>
+    </div>
+    <p class="hint mt8" id="checkinNote" role="status" hidden></p>
+  </section>
+
+  <h2 class="sec mt32">Needs your attention</h2>
+  <p class="hint mt4">Skip, post now, or move. These were not sent.</p>
+  <div class="grid g2 mt12">
+    <article class="card item">
+      <div class="th"><div class="post t-bold"><h4 class="p-head" style="font-size:12cqw">Fresh sourdough</h4></div></div>
+      <div class="bd">
+        <h3><svg class="i sm" aria-hidden="true"><use href="#i-fb"/></svg>Facebook<span class="badge err">Failed</span></h3>
+        <p class="when">Wed 8 Oct, 10:30</p><p class="hl">Fresh sourdough every morning</p>
+        <p class="note-amber" style="font-size:13px;line-height:18px">We could not publish this. We emailed it to you so you can share it yourself.</p>
+        <div class="acts"><button class="btn btn-ghost sm" type="button">Move</button><button class="btn btn-primary sm" type="button">Post now</button><button class="btn btn-ghost sm" type="button">Skip</button><button class="btn btn-ghost sm" type="button">Take out of the queue</button></div>
+      </div>
+    </article>
+  </div>
+
+  <h2 class="sec mt32">Coming up</h2>
+  <p class="dayh">Friday 17 Oct</p>
+  <div class="grid g2">
+    <article class="card item">
+      <div class="th"><div class="post"><h4 class="p-head" style="font-size:12cqw">20% off all cakes</h4></div></div>
+      <div class="bd">
+        <h3><svg class="i sm" aria-hidden="true"><use href="#i-insta"/></svg>Instagram<span class="badge info">Scheduled</span></h3>
+        <p class="when">Fri 17 Oct, 10:00 · Auto-publish</p><p class="hl">20% off all cakes this weekend</p>
+        <div class="acts"><button class="btn btn-ghost sm" type="button">Move</button><button class="btn btn-primary sm" type="button">Post now</button><button class="btn btn-ghost sm" type="button">Skip</button></div>
+      </div>
+    </article>
+    <article class="card item">
+      <div class="th"><div class="post t-dark"><h4 class="p-head" style="font-size:12cqw">20% off all cakes</h4></div></div>
+      <div class="bd">
+        <h3><svg class="i sm" aria-hidden="true"><use href="#i-fb"/></svg>Facebook<span class="badge warn">Needs approval</span></h3>
+        <p class="when">Fri 17 Oct, 10:30 · We'll email it to you</p><p class="hl">Weekend cake sale</p>
+        <div class="acts"><a class="btn btn-primary sm" href="#review">Review</a><button class="btn btn-ghost sm" type="button">Skip</button></div>
+      </div>
+    </article>
+  </div>
+  <p class="dayh">Saturday 18 Oct</p>
+  <div class="grid g2">
+    <article class="card item">
+      <div class="th"><div class="post t-green"><h4 class="p-head" style="font-size:12cqw">Eggless cakes</h4></div></div>
+      <div class="bd">
+        <h3><svg class="i sm" aria-hidden="true"><use href="#i-insta"/></svg>Instagram<span class="badge info">Scheduled</span></h3>
+        <p class="when">Sat 18 Oct, 09:00 · Auto-publish</p><p class="hl">Eggless cakes, made to order</p>
+        <div class="acts"><button class="btn btn-ghost sm" type="button">Move</button><button class="btn btn-primary sm" type="button">Post now</button><button class="btn btn-ghost sm" type="button">Skip</button></div>
+      </div>
+    </article>
+  </div>
+
+  <h2 class="sec mt32">Ready to schedule</h2>
+  <p class="hint mt4">Approved, but not in the queue yet.</p>
+  <div class="grid g2 mt12">
+    <article class="card item">
+      <div class="th"><div class="post t-bold"><h4 class="p-head" style="font-size:12cqw">Sourdough</h4></div></div>
+      <div class="bd">
+        <h3><svg class="i sm" aria-hidden="true"><use href="#i-insta"/></svg>Instagram<span class="badge">Approved</span></h3>
+        <p class="hl">Fresh sourdough every morning</p>
+        <div class="acts"><button class="btn btn-primary sm" type="button">Schedule</button><button class="btn btn-ghost sm" type="button">Post now</button></div>
+      </div>
+    </article>
+  </div>
+
+  <h2 class="sec mt32">Sent lately</h2>
+  <div class="grid g2 mt12">
+    <article class="card item">
+      <div class="th"><div class="post t-bold"><h4 class="p-head" style="font-size:12cqw">Sourdough</h4></div></div>
+      <div class="bd">
+        <h3><svg class="i sm" aria-hidden="true"><use href="#i-insta"/></svg>Instagram<span class="badge ok">Published</span></h3>
+        <p class="when">Fri 10 Oct, 10:00 · Auto-publish</p><p class="hl">Fresh sourdough every morning</p>
+        <div class="acts"><a class="btn btn-ghost sm" href="#queue">View on Instagram<svg class="i sm" aria-hidden="true"><use href="#i-arrow"/></svg></a></div>
+      </div>
+    </article>
+  </div>
+
+  <section class="card lg mt32" aria-labelledby="c-qs">
+    <h2 class="card-title" id="c-qs">Queue settings</h2>
+    <p class="hint">How often, on which days and at what time posts go out. Times are in Asia/Kolkata.</p>
+    <div class="grid g2 mt16" style="align-items:start">
+      <div><label class="lbl" for="ppw">Posts per week</label><select class="select" id="ppw"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>7</option></select></div>
+      <div><p class="lbl" id="days-l">Days</p><div class="chips" role="group" aria-labelledby="days-l"><button class="chip sm" type="button" aria-pressed="true">Mon</button><button class="chip sm" type="button" aria-pressed="false">Tue</button><button class="chip sm" type="button" aria-pressed="true">Wed</button><button class="chip sm" type="button" aria-pressed="false">Thu</button><button class="chip sm" type="button" aria-pressed="true">Fri</button><button class="chip sm" type="button" aria-pressed="false">Sat</button><button class="chip sm" type="button" aria-pressed="false">Sun</button></div><p class="hint mt4">A post goes out on one of these days.</p></div>
+    </div>
+    <p class="lbl mt16">Time for each channel</p>
+    <div class="grid g2">
+      <div class="well" style="background:#fff;border-color:var(--g94)"><div class="row between"><b class="small" style="color:var(--t-title);font-weight:500"><span class="chan"><svg class="i sm" aria-hidden="true"><use href="#i-insta"/></svg>Instagram</span></b><span class="badge ok">Connected</span></div><p class="hint">Connected: posts are published for you.</p><label class="lbl mt8" for="ti">Instagram time</label><input class="input" id="ti" type="time" value="10:00"><label class="check mt12"><input type="checkbox"><span>Auto-approve posts with no flags</span></label></div>
+      <div class="well" style="background:#fff;border-color:var(--g94)"><div class="row between"><b class="small" style="color:var(--t-title);font-weight:500"><span class="chan"><svg class="i sm" aria-hidden="true"><use href="#i-fb"/></svg>Facebook</span></b><span class="badge">Not connected</span></div><p class="hint">Not connected: we email the post to you.</p><label class="lbl mt8" for="tf">Facebook time</label><input class="input" id="tf" type="time" value="10:30"><label class="check mt12"><input type="checkbox"><span>Auto-approve posts with no flags</span></label></div>
+    </div>
+    <div class="alert warn mt12"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><p>A post with nothing to check is approved and queued by itself, with no tap from you. Posts with a "Please check" flag always wait for you. Off unless you turn it on.</p></div>
+    <div class="stack s12 mt16">
+      <label class="check"><input type="checkbox" class="sw" role="switch"><span>Email me posts I share myself<small>At the time of a post that cannot be published automatically, we email it to you with a Share button.</small></span></label>
+      <label class="check"><input type="checkbox" class="sw" role="switch" id="pauseSwitch"><span>Pause the queue<small>Nothing is sent and reminders stop until you switch it back on. Posts that pass their time meanwhile show under "Needs your attention".</small></span></label>
+    </div>
+    <div class="row gap12 mt24 wrap"><button class="btn btn-primary" type="button" data-toast="Settings saved (prototype).">Save settings</button><a class="link" href="#connections">Connections</a></div>
+  </section>
+
+</div>
+</section>
+
+
+<!-- =============== 10. BRAND =============== -->
+<section class="screen" id="s-brand" data-title="Brand" aria-labelledby="h-brand" hidden>
+<div class="page w1040">
+  <h1 class="sr-only" id="h-brand">Your brand memory</h1>
+  <div class="navpills" id="brandNav" role="navigation" aria-label="Sections on this page">
+    <button type="button" data-sec="b-facts" aria-current="true">Facts</button><button type="button" data-sec="b-usp">Selling points</button><button type="button" data-sec="b-contacts">Contacts</button><button type="button" data-sec="b-voice">Voice</button><button type="button" data-sec="b-look">Logo and colours</button><button type="button" data-sec="b-photos">Photos</button><button type="button" data-sec="b-dates">Dates</button><button type="button" data-sec="b-pay">Payment QR</button><button type="button" data-sec="b-settings">Settings</button><button type="button" data-sec="b-data">Your data</button>
+  </div>
+
+  <div class="stack">
+  <details class="card sect" id="b-facts" open>
+    <summary>Your facts<svg class="i" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="inside">
+      <p class="hint">Posts only use facts from this list. If it is not here, a post will not state it.</p>
+      <div class="well mt12">
+        <label class="lbl" for="site">Website address</label>
+        <div class="row gap8 wrap"><input class="input grow" id="site" value="www.cornerbakery.in" style="min-width:180px"><button class="btn btn-secondary" type="button" data-toast="Reading your website... (prototype)">Read my website again</button></div>
+        <p class="hint mt8">We read up to 5 pages for facts. Facts you edited or added yourself are kept. If you change the address, your existing facts are kept until the new address has been read successfully.</p>
+        <p class="hint mt4">Last read: 12 Oct. Done. We read 5 pages and found 14 facts.</p>
+      </div>
+      <h3 class="card-title mt16" style="font-size:14px">Products and services <span class="badge">2</span></h3>
+      <ul class="list mt8">
+        <li class="fact"><div><p class="v">Eggless butter cakes, 500 g to 2 kg</p><div class="mt4"><span class="badge info">From your website</span></div></div><div class="acts-r"><button class="link" type="button">Edit</button><button class="link danger" type="button">Remove</button></div></li>
+        <li class="fact"><div><p class="v">Sourdough loaves</p><div class="mt4"><span class="badge">Added by you</span></div></div><div class="acts-r"><button class="link" type="button">Edit</button><button class="link danger" type="button">Remove</button></div></li>
+      </ul>
+      <h3 class="card-title mt16" style="font-size:14px">Prices <span class="badge">1</span></h3>
+      <ul class="list mt8"><li class="fact"><div><p class="v">Chocolate truffle cake from ₹650</p><div class="mt4"><span class="badge">Edited by you (was from your website)</span></div></div><div class="acts-r"><button class="link" type="button">Edit</button><button class="link danger" type="button">Remove</button></div></li></ul>
+      <h3 class="card-title mt16" style="font-size:14px">Claims <span class="badge">1</span></h3>
+      <ul class="list mt8"><li class="fact"><div><p class="v">Baked fresh every morning</p><div class="mt4"><span class="badge info">From your website</span></div><p class="note-amber" style="font-size:12px"><svg class="i sm" aria-hidden="true"><use href="#i-alert"/></svg>This promises a result. Only keep it if you can stand behind it.</p></div><div class="acts-r"><button class="link" type="button">Edit</button><button class="link danger" type="button">Remove</button></div></li></ul>
+      <button class="btn btn-secondary mt16" type="button"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Add a fact</button>
+    </div>
+  </details>
+
+  <details class="card sect" id="b-usp" open>
+    <summary>Your selling points<svg class="i" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="inside">
+      <p class="hint">The points your posts can feature, like a discount, a price or a rating. Posts use only what is listed here.</p>
+      <div class="grid g2 mt12">
+        <div class="well" style="background:#fff"><p class="v">20% off all cakes</p><p class="small desc">Discount · 20% off cakes</p><div class="mt8"><span class="badge">Added by you</span></div><div class="row gap12 mt8 wrap"><button class="link" type="button">Move up</button><button class="link" type="button">Move down</button><button class="link" type="button">Edit</button><button class="link danger" type="button">Remove</button></div></div>
+        <div class="well" style="background:#fff"><p class="v">Rated 4.8 on Google</p><p class="small desc">Reviews and rating · 4.8 from 212 reviews</p><div class="mt8"><span class="badge info">Suggested from your website</span></div><div class="row gap12 mt8 wrap"><button class="link" type="button">Move up</button><button class="link" type="button">Move down</button><button class="link" type="button">Edit</button><button class="link danger" type="button">Remove</button></div></div>
+        <div class="well" style="background:#fff"><p class="v">Always eggless</p><p class="small desc">Experience and trust · Every cake is eggless</p><div class="mt8"><span class="badge">From your setup answers</span></div><label class="check mt8"><input type="checkbox"><span>I confirm this is true</span></label><p class="note-amber" style="font-size:12px">Posts will not use this until you confirm it.</p></div>
+      </div>
+      <button class="btn btn-secondary mt16" type="button"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Add a selling point</button>
+    </div>
+  </details>
+
+  <details class="card sect" id="b-contacts" open>
+    <summary>How customers reach you<svg class="i" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="inside">
+      <p class="hint">Phone, website, address and hours that your posts can show. Turn a line off to keep it off new posts.</p>
+      <ul class="list mt12">
+        <li class="fact"><div><p class="small desc">Phone</p><p class="v">+91 80 4000 1234</p><div class="mt4"><span class="badge">From setup</span></div><label class="check mt8"><input type="checkbox" checked><span>Show on new posts</span></label></div><div class="acts-r"><button class="link" type="button">Edit</button><button class="link danger" type="button">Remove</button></div></li>
+        <li class="fact"><div><p class="small desc">Website</p><p class="v">cornerbakery.in</p><div class="mt4 row gap8"><span class="badge info">From your website</span><span class="badge ok">Link works</span></div><label class="check mt8"><input type="checkbox" checked><span>Show on new posts</span></label></div><div class="acts-r"><button class="link" type="button">Edit</button><button class="link" type="button">Check link</button><button class="link danger" type="button">Remove</button></div></li>
+        <li class="fact"><div><p class="small desc">Address</p><p class="v">12 Church Street, Bengaluru</p><div class="mt4"><span class="badge">Added by you</span></div><label class="check mt8"><input type="checkbox"><span>Show on new posts</span></label></div><div class="acts-r"><button class="link" type="button">Edit</button><button class="link danger" type="button">Remove</button></div></li>
+        <li class="fact"><div><p class="small desc">Instagram</p><p class="v">@cornerbakery</p><div class="mt4 row gap8"><span class="badge">Added by you</span><span class="badge warn">Not checked yet</span></div><label class="check mt8"><input type="checkbox" checked><span>Show on new posts</span></label></div><div class="acts-r"><button class="link" type="button">Edit</button><button class="link" type="button">Check link</button><button class="link danger" type="button">Remove</button></div></li>
+      </ul>
+      <button class="btn btn-secondary mt16" type="button"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>Add a contact detail</button>
+    </div>
+  </details>
+
+  <details class="card sect" id="b-voice" open>
+    <summary>Your voice<svg class="i" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="inside">
+      <h3 class="card-title" style="font-size:14px">How you write</h3>
+      <label class="lbl mt8" for="style">Your style</label>
+      <textarea class="textarea" id="style">Warm and short. Friendly neighbourhood tone, a little humour, always mentions fresh baking.</textarea>
+      <p class="mt4"><button class="link" type="button">Save</button></p>
+      <p class="lbl mt16">Phrases you use</p>
+      <div class="chips"><span class="pill-x">the kettle is always on<button type="button" aria-label="Remove phrase: the kettle is always on"><svg class="i sm" aria-hidden="true"><use href="#i-x"/></svg></button></span><span class="pill-x">baked this morning<button type="button" aria-label="Remove phrase: baked this morning"><svg class="i sm" aria-hidden="true"><use href="#i-x"/></svg></button></span></div>
+      <div class="row gap8 mt8"><label class="sr-only" for="ph">Add a phrase</label><input class="input" id="ph" placeholder="e.g. the kettle is always on"><button class="btn btn-secondary" type="button">Add</button></div>
+      <p class="lbl mt16">Words to avoid</p>
+      <p class="hint">Nothing on the list yet.</p>
+      <div class="row gap8 mt8"><label class="sr-only" for="av">Add a word to avoid</label><input class="input" id="av" placeholder="e.g. cheap"><button class="btn btn-secondary" type="button">Add</button></div>
+      <p class="lbl mt16">We suggest avoiding</p>
+      <div class="row between wrap"><span class="small">"best in town"</span><span class="row gap12"><button class="link" type="button">Add to words to avoid</button><button class="link" type="button">Dismiss</button></span></div>
+      <button class="btn btn-secondary mt16" type="button">Update from my posts</button>
+    </div>
+  </details>
+
+  <details class="card sect" id="b-look" open>
+    <summary>Logo and colours<svg class="i" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="inside">
+      <h3 class="card-title" style="font-size:14px">Logo</h3>
+      <div class="row gap16 mt8 wrap" style="gap:16px"><div class="logo-box"><span class="mark" style="width:36px;height:36px;border-radius:12px"><svg viewBox="0 0 24 24" style="width:20px;height:20px" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h9"/></svg></span></div><div><button class="btn btn-secondary" type="button">Replace logo</button><p class="link mt8"><button class="link" type="button">Remove logo</button></p><p class="ok-text mt4">Logo saved.</p></div></div>
+      <h3 class="card-title mt24" style="font-size:14px">Colours</h3>
+      <p class="hint">Pick the colours your posts use. Start from a ready palette or choose your own.</p>
+      <div class="grid g3 keep mt8" style="gap:8px" id="palettes">
+        <button class="pal" type="button" aria-pressed="true"><span class="sw3"><i style="background:#9A4A22"></i><i style="background:#FFF3E0"></i><i style="background:#E4572E"></i></span><span>From your logo</span></button>
+        <button class="pal" type="button" aria-pressed="false"><span class="sw3"><i style="background:#E4572E"></i><i style="background:#FFF3E0"></i><i style="background:#1B998B"></i></span><span>Saffron</span></button>
+        <button class="pal" type="button" aria-pressed="false"><span class="sw3"><i style="background:#B5121B"></i><i style="background:#FFF4E0"></i><i style="background:#F2A900"></i></span><span>Red and gold</span></button>
+        <button class="pal" type="button" aria-pressed="false"><span class="sw3"><i style="background:#1B7F3B"></i><i style="background:#F1F8E9"></i><i style="background:#FFB400"></i></span><span>Fresh green</span></button>
+        <button class="pal" type="button" aria-pressed="false"><span class="sw3"><i style="background:#1F4E9C"></i><i style="background:#EAF1FB"></i><i style="background:#F59E0B"></i></span><span>Trust blue</span></button>
+        <button class="pal" type="button" aria-pressed="false"><span class="sw3"><i style="background:#7B2D8E"></i><i style="background:#FBEFFC"></i><i style="background:#F4A261"></i></span><span>Royal purple</span></button>
+        <button class="pal" type="button" aria-pressed="false"><span class="sw3"><i style="background:#222831"></i><i style="background:#F5F5F5"></i><i style="background:#D4A017"></i></span><span>Charcoal and gold</span></button>
+      </div>
+      <div class="grid g4 keep mt16" style="gap:12px">
+        <div><label class="lbl" for="c1">Main colour</label><div class="row gap8"><span class="sq" style="background:#9A4A22"></span><input class="input" id="c1" value="#9A4A22"></div></div>
+        <div><label class="lbl" for="c2">Second colour</label><div class="row gap8"><span class="sq" style="background:#FFF3E0"></span><input class="input" id="c2" value="#FFF3E0"></div></div>
+        <div><label class="lbl" for="c3">Highlight</label><div class="row gap8"><span class="sq" style="background:#E4572E"></span><input class="input" id="c3" value="#E4572E"></div></div>
+        <div><label class="lbl" for="c4">Background</label><div class="row gap8"><span class="sq" style="background:#FFFFFF"></span><input class="input" id="c4" value="#FFFFFF"></div></div>
+      </div>
+      <label class="check mt16"><input type="checkbox" checked><span>Use my business name as a text logo when I have no logo</span></label>
+      <div class="row gap12 mt16"><button class="btn btn-primary" type="button" data-toast="Look saved. (prototype)">Save my look</button></div>
+    </div>
+  </details>
+
+  <details class="card sect" id="b-photos" open>
+    <summary>Photos and past posts<svg class="i" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="inside">
+      <h3 class="card-title" style="font-size:14px">Your Instagram</h3>
+      <p class="hint">Add your @name and we read your recent public posts. You do not log in to anything.</p>
+      <label class="lbl mt8" for="ig-name">Instagram name</label>
+      <input class="input" id="ig-name" placeholder="@yourbusiness" value="@cornerbakery"><p class="hint mt4">Only add your own business's account.</p>
+      <div class="row gap8 mt8 wrap"><button class="btn btn-primary" type="button">Bring in my recent posts</button><button class="btn btn-outline" type="button">Refresh</button><button class="btn btn-ghost" type="button">Remove Instagram posts</button></div>
+      <p class="hint mt8">9 posts from @cornerbakery added to your past posts</p>
+      <h3 class="card-title mt24" style="font-size:14px">Your photos</h3>
+      <p class="hint">Add photos of your products, shop and work. Up to 30 photos.</p>
+      <div class="grid g4 keep mt8" style="gap:12px">
+        <div><span class="photo"></span><label class="check mt8"><input type="checkbox"><span>Has people in it</span></label></div>
+        <div><span class="photo h2"></span><label class="check mt8"><input type="checkbox"><span>Has people in it</span></label></div>
+        <div><span class="photo h3"></span><label class="check mt8"><input type="checkbox" checked><span>Has people in it</span></label><p class="hint mt4">Only use photos of people who agreed to be in your posts.</p></div>
+        <div><span class="photo h4"></span><p class="note-amber" style="font-size:12px">This photo looks dark or blurry; it may not look good in posts</p><button class="link danger mt4" type="button">Delete</button></div>
+      </div>
+      <div class="row gap12 mt12"><button class="btn btn-secondary" type="button"><svg class="i" aria-hidden="true"><use href="#i-upload"/></svg>Add photos</button><span class="hint">4 of 30 photos</span></div>
+      <h3 class="card-title mt24" style="font-size:14px">Your past posts</h3>
+      <p class="hint">Add 3 to 5 posts you have shared before, so new posts sound like you.</p>
+      <ul class="list mt8"><li><span class="badge info">From Instagram</span><p class="small mt4">Fresh bread, warm cakes, and a kettle that is always on. Come say hello.</p><div class="row gap12 mt4"><button class="link" type="button">View on Instagram</button><button class="link" type="button">Edit</button><button class="link danger" type="button">Delete</button></div></li></ul>
+      <div class="row gap8 mt12 wrap"><button class="btn btn-secondary" type="button">Paste text</button><button class="btn btn-secondary" type="button">Upload screenshot</button><span class="hint">1 of 5 posts</span></div>
+    </div>
+  </details>
+
+  <details class="card sect" id="b-dates" open>
+    <summary>Your dates<svg class="i" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="inside">
+      <p class="hint">Add days you want posts to mention: an anniversary, a sale, a local event.</p>
+      <ul class="list mt8"><li class="fact"><p class="small">Shop anniversary · 3 Nov <span class="desc">(every year)</span></p><button class="link danger" type="button">Remove</button></li></ul>
+      <div class="grid g3 mt12" style="align-items:end"><div><label class="lbl" for="d-date">Date</label><input class="input" id="d-date" type="date"></div><div><label class="lbl" for="d-name">Name</label><input class="input" id="d-name" placeholder="e.g. Shop anniversary"></div><div class="row gap12"><label class="check"><input type="checkbox">Every year</label><button class="btn btn-secondary" type="button">Add date</button></div></div>
+      <h3 class="card-title mt24" style="font-size:14px">Coming up in the next 8 weeks</h3>
+      <p class="hint">These are the days your posts may mention. Public holidays for your country are included.</p>
+      <ul class="list mt8">
+        <li><p class="small desc">Week of 20 Oct</p><p class="small mt4">Diwali <span class="badge warn">Sensitive day</span></p></li>
+        <li><p class="small desc">Week of 27 Oct</p><p class="small mt4 desc">Nothing coming up</p></li>
+        <li><p class="small desc">Week of 3 Nov</p><p class="small mt4">Shop anniversary <span class="badge coral">Your date</span></p></li>
+      </ul>
+    </div>
+  </details>
+
+  <details class="card sect" id="b-pay" open>
+    <summary>Payment QR code<svg class="i" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="inside">
+      <p class="hint">Show a QR code on your posts that opens a payment app with your UPI ID filled in. You type the ID yourself and we email you to confirm it. It is never written or changed by AI.</p>
+      <div class="row top mt12" style="gap:20px;flex-wrap:wrap">
+        <figure class="stack s8" style="align-items:center"><div class="qrbox"><svg data-qr="upi" viewBox="0 0 21 21" shape-rendering="crispEdges" aria-label="Sample payment QR code (illustration)"></svg></div><figcaption class="small centered">Scan to pay<br><span class="desc">cornerbakery@okbank · Corner Bakery</span></figcaption></figure>
+        <div style="flex:1;min-width:220px">
+          <ul class="list"><li class="row between"><span class="small">UPI · cornerbakery@okbank</span><span class="row gap8"><span class="badge ok">Active</span><button class="link danger" type="button">Retire this ID</button></span></li></ul>
+          <div class="field mt12"><label class="lbl" for="pm">Payment method</label><select class="select" id="pm" disabled><option>UPI</option></select></div>
+          <div class="field"><label class="lbl" for="upi">UPI ID</label><input class="input" id="upi" placeholder="name@bank"><p class="hint mt4">Looks like name@bank</p></div>
+          <div class="field"><label class="lbl" for="payee">Name shown to the payer</label><input class="input" id="payee" value="Corner Bakery"><p class="hint mt4">The name on your bank account or business name (up to 60 characters)</p></div>
+          <button class="btn btn-primary mt16" type="button" data-reveal="#upiSent">Save and send confirmation email</button>
+          <p class="ok-text mt8" id="upiSent" role="status" hidden>We emailed you a link. Open it within 1 hour to confirm the ID.</p>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="card sect" id="b-settings" open>
+    <summary>Settings<svg class="i" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="inside">
+      <p class="hint">These answers shape every weekly set of posts.</p>
+      <div class="grid g2 mt12">
+        <div><label class="lbl" for="s-name">Business name</label><input class="input" id="s-name" value="Corner Bakery"></div>
+        <div><label class="lbl" for="s-sell">What you sell</label><input class="input" id="s-sell" value="Cakes, sourdough bread and coffee"><p class="hint mt4">One line is enough. We use it to spot regulated businesses.</p></div>
+        <div><label class="lbl" for="s-cust">Your customers</label><input class="input" id="s-cust" value="Families and office workers nearby"></div>
+        <div><label class="lbl" for="s-country">Country</label><select class="select" id="s-country"><option>India</option><option>United Kingdom</option></select></div>
+        <div><label class="lbl" for="s-city">City or town</label><input class="input" id="s-city" value="Bengaluru"></div>
+        <div><label class="lbl" for="s-goal">Goal</label><select class="select" id="s-goal"><option>More enquiries</option><option selected>More visits</option><option>Get known</option></select></div>
+        <div><label class="lbl" for="s-tone">Tone</label><select class="select" id="s-tone"><option selected>Friendly</option><option>Professional</option><option>Playful</option><option>Like my past posts</option></select></div>
+        <div><label class="lbl" for="s-min">Minutes one post takes you today</label><input class="input" id="s-min" type="number" value="25"></div>
+      </div>
+      <div class="alert warn mt16"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><p>Check your local advertising rules before you share posts.</p></div>
+      <div class="row gap12 mt16"><button class="btn btn-primary" type="button">Save settings</button><span class="ok-text">Saved.</span></div>
+    </div>
+  </details>
+
+  <details class="card sect" id="b-data">
+    <summary>Your data<svg class="i" aria-hidden="true"><use href="#i-down"/></svg></summary>
+    <div class="inside">
+      <p class="hint">Your business details, photos and posts are yours. You can take a copy, or delete everything, whenever you like.</p>
+      <div class="mt16"><p class="card-title" style="font-size:14px">Download my data</p><button class="btn btn-secondary mt8" type="button"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download my data</button></div>
+      <hr class="sep">
+      <p class="card-title" style="font-size:14px">Delete my account</p>
+      <p class="hint mt4">This deletes your business, photos, posts and connections. It cannot be undone.</p>
+      <button class="btn btn-danger mt8" type="button" data-open-dialog="delete">Delete my account</button>
+      <p class="mt16"><a class="link" href="#brand" data-toast="Privacy notice and terms are not part of this prototype.">Read our privacy notice and terms</a></p>
+    </div>
+  </details>
+  </div>
+</div>
+</section>
+
+<!-- =============== 11. CONNECTIONS =============== -->
+<section class="screen" id="s-connections" data-title="Connections" aria-labelledby="h-connections" hidden>
+<div class="page w1040">
+  <h1 class="sr-only" id="h-connections">Connections</h1>
+  <p class="lede" style="margin-top:0">Connect once and we post your approved designs at their time. Nothing is posted until you approve it, and you can disconnect any time.</p>
+  <div class="grid g2 mt16" style="align-items:start">
+    <section class="card stateful" data-state="on" aria-labelledby="c-pig">
+      <div class="row between wrap"><h3 class="card-title row gap8" id="c-pig"><svg class="i" aria-hidden="true"><use href="#i-insta"/></svg>Publish to Instagram</h3>
+        <span class="badge ok" data-on>Connected</span><span class="badge" data-off>Setup pending</span></div>
+      <div data-on>
+        <p class="mt12">Account: <b style="font-weight:500">@cornerbakery</b></p>
+        <div class="alert warn mt12"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><p>The permission ends on 28 Oct. Reconnect to keep auto-posting.</p></div>
+      </div>
+      <p class="mt12" data-off>Sign in to Instagram once and allow us to post your approved designs. Until then, we email you each post to share yourself.</p>
+      <p class="hint mt12">Business or creator account needed. A personal account cannot be posted to by apps. You can switch for free in the Instagram app: Settings &gt; Account type and tools.</p>
+      <div class="row gap8 mt16 wrap"><button class="btn btn-primary" type="button" data-on data-toast="Reconnect (prototype).">Reconnect</button><button class="btn btn-primary" type="button" data-off data-toggle-state>Connect</button><button class="btn btn-ghost" type="button" data-on data-toggle-state>Disconnect</button></div>
+    </section>
+    <section class="card stateful" data-state="off" aria-labelledby="c-pfb">
+      <div class="row between wrap"><h3 class="card-title row gap8" id="c-pfb"><svg class="i" aria-hidden="true"><use href="#i-fb"/></svg>Publish to Facebook</h3>
+        <span class="badge ok" data-on>Connected</span><span class="badge" data-off>Not connected</span></div>
+      <p class="mt12" data-on>Account: <b style="font-weight:500">Corner Bakery (Page)</b></p>
+      <p class="mt12" data-off>Sign in to Facebook once and choose your Page. Until then, we email you each post to share yourself.</p>
+      <p class="hint mt12">A Facebook Page is needed, not a personal profile.</p>
+      <div class="row gap8 mt16 wrap"><button class="btn btn-primary" type="button" data-off data-toggle-state>Connect</button><button class="btn btn-ghost" type="button" data-on data-toggle-state>Disconnect</button></div>
+    </section>
+  </div>
+</div>
+</section>
+
+
+<!-- =============== 12. RESULTS =============== -->
+<section class="screen" id="s-results" data-title="Results" aria-labelledby="h-results" hidden>
+<div class="page w1040">
+  <h1 class="sr-only" id="h-results">Your results</h1>
+  <div class="grid g4">
+    <section class="card" aria-labelledby="k1"><p class="t-desc" id="k1">Posts shared</p><p class="kpi">9</p><p class="hint">This month, up from 6 in September.</p></section>
+    <section class="card" aria-labelledby="k2"><p class="t-desc" id="k2">Time saved</p><p class="kpi">3 h 45 min</p><p class="hint">9 posts times the 25 minutes you told us a post takes.</p></section>
+    <section class="card" aria-labelledby="k3"><p class="t-desc" id="k3">Clicks on your links</p><p class="kpi">128</p><p class="hint">This month. Last month: 94.</p></section>
+    <section class="card" aria-labelledby="k4"><p class="t-desc" id="k4">QR code scans</p><p class="kpi">41</p><p class="hint">At least this many this month.</p></section>
+  </div>
+
+  <div class="grid g2 mt16" style="align-items:start">
+    <section class="card" aria-labelledby="c-worked">
+      <h2 class="card-title" id="c-worked">What worked</h2>
+      <ul class="list mt12">
+        <li class="row gap12"><div style="width:44px;flex:none"><div class="post"><h4 class="p-head" style="font-size:14cqw">20%</h4></div></div><div class="grow"><p class="v">Weekend cake sale</p><p class="small desc">Instagram · 10 Oct</p></div><span class="badge ok">64 clicks</span></li>
+        <li class="row gap12"><div style="width:44px;flex:none"><div class="post t-bold"><h4 class="p-head" style="font-size:14cqw">Hot</h4></div></div><div class="grow"><p class="v">Sourdough mornings</p><p class="small desc">Facebook · 3 Oct</p></div><span class="badge ok">41 clicks</span></li>
+        <li class="row gap12"><div style="width:44px;flex:none"><div class="post t-dark"><h4 class="p-head" style="font-size:14cqw">Egg</h4></div></div><div class="grow"><p class="v">Eggless cakes</p><p class="small desc">Instagram · 29 Sep</p></div><span class="badge ok">23 clicks</span></li>
+      </ul>
+    </section>
+    <section class="card" aria-labelledby="c-enq">
+      <h2 class="card-title" id="c-enq">Enquiries, from your check-ins</h2>
+      <ul class="list mt12">
+        <li class="row between"><span class="small">Week of 6 Oct</span><span class="badge ok">A few</span></li>
+        <li class="row between"><span class="small">Week of 29 Sep</span><span class="badge ok">Many</span></li>
+        <li class="row between"><span class="small">Week of 22 Sep</span><span class="badge">None</span></li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="card mt16" aria-labelledby="c-reply">
+    <h2 class="card-title" id="c-reply">Reply to a review</h2>
+    <p class="hint">Paste a customer review and we will write a reply in your voice.</p>
+    <div class="grid g2 mt12" style="align-items:start">
+      <div><label class="lbl" for="rv-text">The customer's review</label><textarea class="textarea" id="rv-text" placeholder="Paste the review here">The truffle cake was lovely and the staff were so kind. Will order again!</textarea>
+        <button class="btn btn-primary mt12" type="button" data-reveal="#replyBox">Write a reply</button></div>
+      <div id="replyBox" hidden><label class="lbl" for="rv-reply">Your reply. You can change it before you copy it.</label><textarea class="textarea" id="rv-reply">Thank you so much! We are so glad you enjoyed the truffle cake, and we will pass your kind words to the team. See you again soon.</textarea><div class="row gap8 mt12"><button class="btn btn-secondary" type="button" data-toast="Copied.">Copy</button></div></div>
+    </div>
+  </section>
+</div>
+</section>
+
+<!-- =============== 13. HISTORY =============== -->
+<section class="screen" id="s-history" data-title="History" aria-labelledby="h-history" hidden>
+<div class="page w1200">
+  <h1 class="sr-only" id="h-history">Past posts</h1>
+  <div class="row gap16 wrap" style="gap:12px 24px" role="group" aria-label="Filter your posts">
+    <div class="chips" data-single role="group" aria-label="Date"><button class="chip sm" type="button" aria-pressed="true">All</button><button class="chip sm" type="button" aria-pressed="false">Today</button><button class="chip sm" type="button" aria-pressed="false">This week</button><button class="chip sm" type="button" aria-pressed="false">This month</button></div>
+    <div class="chips" data-single role="group" aria-label="Language"><button class="chip sm" type="button" aria-pressed="true">Any</button><button class="chip sm" type="button" aria-pressed="false">हिंदी</button><button class="chip sm" type="button" aria-pressed="false">Hinglish</button><button class="chip sm" type="button" aria-pressed="false">English</button></div>
+  </div>
+
+  <div class="card mt16 hist-table" style="padding:8px 8px 4px">
+    <div class="tbl-wrap">
+    <table>
+      <thead><tr><th scope="col">Post</th><th scope="col">Created</th><th scope="col">Language</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead>
+      <tbody>
+        <tr><td><a href="#review" class="row gap12" style="text-decoration:none"><span style="width:40px;flex:none"><span class="post"><b class="p-head" style="font-size:16cqw">20%</b></span></span><span>20% off all cakes this weekend</span></a></td><td class="num">16 Oct, 09:12</td><td><span class="badge">English</span></td><td><span class="badge info">Still making</span></td><td><details class="menu"><summary class="btn btn-outline sm">Download<svg class="i sm" aria-hidden="true"><use href="#i-down"/></svg></summary><div class="menu-pop"><a href="#history">Instagram image</a><a href="#history">Story image</a><a href="#history">Facebook image</a></div></details></td></tr>
+        <tr><td><a href="#review" class="row gap12" style="text-decoration:none"><span style="width:40px;flex:none"><span class="post t-bold"><b class="p-head" style="font-size:16cqw">Hot</b></span></span><span>Fresh sourdough every morning</span></a></td><td class="num">10 Oct, 08:40</td><td><span class="badge">English</span></td><td><span class="badge ok">Ready to post</span></td><td><details class="menu"><summary class="btn btn-outline sm">Download<svg class="i sm" aria-hidden="true"><use href="#i-down"/></svg></summary><div class="menu-pop"><a href="#history">Instagram image</a><a href="#history">Story image</a><a href="#history">Facebook image</a></div></details></td></tr>
+        <tr><td><a href="#review" class="row gap12" style="text-decoration:none"><span style="width:40px;flex:none"><span class="post t-dark"><b class="p-head" style="font-size:16cqw">Egg</b></span></span><span>Eggless cakes, made to order</span></a></td><td class="num">3 Oct, 18:05</td><td><span class="badge">Hinglish</span></td><td><span class="badge">Draft</span></td><td><button class="btn btn-outline sm" type="button" disabled>No images to download</button></td></tr>
+        <tr><td><a href="#review" class="row gap12" style="text-decoration:none"><span style="width:40px;flex:none"><span class="post t-green"><b class="p-head" style="font-size:16cqw">Fest</b></span></span><span>No caption</span></a></td><td class="num">26 Sep, 11:30</td><td><span class="badge">हिंदी</span></td><td><span class="badge err">Could not be made</span></td><td><button class="btn btn-outline sm" type="button" disabled>No images to download</button></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+  <div class="hist-cards mt16">
+    <a class="card item" href="#review" style="text-decoration:none"><div class="th"><div class="post"><b class="p-head" style="font-size:16cqw">20%</b></div></div><div class="bd"><p class="when">16 Oct, 09:12</p><p class="hl">20% off all cakes this weekend</p><div class="row gap4 mt8 wrap"><span class="badge">English</span><span class="badge info">Still making</span></div></div></a>
+    <a class="card item" href="#review" style="text-decoration:none"><div class="th"><div class="post t-bold"><b class="p-head" style="font-size:16cqw">Hot</b></div></div><div class="bd"><p class="when">10 Oct, 08:40</p><p class="hl">Fresh sourdough every morning</p><div class="row gap4 mt8 wrap"><span class="badge">English</span><span class="badge ok">Ready to post</span></div><div class="mt8"><button class="btn btn-outline sm" type="button">Download<svg class="i sm" aria-hidden="true"><use href="#i-down"/></svg></button></div></div></a>
+    <a class="card item" href="#review" style="text-decoration:none"><div class="th"><div class="post t-dark"><b class="p-head" style="font-size:16cqw">Egg</b></div></div><div class="bd"><p class="when">3 Oct, 18:05</p><p class="hl">Eggless cakes, made to order</p><div class="row gap4 mt8 wrap"><span class="badge">Hinglish</span><span class="badge">Draft</span></div></div></a>
+  </div>
+  <div class="centered mt16"><button class="btn btn-secondary" type="button">Load more</button></div>
+</div>
+</section>
+
+<!-- =============== 14. ADMIN =============== -->
+<section class="screen" id="s-admin" data-title="Admin" data-chrome="none" aria-labelledby="h-admin" hidden>
+<div class="page w1200">
+  <div class="pagebrand"><a class="nm" href="#home"><span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h9"/></svg></span>Weekly Posts</a><a class="link" href="#home">Back to the app</a></div>
+  <div class="page-head mt8"><div><h1 class="h-page" id="h-admin">Admin</h1><p class="lede">Read-only view of all brands. Times are UTC.</p></div>
+    <div class="row gap12 wrap"><span class="hint">Last updated 09:42</span><button class="btn btn-secondary sm" type="button"><svg class="i sm" aria-hidden="true"><use href="#i-refresh"/></svg>Refresh</button><label class="check small"><input type="checkbox">Refresh every 60 seconds</label></div></div>
+
+  <div class="stack">
+    <section class="card" aria-labelledby="a1"><h2 class="card-title" id="a1">Overview</h2>
+      <div class="grid g5 mt12" style="gap:8px"><div class="stat"><b>142</b><span>Owners signed up</span></div><div class="stat"><b>151</b><span>Brands</span></div><div class="stat"><b>9</b><span>New owners, last 7 days</span></div><div class="stat"><b>31</b><span>New owners, last 30 days</span></div><div class="stat"><b>76</b><span>Active brands, last 7 days</span></div></div>
+      <p class="hint mt8">Active means a brand made or approved a post in that time.</p></section>
+
+    <section class="card" aria-labelledby="a2"><h2 class="card-title" id="a2">AI cost</h2>
+      <p class="hint">Weekly cap per brand: $0.50. In fixture mode every cost is $0.</p>
+      <div class="grid g3 mt12" style="gap:8px"><div class="stat"><b>$1.84</b><span>Today (UTC)</span></div><div class="stat"><b>$11.20</b><span>Last 7 days</span></div><div class="stat"><b>$43.90</b><span>Last 30 days</span></div></div>
+      <div class="grid g2 mt16" style="align-items:start">
+        <div><p class="lbl">By kind of AI call</p><div class="tbl-wrap"><table><thead><tr><th scope="col">Kind</th><th scope="col">Calls, 7 days</th><th scope="col">Cost, 7 days</th></tr></thead><tbody><tr><td>copy</td><td class="num">412</td><td class="num">$4.10</td></tr><tr><td>brief fill</td><td class="num">380</td><td class="num">$1.90</td></tr><tr><td>background image</td><td class="num">96</td><td class="num">$5.20</td></tr></tbody></table></div></div>
+        <div><p class="lbl">Top 10 brands this week (against the $0.50 cap)</p><div class="tbl-wrap"><table><thead><tr><th scope="col">Brand</th><th scope="col">Cost this week</th><th scope="col">Calls</th><th scope="col">Cap</th></tr></thead><tbody><tr class="bad"><td>Spice Route Cafe</td><td class="num">$0.61</td><td class="num">38</td><td><span class="badge err">OVER CAP</span></td></tr><tr><td>Corner Bakery</td><td class="num">$0.18</td><td class="num">14</td><td><span class="badge ok">under</span></td></tr></tbody></table></div></div>
+      </div></section>
+
+    <section class="card" aria-labelledby="a3"><h2 class="card-title" id="a3">Posts, last 14 days</h2>
+      <div class="tbl-wrap mt8"><table><thead><tr><th scope="col">Day</th><th scope="col">Created</th><th scope="col">Approved</th><th scope="col">Published</th><th scope="col">Delivered</th></tr></thead><tbody>
+        <tr><td>15 Oct</td><td><div class="mini"><i style="width:60px;background:var(--g75)"></i><span class="num small">30</span></div></td><td><div class="mini"><i style="width:44px;background:rgba(228,87,46,.6)"></i><span class="num small">22</span></div></td><td><div class="mini"><i style="width:30px;background:#059669"></i><span class="num small">15</span></div></td><td class="num">4</td></tr>
+        <tr><td>14 Oct</td><td><div class="mini"><i style="width:52px;background:var(--g75)"></i><span class="num small">26</span></div></td><td><div class="mini"><i style="width:36px;background:rgba(228,87,46,.6)"></i><span class="num small">18</span></div></td><td><div class="mini"><i style="width:24px;background:#059669"></i><span class="num small">12</span></div></td><td class="num">3</td></tr>
+        <tr><td>13 Oct</td><td><div class="mini"><i style="width:40px;background:var(--g75)"></i><span class="num small">20</span></div></td><td><div class="mini"><i style="width:30px;background:rgba(228,87,46,.6)"></i><span class="num small">15</span></div></td><td><div class="mini"><i style="width:18px;background:#059669"></i><span class="num small">9</span></div></td><td class="num">2</td></tr>
+      </tbody></table></div></section>
+
+    <section class="card" aria-labelledby="a4"><h2 class="card-title" id="a4">Publishing queue</h2>
+      <div class="chips mt8"><span class="badge info">scheduled 34</span><span class="badge warn">due 2</span><span class="badge ok">published 211</span><span class="badge err">failed 3</span></div>
+      <p class="lbl mt16">Stuck for more than 15 minutes</p>
+      <div class="tbl-wrap"><table><thead><tr><th scope="col">Brand</th><th scope="col">Channel</th><th scope="col">State</th><th scope="col">Planned for</th><th scope="col">Minutes late</th><th scope="col">Tries</th></tr></thead><tbody><tr class="bad"><td>Spice Route Cafe</td><td>Instagram</td><td>due</td><td class="num">09:00</td><td class="num">42</td><td class="num">3</td></tr></tbody></table></div>
+      <p class="lbl mt16">Latest failures</p>
+      <div class="tbl-wrap"><table><thead><tr><th scope="col">When</th><th scope="col">Brand</th><th scope="col">Channel</th><th scope="col">Tries</th><th scope="col">Error</th></tr></thead><tbody><tr><td class="num">08 Oct 10:30</td><td>Corner Bakery</td><td>Facebook</td><td class="num">3</td><td>Permission expired</td></tr></tbody></table></div></section>
+
+    <div class="grid g2" style="align-items:start">
+      <section class="card" aria-labelledby="a5"><h2 class="card-title" id="a5">Connected accounts</h2><div class="chips mt8"><span class="badge ok">instagram active: 48</span><span class="badge warn">instagram expired: 4</span><span class="badge ok">facebook active: 22</span></div>
+        <p class="lbl mt16">Recent problems</p><div class="tbl-wrap"><table><thead><tr><th scope="col">When</th><th scope="col">Brand</th><th scope="col">Account</th><th scope="col">State</th><th scope="col">Error</th></tr></thead><tbody><tr><td class="num">12 Oct</td><td>Corner Bakery</td><td>facebook</td><td>expired</td><td>Token expired</td></tr></tbody></table></div></section>
+      <section class="card" aria-labelledby="a6"><h2 class="card-title" id="a6">Meta data-deletion requests</h2><div class="chips mt8"><span class="badge warn">received 1</span><span class="badge ok">done 7</span></div><p class="hint mt12">Oldest waiting request: MD-0231 (2 days ago)</p></section>
+    </div>
+
+    <section class="card" aria-labelledby="a7"><h2 class="card-title" id="a7">Email, last 7 days</h2>
+      <div class="tbl-wrap mt8"><table><thead><tr><th scope="col">Kind</th><th scope="col">Sent</th><th scope="col">Failed</th><th scope="col">Waiting</th></tr></thead><tbody><tr><td>magic link</td><td class="num">58</td><td class="num">0</td><td class="num">0</td></tr><tr><td>weekly posts</td><td class="num">96</td><td class="num">2</td><td class="num">1</td></tr></tbody></table></div>
+      <p class="lbl mt16">Recent failures</p>
+      <div class="tbl-wrap"><table><thead><tr><th scope="col">When</th><th scope="col">Kind</th><th scope="col">Brand</th><th scope="col">To</th><th scope="col">Error</th></tr></thead><tbody><tr class="bad"><td class="num">14 Oct</td><td>weekly posts</td><td>Spice Route Cafe</td><td>owner@example.com</td><td>Mailbox full</td></tr></tbody></table></div></section>
+  </div>
+</div>
+</section>
+
+<!-- =============== 15. THEME =============== -->
+<section class="screen" id="s-theme" data-title="Theme" aria-labelledby="h-theme" hidden>
+<div class="page w1200">
+  <div class="page-head"><div><h1 class="h-page" id="h-theme">Theme</h1><p class="lede">Every token and component of the Fish-style theme, from <code>docs/design/11-theme-fish-style.md</code>. Hover and focus states are forced so you can see them side by side.</p></div></div>
+  <div class="stack s24">
+
+  <section class="card lg" aria-labelledby="t-type"><h2 class="card-title" id="t-type">Type scale (Onest)</h2>
+    <div class="list mt12" style="display:block">
+      <div class="row between wrap" style="padding:10px 0;border-top:0"><span class="t-page">Home</span><span class="hint">text-page-title · 14/20 · 500</span></div>
+      <div class="row between wrap" style="padding:10px 0;border-top:1px solid var(--g94)"><span class="t-banner">Your next post goes out Friday 10:00</span><span class="hint">text-banner · 20/28 · 700 (dialog: 500)</span></div>
+      <div class="row between wrap" style="padding:10px 0;border-top:1px solid var(--g94)"><span class="t-section">Recent posts</span><span class="hint">text-section · 18/26 · 400 · letter-spacing 0.18px</span></div>
+      <div class="row between wrap" style="padding:10px 0;border-top:1px solid var(--g94)"><span class="t-card">Create a post</span><span class="hint">text-card-title · 16/24 · 500</span></div>
+      <div class="row between wrap" style="padding:10px 0;border-top:1px solid var(--g94)"><span class="t-body">Default body text, 16 on 24.</span><span class="hint">text-body · 16/24 · 400</span></div>
+      <div class="row between wrap" style="padding:10px 0;border-top:1px solid var(--g94)"><span class="t-ui">Sidebar item, button, form label</span><span class="hint">text-ui · 14/20 · 500</span></div>
+      <div class="row between wrap" style="padding:10px 0;border-top:1px solid var(--g94)"><span class="t-desc">Card description, up to three lines.</span><span class="hint">text-desc · 12/16 · 400</span></div>
+      <div class="row between wrap" style="padding:10px 0;border-top:1px solid var(--g94)"><span class="t-group">Brand (group label)</span><span class="hint">text-group · 12/16 · 500 · helper colour</span></div>
+      <div class="row between wrap" style="padding:10px 0;border-top:1px solid var(--g94)"><span><span class="badge new">New</span> <span class="badge new">Soon</span></span><span class="hint">text-badge · 11/14 · 500</span></div>
+    </div></section>
+
+  <section class="card lg" aria-labelledby="t-col"><h2 class="card-title" id="t-col">Colours</h2>
+    <p class="lbl mt16">Warm greys</p>
+    <div class="grid g6" style="gap:12px">
+      <div class="swatch"><div class="c" style="background:#FBFAF9"></div><div class="m"><b>gray-99</b><code>#FBFAF9</code><div class="hint">Page</div></div></div>
+      <div class="swatch"><div class="c" style="background:#FAF7F7"></div><div class="m"><b>gray-98</b><code>#FAF7F7</code><div class="hint">Hover on white</div></div></div>
+      <div class="swatch"><div class="c" style="background:#F6F0EC"></div><div class="m"><b>gray-96</b><code>#F6F0EC</code><div class="hint">Wells, tracks</div></div></div>
+      <div class="swatch"><div class="c" style="background:#F0EAE7"></div><div class="m"><b>gray-94</b><code>#F0EAE7</code><div class="hint">Dividers</div></div></div>
+      <div class="swatch"><div class="c" style="background:#E5DCD9"></div><div class="m"><b>gray-90</b><code>#E5DCD9</code><div class="hint">Borders</div></div></div>
+      <div class="swatch"><div class="c" style="background:#D0C4C0"></div><div class="m"><b>gray-80</b><code>#D0C4C0</code><div class="hint">Divider lines</div></div></div>
+      <div class="swatch"><div class="c" style="background:#C4B7B4"></div><div class="m"><b>gray-75</b><code>#C4B7B4</code><div class="hint">Disabled</div></div></div>
+      <div class="swatch"><div class="c" style="background:#9F928E"></div><div class="m"><b>gray-60</b><code>#9F928E</code><div class="hint">Helper text</div></div></div>
+      <div class="swatch"><div class="c" style="background:#7A6F6B"></div><div class="m"><b>gray-45</b><code>#7A6F6B</code><div class="hint">Description</div></div></div>
+      <div class="swatch"><div class="c" style="background:#554F4C"></div><div class="m"><b>gray-30</b><code>#554F4C</code><div class="hint">Subtitle</div></div></div>
+      <div class="swatch"><div class="c" style="background:#1D1D1C"></div><div class="m"><b>gray-6</b><code>#1D1D1C</code><div class="hint">Primary, body</div></div></div>
+      <div class="swatch"><div class="c" style="background:#161616"></div><div class="m"><b>gray-4</b><code>#161616</code><div class="hint">Titles</div></div></div>
+    </div>
+    <p class="lbl mt24">Translucent fills (shown on white)</p>
+    <div class="grid g5" style="gap:12px">
+      <div class="swatch"><div class="c" style="background:rgba(96,0,0,.03)"></div><div class="m"><b>fill-active</b><code>rgba(96,0,0,0.03)</code></div></div>
+      <div class="swatch"><div class="c" style="background:rgba(96,0,0,.016)"></div><div class="m"><b>fill-group</b><code>rgba(96,0,0,0.016)</code></div></div>
+      <div class="swatch"><div class="c" style="background:rgba(96,32,0,.063)"></div><div class="m"><b>border-light / secondary</b><code>rgba(96,32,0,0.063)</code></div></div>
+      <div class="swatch"><div class="c" style="background:rgba(73,21,0,.192)"></div><div class="m"><b>border-input</b><code>rgba(73,21,0,0.192)</code></div></div>
+      <div class="swatch"><div class="c" style="background:rgba(0,0,0,.05)"></div><div class="m"><b>border-card</b><code>rgba(0,0,0,0.05)</code></div></div>
+    </div>
+    <p class="lbl mt24">Accent: coral, used sparingly</p>
+    <div class="grid g4" style="gap:12px">
+      <div class="swatch"><div class="c" style="background:#E4572E"></div><div class="m"><b>coral</b><code>#E4572E</code></div></div>
+      <div class="swatch"><div class="c" style="background:#B93A15"></div><div class="m"><b>coral dark</b><code>#B93A15</code></div></div>
+      <div class="swatch"><div class="c" style="background:#FDF3EF"></div><div class="m"><b>coral tint</b><code>#FDF3EF</code></div></div>
+      <div class="swatch"><div class="c" style="background:#FEF7F5"></div><div class="m"><b>coral 50</b><code>#FEF7F5</code></div></div>
+    </div>
+    <p class="lbl mt24">Status</p>
+    <div class="grid g5" style="gap:12px">
+      <div class="swatch"><div class="c" style="background:#EBF9F6;border-bottom:1px solid #CCF0E7;color:#13725C;display:grid;place-items:center;font-weight:500">Success</div><div class="m"><code>#EBF9F6 · #CCF0E7 · #13725C</code></div></div>
+      <div class="swatch"><div class="c" style="background:#FFF6E5;border-bottom:1px solid #FFE3B2;color:#C2670C;display:grid;place-items:center;font-weight:500">Warning</div><div class="m"><code>#FFF6E5 · #FFE3B2 · #C2670C</code></div></div>
+      <div class="swatch"><div class="c" style="background:#FFEFEB;border-bottom:1px solid #FDD0C6;color:#B9241C;display:grid;place-items:center;font-weight:500">Error</div><div class="m"><code>#FFEFEB · #FDD0C6 · #B9241C</code></div></div>
+      <div class="swatch"><div class="c" style="background:#F0F7FF;border-bottom:1px solid #CCE5FF;color:#1D7BD8;display:grid;place-items:center;font-weight:500">Info</div><div class="m"><code>#F0F7FF · #CCE5FF · #1D7BD8</code></div></div>
+      <div class="swatch"><div class="c" style="background:#FFEFEB;color:#F54B45;display:grid;place-items:center;font-weight:500">New</div><div class="m"><code>#FFEFEB · #F54B45</code></div></div>
+    </div>
+    <p class="hint mt16">Contrast: description grey #7A6F6B on cream is about 4.6:1 (AA for body). Helper grey #9F928E is about 2.9:1, so it is used for non-essential text only (group labels, placeholders), never for labels, errors or instructions. Status text sits on its own tint, with body text in subtitle grey inside alerts.</p>
+  </section>
+
+  <section class="card lg" aria-labelledby="t-btn"><h2 class="card-title" id="t-btn">Buttons</h2>
+    <div class="tbl-wrap mt12"><table><thead><tr><th scope="col">Variant</th><th scope="col">Default</th><th scope="col">Hover</th><th scope="col">Pressed</th><th scope="col">Disabled</th><th scope="col">Sizes</th></tr></thead><tbody>
+      <tr><td>Primary</td><td><button class="btn btn-primary" type="button">Create a post</button></td><td><button class="btn btn-primary is-hover" type="button">Create a post</button></td><td><button class="btn btn-primary is-active" type="button">Create a post</button></td><td><button class="btn btn-primary" type="button" disabled>Create a post</button></td><td><span class="row gap8"><button class="btn btn-primary sm" type="button">Small</button><button class="btn btn-primary lg" type="button">Dialog 40</button></span></td></tr>
+      <tr><td>Secondary</td><td><button class="btn btn-secondary" type="button">Add a fact</button></td><td><button class="btn btn-secondary is-hover" type="button">Add a fact</button></td><td>-</td><td><button class="btn btn-secondary" type="button" disabled>Add a fact</button></td><td><button class="btn btn-secondary sm" type="button">Small</button></td></tr>
+      <tr><td>Outline</td><td><button class="btn btn-outline" type="button">Back</button></td><td><button class="btn btn-outline is-hover" type="button">Back</button></td><td>-</td><td><button class="btn btn-outline" type="button" disabled>Back</button></td><td><button class="btn btn-outline sm" type="button">Small</button></td></tr>
+      <tr><td>Ghost</td><td><button class="btn btn-ghost" type="button">Skip</button></td><td><button class="btn btn-ghost is-hover" type="button">Skip</button></td><td>-</td><td><button class="btn btn-ghost" type="button" disabled>Skip</button></td><td><button class="btn btn-ghost sm" type="button">Small</button></td></tr>
+      <tr><td>Danger outline</td><td><button class="btn btn-danger" type="button">Delete my account</button></td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+    </tbody></table></div>
+    <p class="row gap8 mt16 wrap"><button class="btn btn-primary" type="button"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg>With icon</button><button class="icon-btn round" type="button" aria-label="Help"><svg class="i" aria-hidden="true"><use href="#i-help"/></svg></button><button class="mic" type="button" aria-label="Speak"><svg class="i" aria-hidden="true"><use href="#i-mic"/></svg></button><span class="hint">Round icon button, mic button.</span></p>
+  </section>
+
+  <section class="card lg" aria-labelledby="t-in"><h2 class="card-title" id="t-in">Inputs</h2>
+    <div class="grid g4 mt12" style="align-items:start">
+      <div><label class="lbl" for="in1">Default</label><input class="input" id="in1" placeholder="e.g. Corner Bakery"></div>
+      <div><label class="lbl" for="in2">Hover</label><input class="input is-hover" id="in2" value="Corner Bakery"></div>
+      <div><label class="lbl" for="in3">Focus</label><input class="input is-focus" id="in3" value="Corner Bakery"></div>
+      <div><label class="lbl" for="in4">Error</label><input class="input is-error" id="in4" aria-invalid="true" aria-describedby="in4e" value="corner@"><p class="err" id="in4e"><svg class="i sm" aria-hidden="true"><use href="#i-alert"/></svg>Enter a valid email address.</p></div>
+      <div><label class="lbl" for="in5">Select (24px radius)</label><select class="select" id="in5"><option>English</option><option>हिंदी</option></select></div>
+      <div><label class="lbl" for="in6">Disabled</label><input class="input" id="in6" value="Not editable" disabled></div>
+      <div style="grid-column:span 2"><label class="lbl" for="in7">Textarea</label><textarea class="textarea" id="in7" placeholder="Describe what kind of post you want."></textarea></div>
+    </div>
+    <div class="row gap16 wrap mt16" style="gap:24px"><label class="check"><input type="checkbox">Checkbox</label><label class="check"><input type="checkbox" checked>Checked</label><label class="check"><input type="radio" name="th-r">Radio</label><label class="check"><input type="radio" name="th-r" checked>Selected</label><label class="check"><input type="checkbox" class="sw" role="switch" checked>Switch</label><label class="check"><input type="checkbox" disabled>Disabled</label></div>
+    <div class="grid g3 mt16" style="gap:8px"><label class="pick"><input type="radio" name="th-p"><span><b>Pick card</b><small>Default</small></span></label><label class="pick"><input type="radio" name="th-p" checked><span><b>Pick card</b><small>Selected: coral border and tint</small></span></label><label class="pick"><input type="radio" name="th-p" disabled><span><b>Pick card</b><small>Disabled</small></span></label></div>
+  </section>
+
+  <section class="card lg" aria-labelledby="t-chip"><h2 class="card-title" id="t-chip">Chips, badges and segmented control</h2>
+    <p class="lbl mt16">Chips</p>
+    <div class="chips"><button class="chip" type="button" aria-pressed="false">Default</button><button class="chip is-hover" type="button" aria-pressed="false">Hover</button><button class="chip" type="button" aria-pressed="true">Selected</button><button class="chip" type="button" disabled>Disabled</button><button class="chip two" type="button" aria-pressed="false">Phone<small>+91 80 4000 1234</small></button></div>
+    <p class="lbl mt16">Badges</p>
+    <div class="chips"><span class="badge">Neutral</span><span class="badge ok">Published</span><span class="badge info">Scheduled</span><span class="badge warn">Needs approval</span><span class="badge err">Failed</span><span class="badge coral">Your date</span><span class="badge new">New</span><span class="badge new">Soon</span><span class="badge outline">Not answered</span></div>
+    <p class="lbl mt16">Segmented control</p>
+    <div class="seg" role="tablist" aria-label="Demo"><button type="button" role="tab" aria-selected="true" data-demo-seg>Instagram</button><button type="button" role="tab" aria-selected="false" data-demo-seg>Facebook</button><button type="button" role="tab" aria-selected="false" data-demo-seg>WhatsApp</button></div>
+  </section>
+
+  <section class="card lg" aria-labelledby="t-al"><h2 class="card-title" id="t-al">Status alerts, cards and dialog</h2>
+    <div class="grid g2 mt16">
+      <div class="alert ok"><svg class="i" aria-hidden="true"><use href="#i-checkc"/></svg><div><b>Saved</b><p>Saved. We checked the words again.</p></div></div>
+      <div class="alert warn"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><div><b>Please check</b><p>We could not find these in your details.</p></div></div>
+      <div class="alert err"><svg class="i" aria-hidden="true"><use href="#i-alert"/></svg><div><b>This design needs a change</b><p>The text does not fit in the square picture.</p></div></div>
+      <div class="alert info"><svg class="i" aria-hidden="true"><use href="#i-info"/></svg><div><b>From your description</b><p>These fields came from your words.</p></div></div>
+    </div>
+    <div class="grid g3 mt16">
+      <div class="card"><p class="card-title">Card</p><p class="hint">16px radius, hairline border, soft shadow.</p></div>
+      <div class="card" style="box-shadow:none;border:0;background:linear-gradient(100deg,#FCE6DC,#F6F0EC)"><p class="card-title">Banner</p><p class="hint" style="color:var(--g30)">16px radius, no border, no shadow.</p></div>
+      <div class="card dashed"><p class="card-title">Empty state</p><p class="hint">Dashed, transparent.</p></div>
+    </div>
+    <div class="row gap12 mt16 wrap"><button class="btn btn-primary" type="button" data-open-dialog="skip">Open dialog</button><span class="hint">Overlay rgba(0,0,0,0.6). Dialog radius 16, 20/28 title, 40px buttons. Esc closes.</span></div>
+  </section>
+  </div>
+</div>
+</section>
+
+
+  </main>
+</div><!-- /main -->
+
+<nav class="bnav" aria-label="Main navigation (phone)">
+  <ul>
+    <li><a href="#details" data-bnav="create"><span class="pillw"><svg class="i" aria-hidden="true"><use href="#i-plus"/></svg></span>Create</a></li>
+    <li><a href="#queue" data-bnav="queue"><span class="pillw"><svg class="i" aria-hidden="true"><use href="#i-calendar"/></svg></span>Queue</a></li>
+    <li><a href="#brand" data-bnav="brand"><span class="pillw"><svg class="i" aria-hidden="true"><use href="#i-palette"/></svg></span>Brand</a></li>
+    <li><a href="#results" data-bnav="results"><span class="pillw"><svg class="i" aria-hidden="true"><use href="#i-chart"/></svg></span>Results</a></li>
+  </ul>
+</nav>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" aria-describedby="dlgText">
+    <h2 class="t-dialog" id="dlgTitle">Skip this post?</h2>
+    <p id="dlgText">We will leave it out. You can change your mind.</p>
+    <div class="btns"><button class="btn btn-outline lg" type="button" id="dlgCancel">Cancel</button><button class="btn btn-primary lg" type="button" id="dlgOk">Skip this post</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+</div><!-- /frame -->
+</div><!-- /stage -->
+
+<div class="proto" id="proto">
+  <button type="button" id="protoBtn" aria-expanded="false" aria-controls="protoPanel"><span class="dot"></span>Prototype</button>
+  <div class="panel" id="protoPanel" hidden>
+    <p class="t-group" style="color:var(--g45)">View</p>
+    <div class="seg block mt4" role="group" aria-label="Preview size"><button type="button" id="vDesk" aria-pressed="true">Desktop</button><button type="button" id="vPhone" aria-pressed="false">Phone 375</button></div>
+    <label for="jump">Jump to screen</label>
+    <select class="select" id="jump"></select>
+    <p class="hint mt8">Sample data only. Nothing is saved or sent.</p>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+  var frame=$('#frame'), sidebar=$('#sidebar'), scrollEl=$('#scroll'), toggle=$('#toggle');
+  var order=['home','login','setup','details','onpost','design','review','schedule','queue','brand','connections','results','history','admin','theme'];
+  var navMap={details:'create',onpost:'create',design:'create',review:'create',schedule:'create',queue:'queue',home:'home',results:'results',history:'history',brand:'brand',connections:'connections'};
+  var screens=$$('.screen'), lastOpener=null, ready=false, carried=null;
+
+  /* toast */
+  var tt; function toast(msg){var t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true},2600)}
+
+  /* sidebar / drawer */
+  function isPhone(){return frame.getBoundingClientRect().width<768}
+  function sync(){
+    var hidden=isPhone()?!frame.classList.contains('drawer-open'):frame.classList.contains('sb-collapsed');
+    sidebar.toggleAttribute('inert',hidden);
+    toggle.setAttribute('aria-expanded',String(!hidden));
+  }
+  toggle.addEventListener('click',function(){
+    if(isPhone()) frame.classList.toggle('drawer-open'); else frame.classList.toggle('sb-collapsed');
+    sync();
+  });
+  $('#scrim').addEventListener('click',function(){frame.classList.remove('drawer-open');sync()});
+  if(window.ResizeObserver) new ResizeObserver(sync).observe(frame);
+
+  /* routing */
+  function go(id,focus){
+    if(order.indexOf(id)<0) id='home';
+    screens.forEach(function(s){s.hidden=(s.id!=='s-'+id)});
+    var s=$('#s-'+id);
+    if(id==='details'&&carried!==null){$('#desc-ta').value=carried;carried=null;$('#fillNote').textContent='';$('#stillBox').hidden=true}
+    frame.dataset.chrome=s.dataset.chrome||'app';
+    $('#topTitle').textContent=s.dataset.title||'';
+    document.title=(s.dataset.title||'')+' | Weekly Posts (prototype)';
+    var key=navMap[id];
+    $$('[data-nav]').forEach(function(a){if(a.dataset.nav===key)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+    $$('[data-bnav]').forEach(function(a){if(a.dataset.bnav===key)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current')});
+    frame.toggleAttribute('data-foot',!!s.querySelector('.foot'));
+    frame.classList.remove('drawer-open'); $('#acctMenu').hidden=true; $('#acct').setAttribute('aria-expanded','false');
+    sync(); scrollEl.scrollTop=0; $('#jump').value=id;
+    if(focus){var h=$('h1',s); if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true})}}
+  }
+  window.addEventListener('hashchange',function(){go(location.hash.slice(1)||'home',true)});
+
+  /* generic click delegation */
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('[data-soon]'); if(t){e.preventDefault();toast(t.dataset.soon+' is coming soon.');return}
+    t=e.target.closest('[data-toast]'); if(t){ if(t.tagName==='A')e.preventDefault(); toast(t.dataset.toast); }
+    t=e.target.closest('[data-reveal]'); if(t){var r=$(t.dataset.reveal); if(r)r.hidden=false}
+    t=e.target.closest('[data-open-dialog]'); if(t){openDialog(t.dataset.openDialog,t)}
+    t=e.target.closest('[data-toggle-state]'); if(t){var c=t.closest('.stateful'); c.dataset.state=c.dataset.state==='on'?'off':'on'}
+    t=e.target.closest('[data-pick]'); if(t){var p=$(t.dataset.pick); p.hidden=!p.hidden; t.textContent=p.hidden?'Pick another time':'Use the suggested time'}
+    /* chips: multi toggle, or single when container has data-single */
+    t=e.target.closest('.chip[aria-pressed]');
+    if(t&&!t.disabled&&!t.closest('.seg')){
+      var box=t.parentElement;
+      if(box.hasAttribute('data-single')||box.dataset.single!==undefined){$$('.chip[aria-pressed]',box).forEach(function(b){b.setAttribute('aria-pressed','false')});t.setAttribute('aria-pressed','true')}
+      else t.setAttribute('aria-pressed',String(t.getAttribute('aria-pressed')!=='true'));
+    }
+    /* segmented: tabs / pressed groups */
+    t=e.target.closest('.seg button');
+    if(t){
+      var seg=t.parentElement, isTab=t.getAttribute('role')==='tab';
+      $$('button',seg).forEach(function(b){ if(isTab)b.setAttribute('aria-selected','false'); else if(b.hasAttribute('aria-pressed'))b.setAttribute('aria-pressed','false'); if(b.dataset.panel){var pn=$('#'+b.dataset.panel); if(pn)pn.hidden=true} });
+      if(isTab)t.setAttribute('aria-selected','true'); else if(t.hasAttribute('aria-pressed'))t.setAttribute('aria-pressed','true');
+      if(t.dataset.panel){var pn2=$('#'+t.dataset.panel); if(pn2)pn2.hidden=false}
+      if(t.dataset.title){var rt=$('#rv-title'); if(rt)rt.textContent=t.dataset.title}
+      if(t.dataset.recent){var em=t.dataset.recent==='empty';$('#recent-list').hidden=em;$('#recent-empty').hidden=!em;$('#recent-note').hidden=!em}
+      if(seg.id==='checkin'){var n=$('#checkinNote');n.hidden=false;n.textContent='Saved: '+t.textContent+'. You can change it.'}
+    }
+    /* palettes, themes */
+    t=e.target.closest('.pal[aria-pressed]'); if(t){$$('.pal[aria-pressed]',t.parentElement).forEach(function(b){b.setAttribute('aria-pressed','false')});t.setAttribute('aria-pressed','true')}
+    t=e.target.closest('.photo-pick'); if(t){$$('.photo-pick',t.closest('.grid')).forEach(function(b){b.setAttribute('aria-pressed','false')});t.setAttribute('aria-pressed','true');var np=$('#no-photo'); if(np&&t.closest('#s-details'))np.checked=false}
+  });
+
+  /* design options */
+  $$('[data-opt]').forEach(function(b){b.addEventListener('click',function(){
+    $$('[data-opt]').forEach(function(o){var on=(o===b);o.setAttribute('aria-pressed',String(on));o.textContent=on?'Selected':'Choose this one';o.className='btn sm block mt12 '+(on?'btn-primary':'btn-outline');o.closest('.opt').classList.toggle('sel',on)});
+  })});
+  var layouts=['Classic','Big headline','Photo top','Left stripe','Centered','Corner badge'], li=1;
+  $$('[data-layout]').forEach(function(b){b.addEventListener('click',function(){li=(li+parseInt(b.dataset.layout,10)+layouts.length)%layouts.length;$('#layoutName').textContent='Layout '+(li+1)+' of '+layouts.length+': '+layouts[li]})});
+
+  /* review flow */
+  var flagLeft=2;
+  function updateFlags(){
+    var ab=$('#approveBtn');
+    if(flagLeft>0){ab.disabled=true;$('#approveHint').hidden=false}
+    else{ab.disabled=false;$('#approveHint').hidden=true}
+  }
+  $$('[data-resolve]').forEach(function(b){b.addEventListener('click',function(){
+    var li2=b.closest('[data-flag]'); if(li2.dataset.done)return; li2.dataset.done='1';
+    $$('button',li2).forEach(function(x){x.disabled=true}); $('[data-result]',li2).textContent=b.dataset.resolve; $('[data-result]',li2).style.color='var(--ok-tx)';
+    flagLeft--; updateFlags();
+  })});
+  $('#approveBtn').addEventListener('click',function(){
+    var s=$('#rv-status'); s.className='badge ok'; s.textContent='Approved';
+    $('#rv-act').hidden=true; $('#rv-after').hidden=false; $('#nextSched').className='btn btn-primary';
+  });
+  $('#undoApprove').addEventListener('click',function(){
+    var s=$('#rv-status'); s.className='badge warn'; s.textContent='Needs your approval';
+    $('#rv-act').hidden=false; $('#rv-after').hidden=true; $('#nextSched').className='btn btn-secondary';
+  });
+
+  /* schedule */
+  $('#confirmSched').addEventListener('click',function(){$('#sched-propose').hidden=true;$('#sched-done').hidden=false});
+
+  /* queue pause */
+  $('#pauseSwitch').addEventListener('change',function(){$('#pausedBanner').hidden=!this.checked});
+
+  /* login */
+  $('#consent').addEventListener('change',function(){$('#sendLink').disabled=!this.checked;$('#consent-hint').hidden=this.checked});
+  $('#sendLink').addEventListener('click',function(){$('#login-1').hidden=true;$('#login-2').hidden=false});
+  $('#diffEmail').addEventListener('click',function(){$('#login-1').hidden=false;$('#login-2').hidden=true});
+
+  /* setup: tap an example chip to add */
+  $$('#likeChips .chip').forEach(function(c){c.addEventListener('click',function(){
+    var ins=['like1','like2','like3'].map(function(i){return $('#'+i)}), vals=ins.map(function(i){return i.value});
+    if(vals.indexOf(c.textContent)>=0)return; var free=ins.filter(function(i){return !i.value})[0]; if(free)free.value=c.textContent; else toast('All three lines are filled.');
+  })});
+  $('[data-mic-setup]').addEventListener('click',function(){toast('Recording looks the same as on the Details step.')});
+
+  /* mic (used by Home composer and Details) */
+  var SAMPLE='20% off all cakes this weekend. Call us to order.';
+  function fmt(n){return Math.floor(n/60)+':'+('0'+(n%60)).slice(-2)}
+  function mic(o){
+    var t,sec=0;
+    function stop(){clearInterval(t);o.rec.hidden=true;o.hide.hidden=false}
+    o.mic.addEventListener('click',function(){
+      sec=0;o.time.textContent='0:00';o.rec.hidden=false;o.hide.hidden=true;
+      t=setInterval(function(){sec++;o.time.textContent=fmt(sec)},1000);o.cancel.focus();
+    });
+    o.cancel.addEventListener('click',function(){stop();o.mic.focus()});
+    o.done.addEventListener('click',function(){
+      stop();o.hide.hidden=true;o.listen.hidden=false;
+      setTimeout(function(){o.listen.hidden=true;o.hide.hidden=false;o.ta.value=SAMPLE;o.ta.dispatchEvent(new Event('input'));o.mic.focus()},1100);
+    });
+  }
+  mic({ta:$('#desc-ta'),mic:$('#micBtn'),hide:$('#micBtn'),rec:$('#recBar'),time:$('#recTime'),cancel:$('#recCancel'),done:$('#recDone'),listen:$('#listen')});
+  mic({ta:$('#hTa'),mic:$('#hMic'),hide:$('#hActions'),rec:$('#hRec'),time:$('#hTime'),cancel:$('#hCancel'),done:$('#hDone'),listen:$('#hListen')});
+
+  /* Home composer: send carries the text to Details */
+  var hTa=$('#hTa'), hSend=$('#hSend');
+  hTa.addEventListener('input',function(){hSend.disabled=!hTa.value.trim()});
+  hTa.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(hTa.value.trim())hSend.click()}});
+  $('#composer').addEventListener('submit',function(e){e.preventDefault();if(!hTa.value.trim())return;carried=hTa.value.trim();hTa.value='';hSend.disabled=true;location.hash='details'});
+  $$('[data-fill]').forEach(function(b){b.addEventListener('click',function(){hTa.value=b.dataset.fill;hTa.dispatchEvent(new Event('input'));hTa.focus()})});
+
+  /* fill in the details */
+  $('#fillBtn').addEventListener('click',function(){
+    var b=this,orig=b.innerHTML; b.disabled=true; b.textContent='Reading your words...';
+    setTimeout(function(){b.disabled=false;b.innerHTML=orig;$('#fillNote').innerHTML='<svg class="i sm" aria-hidden="true"><use href="#i-check"/></svg>We filled in what your words covered.';$('#stillBox').hidden=false},900);
+  });
+
+  /* brand: in-page section nav + scroll spy */
+  var pills=$$('#brandNav button');
+  function setPill(id){pills.forEach(function(p){if(p.dataset.sec===id)p.setAttribute('aria-current','true');else p.removeAttribute('aria-current')})}
+  pills.forEach(function(p){p.addEventListener('click',function(){
+    var t=$('#'+p.dataset.sec); t.open=true; setPill(p.dataset.sec);
+    var dy=t.getBoundingClientRect().top-scrollEl.getBoundingClientRect().top; scrollEl.scrollTo({top:scrollEl.scrollTop+dy-56,behavior:'smooth'});
+  })});
+  scrollEl.addEventListener('scroll',function(){
+    if($('#s-brand').hidden)return; var top=scrollEl.getBoundingClientRect().top, cur=null;
+    $$('#s-brand .sect').forEach(function(s){if(s.getBoundingClientRect().top-top<120)cur=s});
+    if(cur)setPill(cur.id);
+  },{passive:true});
+
+  /* account menu */
+  $('#acct').addEventListener('click',function(e){e.stopPropagation();var m=$('#acctMenu');m.hidden=!m.hidden;this.setAttribute('aria-expanded',String(!m.hidden))});
+  document.addEventListener('click',function(e){if(!e.target.closest('.acct-wrap')){$('#acctMenu').hidden=true;$('#acct').setAttribute('aria-expanded','false')}});
+
+  /* dialog */
+  var dlg={skip:{t:'Skip this post?',p:'We will leave it out. You can change your mind.',c:'Cancel',o:'Skip this post'},
+           'delete':{t:'Delete everything?',p:'This can\'t be undone. Your business, photos, posts and connections will be deleted.',c:'No, keep my account',o:'Delete everything'}};
+  function openDialog(k,opener){
+    var d=dlg[k]||dlg.skip; $('#dlgTitle').textContent=d.t;$('#dlgText').textContent=d.p;$('#dlgCancel').textContent=d.c;$('#dlgOk').textContent=d.o;
+    lastOpener=opener; $('#overlay').hidden=false; $('#dlgCancel').focus();
+  }
+  function closeDialog(){$('#overlay').hidden=true; if(lastOpener)lastOpener.focus()}
+  $('#dlgCancel').addEventListener('click',closeDialog);
+  $('#dlgOk').addEventListener('click',function(){closeDialog();toast('Done (prototype).')});
+  $('#overlay').addEventListener('mousedown',function(e){if(e.target===this)closeDialog()});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'){
+      if(!$('#overlay').hidden){closeDialog();return}
+      if(!$('#acctMenu').hidden){$('#acctMenu').hidden=true;$('#acct').focus();return}
+      if(frame.classList.contains('drawer-open')){frame.classList.remove('drawer-open');sync();toggle.focus()}
+      $('#protoPanel').hidden=true;
+    }
+    if(e.key==='Tab'&&!$('#overlay').hidden){
+      var f=$$('button',$('#overlay')); if(!f.length)return; var first=f[0], last=f[f.length-1];
+      if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+      else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+    }
+  });
+
+  /* fake QR codes (illustration only, not scannable) */
+  function rng(seed){var a=0;for(var i=0;i<seed.length;i++)a=(a*31+seed.charCodeAt(i))|0;return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+  $$('svg[data-qr]').forEach(function(svg){
+    var r=rng(svg.dataset.qr), d='', n=21, fin=[[0,0],[14,0],[0,14]];
+    function inFinder(x,y){return fin.some(function(f){return x>=f[0]-1&&x<=f[0]+7&&y>=f[1]-1&&y<=f[1]+7})}
+    for(var y=0;y<n;y++)for(var x=0;x<n;x++){
+      var dark=false;
+      if(inFinder(x,y)){
+        fin.forEach(function(f){var dx=x-f[0],dy=y-f[1]; if(dx>=0&&dx<7&&dy>=0&&dy<7) dark=(dx===0||dx===6||dy===0||dy===6||(dx>=2&&dx<=4&&dy>=2&&dy<=4))});
+      } else dark=r()>0.52;
+      if(dark)d+='M'+x+' '+y+'h1v1h-1z';
+    }
+    svg.innerHTML='<rect width="21" height="21" fill="#fff"/><path d="'+d+'" fill="#161616"/>';
+  });
+
+  /* prototype control */
+  var sel=$('#jump'); order.forEach(function(id){var o=document.createElement('option');o.value=id;o.textContent=($('#s-'+id).dataset.title||id)+(id==='onpost'?' (On the post)':id==='details'?' (Details)':id==='design'?' (Design)':id==='review'?' (Review)':id==='schedule'?' (Schedule)':'');sel.appendChild(o)});
+  sel.addEventListener('change',function(){location.hash=sel.value});
+  $('#protoBtn').addEventListener('click',function(){var p=$('#protoPanel');p.hidden=!p.hidden;this.setAttribute('aria-expanded',String(!p.hidden))});
+  function setView(v){
+    document.body.classList.toggle('phone',v==='phone');
+    $('#vDesk').setAttribute('aria-pressed',String(v!=='phone'));$('#vPhone').setAttribute('aria-pressed',String(v==='phone'));
+    try{localStorage.setItem('wp-proto-view',v)}catch(e){}
+    frame.classList.remove('drawer-open'); sync();
+  }
+  $('#vDesk').addEventListener('click',function(){setView('desktop')});
+  $('#vPhone').addEventListener('click',function(){setView('phone')});
+  try{var sv=localStorage.getItem('wp-proto-view'); if(sv==='phone')setView('phone')}catch(e){}
+  if(/[?&]view=phone/.test(location.search))setView('phone');
+
+  go(location.hash.slice(1)||'home',false); ready=true;
+})();
+</script>
+</body>
+</html>

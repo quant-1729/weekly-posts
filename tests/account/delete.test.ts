@@ -51,8 +51,9 @@ describe("deleteAccount (AC 22)", () => {
     // Every table must be tied to an account by some column, or this test cannot see it.
     // Only tables that hold no personal data may be left out, and each must be named here on purpose
     // (used_tokens: a hash of a random link id, no brand and no user; deletion_requests: Meta's
-    // data-deletion receipts, only a platform account id and a code, kept after the account is gone).
-    const NO_PERSONAL_DATA = ["used_tokens", "deletion_requests"];
+    // data-deletion receipts, only a platform account id and a code, kept after the account is gone;
+    // admin_actions: what an admin did, keyed by the admin's own email, not an owner's data).
+    const NO_PERSONAL_DATA = ["used_tokens", "deletion_requests", "admin_actions"];
     expect([...rules].filter(([t, conds]) => conds.length === 0 && !NO_PERSONAL_DATA.includes(t)).map(([t]) => t)).toEqual([]);
     expect(allTables).toEqual(expect.arrayContaining(CORE_TABLES));
 

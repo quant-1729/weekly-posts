@@ -73,24 +73,24 @@ export function cleanup(b: Bakery): void {
   rmSync(b.dir, { recursive: true, force: true });
 }
 
-/** A ready brief for the bakery (an offer on cakes, with the contact blocks on) with any field overridden. */
+/**
+ * A ready brief for the bakery (an offer on cakes, with the contact blocks on) with any field overridden. A brief with
+ * no main point gets a short description, since a ready brief needs one or the other.
+ */
 export async function readyBrief(b: Bakery, patch: Record<string, unknown> = {}): Promise<Brief> {
-  return createBrief(
-    b.userId,
-    b.brandId,
-    {
-      postType: "offer",
-      primaryUspId: b.usps.discount.id,
-      secondaryUspIds: [],
-      cta: "visit",
-      blocks: { phone: true, website: true, address: true, dates: true },
-      endsOn: "2026-10-20",
-      channels: ["instagram"],
-      status: "ready",
-      ...patch,
-    },
-    { now: NOW },
-  );
+  const input: Record<string, unknown> = {
+    postType: "offer",
+    primaryUspId: b.usps.discount.id,
+    secondaryUspIds: [],
+    cta: "visit",
+    blocks: { phone: true, website: true, address: true, dates: true },
+    endsOn: "2026-10-20",
+    channels: ["instagram"],
+    status: "ready",
+    ...patch,
+  };
+  if (!input.primaryUspId && !("notes" in patch)) input.notes = "Fresh cakes baked every morning.";
+  return createBrief(b.userId, b.brandId, input, { now: NOW });
 }
 
 let seq = 0;

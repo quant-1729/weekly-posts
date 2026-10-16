@@ -212,7 +212,7 @@ export async function generateBackground(
     } catch (e) {
       usd += failedCallUsd(e);
       spent += usd;
-      await recordUsage(brandId, userId, 'image', usd);
+      await recordUsage(brandId, userId, 'image', usd, { ok: false }); // image + partial check: no single model
       return { ok: false, reason: 'check_failed', message: e instanceof Error ? e.message : String(e), attempts, usd: spent };
     }
     usd += checked.usd;

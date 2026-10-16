@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { cardClass } from "@/components/ui";
 import type { AdminMetrics, Count } from "@/lib/admin/metrics";
 
 // Server-rendered panels for /admin. Plain tables and CSS bars; no chart library.
@@ -9,9 +10,9 @@ export const when = (iso: string | null) => (iso ? `${iso.slice(0, 10)} ${iso.sl
 
 export function Panel({ title, note, children }: { title: string; note?: string; children: ReactNode }) {
   return (
-    <section className="min-w-0 rounded-xl border border-stone-200 bg-white p-4">
-      <h2 className="text-lg font-bold">{title}</h2>
-      {note && <p className="mt-1 text-sm text-stone-500">{note}</p>}
+    <section className={`min-w-0 ${cardClass}`}>
+      <h2 className="text-card-title text-title">{title}</h2>
+      {note && <p className="mt-1 text-[13px] leading-[18px] text-desc">{note}</p>}
       <div className="mt-3 space-y-4">{children}</div>
     </section>
   );
@@ -19,9 +20,9 @@ export function Panel({ title, note, children }: { title: string; note?: string;
 
 export function Stat({ label, value, tone }: { label: string; value: string | number; tone?: "bad" }) {
   return (
-    <div className="min-w-0 rounded-lg bg-stone-50 px-3 py-2">
-      <div className={`text-xl font-bold ${tone === "bad" ? "text-red-700" : ""}`}>{value}</div>
-      <div className="text-sm text-stone-600">{label}</div>
+    <div className="min-w-0 rounded-xl border border-divider bg-cream px-3.5 py-3">
+      <div className={`text-[24px] font-medium leading-8 tabular-nums ${tone === "bad" ? "text-err-tx" : "text-title"}`}>{value}</div>
+      <div className="text-note text-desc">{label}</div>
     </div>
   );
 }
@@ -31,17 +32,17 @@ export function Stats({ children }: { children: ReactNode }) {
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-  return <p className="text-sm text-stone-500">{children}</p>;
+  return <p className="text-[13px] leading-[18px] text-desc">{children}</p>;
 }
 
 export function Table({ head, children }: { head: string[]; children: ReactNode }) {
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-max text-left text-sm">
+      <table className="w-full min-w-max text-left text-[14px] leading-5">
         <thead>
-          <tr className="border-b border-stone-300">
+          <tr className="border-b border-divider">
             {head.map((h) => (
-              <th key={h} className="py-2 pr-4 font-semibold">
+              <th key={h} className="py-2 pr-4 text-note text-desc">
                 {h}
               </th>
             ))}
@@ -54,14 +55,14 @@ export function Table({ head, children }: { head: string[]; children: ReactNode 
 }
 
 export const Td = ({ children, bad, wide }: { children: ReactNode; bad?: boolean; wide?: boolean }) => (
-  <td className={`py-2 pr-4 align-top ${bad ? "font-semibold text-red-700" : ""} ${wide ? "min-w-64 max-w-md whitespace-normal break-words" : ""}`}>{children}</td>
+  <td className={`py-2 pr-4 align-top ${bad ? "font-medium text-err-tx" : ""} ${wide ? "min-w-64 max-w-md whitespace-normal break-words" : ""}`}>{children}</td>
 );
 
-const Row = ({ children, bad }: { children: ReactNode; bad?: boolean }) => <tr className={`border-b border-stone-200 ${bad ? "bg-red-50" : ""}`}>{children}</tr>;
+const Row = ({ children, bad }: { children: ReactNode; bad?: boolean }) => <tr className={`border-b border-divider ${bad ? "bg-err-bg" : ""}`}>{children}</tr>;
 
 const countsLine = (rows: Count[]) =>
   rows.map((r) => (
-    <li key={r.key} className="rounded-full border border-stone-200 bg-stone-50 px-3 py-1 text-sm">
+    <li key={r.key} className="rounded-full bg-well px-3 py-1 text-[13px] leading-[18px] text-sub">
       {r.key.replace(/_/g, " ")}: <b>{r.n}</b>
     </li>
   ));
@@ -77,7 +78,7 @@ export function OverviewPanel({ m }: { m: AdminMetrics }) {
         <Stat label="New owners, last 30 days" value={o.newOwners30d} />
         <Stat label="Active brands, last 7 days" value={o.activeBrands7d} />
       </Stats>
-      <p className="text-sm text-stone-500">Active means the brand made a post, took an action on a post, or used AI in the last 7 days.</p>
+      <p className="text-[13px] leading-[18px] text-desc">Active means the brand made a post, took an action on a post, or used AI in the last 7 days.</p>
     </Panel>
   );
 }
@@ -92,7 +93,7 @@ export function CostPanel({ m }: { m: AdminMetrics }) {
         <Stat label="Last 30 days" value={usd(c.last30dUsd)} />
       </Stats>
       <div>
-        <h3 className="mb-1 font-semibold">By kind of AI call</h3>
+        <h3 className="mb-1 font-medium">By kind of AI call</h3>
         {c.byKind.length === 0 ? (
           <Empty>No AI usage in the last 30 days.</Empty>
         ) : (
@@ -110,7 +111,7 @@ export function CostPanel({ m }: { m: AdminMetrics }) {
         )}
       </div>
       <div>
-        <h3 className="mb-1 font-semibold">Top 10 brands this week (against the {usd(c.weeklyCapUsd)} cap)</h3>
+        <h3 className="mb-1 font-medium">Top 10 brands this week (against the {usd(c.weeklyCapUsd)} cap)</h3>
         {c.topBrands.length === 0 ? (
           <Empty>No AI usage this week yet.</Empty>
         ) : (
@@ -153,7 +154,7 @@ export function PostsPanel({ m }: { m: AdminMetrics }) {
               <Td>
                 <div className="w-24">
                   {d.approved}
-                  {bar(d.approved, "bg-[#E4572E]/60")}
+                  {bar(d.approved, "bg-coral/60")}
                 </div>
               </Td>
               <Td>
@@ -177,7 +178,7 @@ export function QueuePanel({ m }: { m: AdminMetrics }) {
     <Panel title="Publishing queue">
       {q.byStatus.length === 0 ? <Empty>Nothing has been queued yet.</Empty> : <ul className="flex flex-wrap gap-2">{countsLine(q.byStatus)}</ul>}
       <div>
-        <h3 className="mb-1 font-semibold">Stuck for more than {q.stuckMinutes} minutes</h3>
+        <h3 className="mb-1 font-medium">Stuck for more than {q.stuckMinutes} minutes</h3>
         <p className="mb-2 text-sm text-stone-500">Being published for too long, or past its time and still waiting.</p>
         {q.stuck.length === 0 ? (
           <Empty>Nothing is stuck.</Empty>
@@ -197,7 +198,7 @@ export function QueuePanel({ m }: { m: AdminMetrics }) {
         )}
       </div>
       <div>
-        <h3 className="mb-1 font-semibold">Latest failures</h3>
+        <h3 className="mb-1 font-medium">Latest failures</h3>
         {q.failures.length === 0 ? (
           <Empty>No failed posts.</Empty>
         ) : (
@@ -234,7 +235,7 @@ export function ConnectionsPanel({ m }: { m: AdminMetrics }) {
         </ul>
       )}
       <div>
-        <h3 className="mb-1 font-semibold">Recent problems</h3>
+        <h3 className="mb-1 font-medium">Recent problems</h3>
         {c.problems.length === 0 ? (
           <Empty>No connection problems.</Empty>
         ) : (
@@ -274,7 +275,7 @@ export function EmailPanel({ m }: { m: AdminMetrics }) {
         </Table>
       )}
       <div>
-        <h3 className="mb-1 font-semibold">Recent failures</h3>
+        <h3 className="mb-1 font-medium">Recent failures</h3>
         {e.failures.length === 0 ? (
           <Empty>No failed emails.</Empty>
         ) : (
@@ -295,6 +296,41 @@ export function EmailPanel({ m }: { m: AdminMetrics }) {
   );
 }
 
+export function ResearchPanel({ m }: { m: AdminMetrics }) {
+  const r = m.research;
+  return (
+    <Panel title="Research (Ideas)" note="Weekly and manual trend research. Counts, cost and error codes only; the week starts Monday, UTC.">
+      <Stats>
+        <Stat label="Runs this week" value={r.runsThisWeek} />
+        <Stat label="Cost this week" value={usd(r.costThisWeekUsd)} />
+        <Stat label="Cost, all time" value={usd(r.costTotalUsd)} />
+      </Stats>
+      {r.byStatus.length === 0 ? <Empty>No research runs this week.</Empty> : <ul className="flex flex-wrap gap-2">{countsLine(r.byStatus)}</ul>}
+      <div>
+        <h3 className="mb-1 font-medium">Top reasons runs were capped, last 30 days</h3>
+        {r.cappedReasons.length === 0 ? <Empty>No capped runs.</Empty> : <ul className="flex flex-wrap gap-2">{countsLine(r.cappedReasons)}</ul>}
+      </div>
+      <div>
+        <h3 className="mb-1 font-medium">Failed runs, last 14 days</h3>
+        {r.failures.length === 0 ? (
+          <Empty>No failed runs.</Empty>
+        ) : (
+          <Table head={["When", "Brand", "Run", "Error"]}>
+            {r.failures.map((f, i) => (
+              <Row key={i}>
+                <Td>{when(f.at)}</Td>
+                <Td>{f.brandName}</Td>
+                <Td>{f.trigger}</Td>
+                <Td wide>{f.error || "(no error text)"}</Td>
+              </Row>
+            ))}
+          </Table>
+        )}
+      </div>
+    </Panel>
+  );
+}
+
 export function DeletionsPanel({ m, now }: { m: AdminMetrics; now: number }) {
   const d = m.deletions;
   const oldestDays = d.oldestPendingAt ? Math.max(0, Math.floor((now - Date.parse(d.oldestPendingAt)) / 86_400_000)) : null;
@@ -302,7 +338,7 @@ export function DeletionsPanel({ m, now }: { m: AdminMetrics; now: number }) {
     <Panel title="Meta data-deletion requests" note="Requests from Instagram or Facebook to delete a person's data. Answer them promptly.">
       {d.byStatus.length === 0 ? <Empty>No deletion requests.</Empty> : <ul className="flex flex-wrap gap-2">{countsLine(d.byStatus.map((r) => ({ ...r, key: r.key === "received" ? "waiting" : r.key })))}</ul>}
       {d.oldestPendingAt && (
-        <p className={`text-sm ${oldestDays !== null && oldestDays >= 7 ? "font-semibold text-red-700" : "text-stone-700"}`}>
+        <p className={`text-sm ${oldestDays !== null && oldestDays >= 7 ? "font-medium text-red-700" : "text-stone-700"}`}>
           Oldest waiting request: {when(d.oldestPendingAt)} ({oldestDays} {oldestDays === 1 ? "day" : "days"} ago).
         </p>
       )}

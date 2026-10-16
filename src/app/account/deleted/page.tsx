@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AuthCard } from "@/components/auth/auth-card";
+import { linkButton } from "@/components/ui";
 import { s } from "@/lib/i18n/strings";
 
 export const metadata = { robots: { index: false, follow: false } };
@@ -7,15 +9,12 @@ export const metadata = { robots: { index: false, follow: false } };
 export default function Page() {
   const t = s.account.deletedPage;
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center px-5 py-8 md:max-w-[560px]">
-      <div className="md:rounded-2xl md:border md:border-stone-200 md:bg-white md:p-10 md:shadow-sm">
-      <h1 className="mb-1 text-2xl font-bold text-[#E4572E]">{s.appName}</h1>
-      <h2 className="mb-2 mt-4 text-xl font-semibold">{t.title}</h2>
-      <p className="text-stone-700">{t.body}</p>
-      <Link href="/login" className="mt-6 inline-block py-2 text-sm text-stone-600 underline">
+    <AuthCard>
+      <h1 className="mt-6 text-dialog text-title">{t.title}</h1>
+      <p className="mt-2 text-[14px] leading-5 text-desc">{t.body}</p>
+      <Link href="/login" className={`${linkButton} mt-6`}>
         {t.link}
       </Link>
-      </div>
-    </main>
+    </AuthCard>
   );
 }

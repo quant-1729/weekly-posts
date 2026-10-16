@@ -113,7 +113,7 @@ export function UspPicker({
 
   return (
     <EditorCard id="usps" title={t.title} hint={t.hint} fromDescription={fromDescription}>
-      {usps.length === 0 && <p className="text-stone-600">{t.empty}</p>}
+      {usps.length === 0 && <p className="text-[14px] leading-5 text-desc">{t.empty}</p>}
       {usps.length > 0 && (
         <div className="space-y-2">
           <fieldset className="min-w-0 space-y-2">

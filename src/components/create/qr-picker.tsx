@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { checkQrLinkAction } from "@/app/(app)/create/actions";
-import { errorClass, hintClass, inputClass, labelClass } from "@/components/ui";
+import { errorClass, hintClass, inputClass, labelClass, linkButton, wellClass } from "@/components/ui";
 import type { PaymentChoice } from "@/lib/briefs/editor-data";
 import { qrTargetUrl, type QrDraft } from "@/lib/briefs/editor-state";
 import { QR_LINK_TARGETS, type QrLinkTarget } from "@/lib/briefs/types";
@@ -74,14 +74,14 @@ export function QrPicker({
               <input
                 type="radio"
                 name="qr-mode"
-                className="mt-1 h-5 w-5 shrink-0"
+                className="mt-0.5 shrink-0"
                 checked={qr.mode === m.mode}
                 disabled={m.disabled}
                 onChange={() => setMode(m.mode)}
               />
               <span className="min-w-0">
-                <span className="block font-medium">{m.label}</span>
-                {m.hint && <span className="block break-words text-sm text-stone-600">{m.hint}</span>}
+                <span className="block text-ui text-title">{m.label}</span>
+                {m.hint && <span className="mt-0.5 block break-words text-note text-desc">{m.hint}</span>}
               </span>
             </label>
           ))}
@@ -90,7 +90,7 @@ export function QrPicker({
 
       {!payment && (
         <p>
-          <Link href="/brand#payment" className="inline-flex min-h-11 items-center font-medium underline">
+          <Link href="/brand#payment" className={linkButton}>
             {t.paymentSetup}
           </Link>
         </p>
@@ -131,7 +131,7 @@ export function QrPicker({
             />
             {!qr.url.trim() && qr.target !== "custom" && <p className={hintClass}>{t.noLinkForTarget}</p>}
             {checked && (
-              <p role={checked.ok ? "status" : "alert"} className={checked.ok ? "mt-1 text-sm text-stone-600" : errorClass}>
+              <p role={checked.ok ? "status" : "alert"} className={checked.ok ? "mt-1 flex items-center gap-1.5 text-[13px] font-medium leading-[18px] text-ok-tx" : errorClass}>
                 {pending ? t.checking : checked.text}
               </p>
             )}
@@ -145,9 +145,9 @@ export function QrPicker({
       )}
 
       {qr.mode === "payment" && payment && (
-        <p data-qr-payment className="break-words rounded-xl bg-stone-50 p-3 text-stone-800">
+        <p data-qr-payment className={`break-words text-[14px] leading-5 ${wellClass}`}>
           {fill(t.paymentFor, { payee: payment.payeeName, address: payment.address })}
-          <span className="mt-1 block text-sm text-stone-600">{t.paymentHint}</span>
+          <span className="mt-1 block text-[13px] leading-[18px] text-desc">{t.paymentHint}</span>
         </p>
       )}
     </EditorCard>

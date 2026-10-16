@@ -42,6 +42,8 @@ vi.mock("@/app/(app)/create/[briefId]/actions", () => ({
   approvePostAction: vi.fn(),
   approveAllAction: vi.fn(),
   undoApprovalAction: vi.fn(),
+  saveCaptionAction: vi.fn(),
+  undoAllAction: vi.fn(),
 }));
 
 import QueuePage from "@/app/(app)/week/page";

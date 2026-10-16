@@ -15,7 +15,7 @@ import { rewriteJsonSchema, rewriteSchema, type Rewrite, type V2FactCheck } from
 import { getDb } from '@/lib/db';
 import { hasBlockingFlags, loadGuardrailContext, runGuardrail, type GuardrailPostInput } from '@/lib/guardrail';
 import { s } from '@/lib/i18n/strings';
-import { DailyCapError, assertUnderDailyCap, failedCallUsd, recordUsage } from '@/lib/usage';
+import { DailyCapError, assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage } from '@/lib/usage';
 import { WeeklyCapError, assertUnderWeeklyCap } from '@/lib/usage/caps';
 import { fixtureFactCheck } from '@/lib/weekly/fixtures';
 import { fitHashtags, fitImageText, trimAtWord, trimCaption } from '@/lib/weekly/normalize';
@@ -145,14 +145,14 @@ export async function rewritePost(ref: PostRef & { instruction: string }, deps: 
     // An answer that did not validate still cost money (h-2).
     const lost = failedCallUsd(err);
     if (lost > 0) {
-      await recordUsage(ref.brandId, actorUser, 'rewrite', lost);
+      await recordUsage(ref.brandId, actorUser, 'rewrite', lost, { ok: false, model: failedCallModel(err) });
       await addToBatchUsd(ref.brandId, post.batchId, lost);
     }
     return fail('ai_failed', e.aiFailed);
   }
   const aiMs = Date.now() - tAi;
   const rewriteUsd = generated.stats?.usd ?? 0;
-  await recordUsage(ref.brandId, actorUser, 'rewrite', rewriteUsd);
+  await recordUsage(ref.brandId, actorUser, 'rewrite', rewriteUsd, { model: generated.stats?.model });
   await addToBatchUsd(ref.brandId, post.batchId, rewriteUsd);
 
   // --- tidy to the channel limits -----------------------------------------------------------

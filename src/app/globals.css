@@ -1,9 +1,294 @@
 @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-noto-sans), var(--font-noto-devanagari), system-ui, sans-serif;
+/*
+ * Design tokens: the "fish-style" theme (docs/design/11-theme-fish-style.md, approved prototype docs/design/prototype-fish-theme.html).
+ * Warm neutrals, pill buttons, 16px cards, near-black primary action, coral (#E4572E) used sparingly.
+ *
+ * Every token is a CSS variable (the @theme block below, plus :root for the ones Tailwind has no utility for)
+ * and Tailwind v4 turns the @theme entries into classes: bg-cream, text-ink, border-line, shadow-card, rounded-card, text-card-title...
+ * The stock stone / amber / emerald / red / green / sky / blue shades the older screens use are re-pointed at the same
+ * warm palette, so a screen that has not been rewritten still looks right.
+ */
+
+@theme {
+  /* Fonts. Onest first; Noto stays for scripts Onest does not cover (Devanagari, Arabic...). */
+  --font-sans: var(--font-onest), system-ui, -apple-system, "Segoe UI", Roboto, var(--font-noto-sans), var(--font-noto-devanagari), "Noto Sans Arabic", sans-serif;
+
+  /* Warm-neutral greys (Fish "new-gray", tinted brown). */
+  --color-cream: #fbfaf9; /* gray-99: page background */
+  --color-hover: #faf7f7; /* gray-98: hover on white */
+  --color-well: #f6f0ec; /* gray-96: wells, tracks */
+  --color-divider: #f0eae7; /* gray-94: dividers on cream */
+  --color-edge: #e5dcd9; /* gray-90: opaque borders */
+  --color-rule: #d0c4c0; /* gray-80 */
+  --color-faint: #c4b7b4; /* gray-75: disabled */
+  --color-helper: #9f928e; /* gray-60: helper text (non-essential only) */
+  --color-desc: #7a6f6b; /* gray-45: description text */
+  --color-sub: #554f4c; /* gray-30: subtitle text, secondary nav */
+  --color-ink-3: #3e3b3a; /* gray-20: pressed */
+  --color-ink-2: #333130; /* gray-15: primary hover */
+  --color-ink: #1d1d1c; /* gray-6: primary button, body text */
+  --color-title: #161616; /* gray-4: titles */
+
+  /* Translucent fills and borders. */
+  --color-fill-active: rgb(96 0 0 / 0.03);
+  --color-fill-group: rgb(96 0 0 / 0.016);
+  --color-fill-secondary: rgb(96 32 0 / 0.063);
+  --color-fill-secondary-hover: rgb(102 31 0 / 0.1);
+  --color-line-light: rgb(96 32 0 / 0.063);
+  --color-line-input: rgb(73 21 0 / 0.192);
+  --color-line-input-hover: rgb(38 9 0 / 0.44);
+  --color-line: rgb(0 0 0 / 0.05);
+
+  /* Accent: used for the focus ring, progress, selected cards and badges. Primary buttons are near-black. */
+  --color-coral: #e4572e;
+  --color-coral-dark: #b93a15;
+  --color-coral-tint: #fdf3ef;
+  --color-coral-50: #fef7f5;
+  --color-hero-from: #fce6dc; /* the banner gradient on Home */
+  --color-hero-via: #f9ede6;
+
+  /* Status. */
+  --color-ok-bg: #ebf9f6;
+  --color-ok-bd: #ccf0e7;
+  --color-ok-tx: #13725c;
+  --color-warn-bg: #fff6e5;
+  --color-warn-bd: #ffe3b2;
+  --color-warn-tx: #c2670c;
+  --color-warn-deep: #9a5009;
+  --color-err-bg: #ffefeb;
+  --color-err-bd: #fdd0c6;
+  --color-err-tx: #b9241c;
+  --color-info-bg: #f0f7ff;
+  --color-info-bd: #cce5ff;
+  --color-info-tx: #1a68b8;
+
+  /* Page widths (centred content columns). */
+  --container-page-sm: 720px;
+  --container-page-md: 880px;
+  --container-page-lg: 1040px;
+  --container-page-xl: 1200px;
+
+  /* Radii. */
+  --radius-card: 16px;
+  --radius-block: 20px;
+  --radius-select: 24px;
+  --radius-toggle: 10px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+
+  /* Shadows. */
+  --shadow-card: 0 1px 3px rgb(0 0 0 / 0.04);
+  --shadow-tab: 0 1px 2px rgb(0 0 0 / 0.05);
+  --shadow-composer: 0 2px 10px rgb(0 0 0 / 0.04);
+  --shadow-dialog: 0 12px 32px -4px rgb(0 0 0 / 0.08), 0 0 1px rgb(0 0 0 / 0.1);
+  --shadow-fade: 0 -14px 14px -6px #fbfaf9; /* the soft edge above a sticky footer */
+  --shadow-float: 0 6px 20px -4px rgb(0 0 0 / 0.12), 0 0 1px rgb(0 0 0 / 0.14);
+
+  /* Type scale (measured from the reference). Use as text-page-title, text-card-title, text-ui... */
+  --text-page-title: 14px;
+  --text-page-title--line-height: 20px;
+  --text-page-title--font-weight: 500;
+  --text-banner: 20px;
+  --text-banner--line-height: 28px;
+  --text-banner--font-weight: 700;
+  --text-dialog: 20px;
+  --text-dialog--line-height: 28px;
+  --text-dialog--font-weight: 500;
+  --text-section: 18px;
+  --text-section--line-height: 26px;
+  --text-section--letter-spacing: 0.18px;
+  --text-card-title: 16px;
+  --text-card-title--line-height: 24px;
+  --text-card-title--font-weight: 500;
+  --text-ui: 14px;
+  --text-ui--line-height: 20px;
+  --text-ui--font-weight: 500;
+  --text-note: 12px; /* description text on cards */
+  --text-note--line-height: 16px;
+  --text-group: 12px;
+  --text-group--line-height: 16px;
+  --text-group--font-weight: 500;
+  --text-badge: 11px;
+  --text-badge--line-height: 14px;
+  --text-badge--font-weight: 500;
+
+  /* Re-point the stock shades the older screens use at the warm palette. */
+  --color-stone-50: #fbfaf9;
+  --color-stone-100: #f6f0ec;
+  --color-stone-200: #f0eae7;
+  --color-stone-300: #d8cdc7;
+  --color-stone-400: #c4b7b4;
+  --color-stone-500: #7a6f6b;
+  --color-stone-600: #6a605c;
+  --color-stone-700: #554f4c;
+  --color-stone-800: #3e3b3a;
+  --color-stone-900: #1d1d1c;
+  --color-amber-50: #fff6e5;
+  --color-amber-100: #ffefd0;
+  --color-amber-200: #ffe3b2;
+  --color-amber-300: #ffd48a;
+  --color-amber-400: #f0a93a;
+  --color-amber-800: #9a5009;
+  --color-amber-900: #7d4107;
+  --color-emerald-50: #ebf9f6;
+  --color-emerald-100: #ccf0e7;
+  --color-emerald-600: #13a37f;
+  --color-emerald-800: #13725c;
+  --color-green-100: #ccf0e7;
+  --color-green-800: #13725c;
+  --color-red-50: #ffefeb;
+  --color-red-100: #ffe1da;
+  --color-red-300: #fdd0c6;
+  --color-red-700: #b9241c;
+  --color-red-800: #9d1d16;
+  --color-red-900: #7f1812;
+  --color-blue-100: #e3f0ff;
+  --color-blue-800: #1a68b8;
+  --color-sky-100: #e3f0ff;
+  --color-sky-200: #cce5ff;
+  --color-sky-300: #a9d2fb;
+  --color-sky-900: #164f8c;
 }
 
+:root {
+  --focus: #e4572e;
+  --sidebar-w: 224px;
+  --topbar-h: 52px;
+}
+
+html,
 body {
-  font-family: var(--font-noto-sans), var(--font-noto-devanagari), system-ui, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  text-rendering: optimizeLegibility;
+}
+
+/* Visible keyboard focus everywhere: 2px coral, offset 2px (unlayered, so it also wins over outline-none utilities).
+   A control whose wrapper draws the ring (the Home composer) opts out with data-own-ring. */
+:focus-visible:not([data-own-ring]) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@layer base {
+/* Checkboxes and radios: warm outline, dark when checked (radios use the coral dot). */
+input[type="checkbox"]:not(.switch),
+input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  flex: none;
+  background: #fff;
+  border: 1.5px solid #c4b7b4;
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+}
+input[type="checkbox"]:not(.switch) {
+  border-radius: 6px;
+}
+input[type="radio"] {
+  border-radius: 50%;
+}
+input[type="checkbox"]:not(.switch):checked {
+  background: #1d1d1c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E") center / 12px no-repeat;
+  border-color: #1d1d1c;
+}
+input[type="radio"]::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e4572e;
+  transform: scale(0);
+  transition: transform 0.12s;
+}
+input[type="radio"]:checked {
+  border-color: #e4572e;
+}
+input[type="radio"]:checked::before {
+  transform: scale(1);
+}
+input[type="checkbox"]:disabled,
+input[type="radio"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* A switch: <input type="checkbox" role="switch" class="switch"> (queue pause, auto-approve...). */
+input.switch {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 36px;
+  height: 20px;
+  margin: 0;
+  border-radius: 99px;
+  background: #d0c4c0;
+  position: relative;
+  cursor: pointer;
+  flex: none;
+  transition: background 0.15s;
+}
+input.switch::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+}
+input.switch:checked {
+  background: #1d1d1c;
+}
+input.switch:checked::after {
+  transform: translateX(16px);
+}
+
+/* Native selects get the calm chevron. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23554F4C' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 38px;
+  cursor: pointer;
+}
+}
+
+mark {
+  background: #ffe3b2;
+  color: inherit;
+  border-radius: 4px;
+  padding: 0 3px;
+}
+
+/* Collapsible cards (<details>): the chevron turns when open. */
+details > summary {
+  list-style: none;
+}
+details > summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

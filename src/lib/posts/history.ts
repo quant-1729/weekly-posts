@@ -1,10 +1,17 @@
 import type { Channel, ContentLanguage } from "@/lib/ai/schemas";
+import { channelFormats } from "@/lib/create/content";
 import { getDb } from "@/lib/db";
 
 /**
  * Past posts for the History screen (R13) and the "Use again" source.
  * Everything runs as the signed-in user, so row-level security keeps each brand's
  * posts separate (R14); the brand id in the query is a second guard, not the only one.
+ *
+ * Two data models share the `posts` table:
+ *  - v1/v2: one post with `outputs` (caption and image per channel).
+ *  - v3 (`brief_id` set): one post row PER CHANNEL of a brief, with its caption on the row, its pictures in
+ *    `post_images` and its place in the queue in `queue_items`. History lists ONE entry per brief (its first
+ *    channel's post); carousel slides never get an entry of their own.
  */
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -25,6 +32,33 @@ export interface HistoryOutput {
   version: string;
 }
 
+/** Where a v3 post stands, from its approval and its queue item. */
+export type V3Status =
+  | "draft"
+  | "needs_approval"
+  | "approved"
+  | "scheduled"
+  | "published"
+  | "delivered"
+  | "skipped"
+  | "expired"
+  | "missed"
+  | "failed";
+
+export interface HistoryV3 {
+  briefId: string;
+  channel: string;
+  status: V3Status;
+  /** When it is scheduled for, or when it was published or delivered. ISO. Null when no date applies. */
+  at: string | null;
+  /** Link to the live post, once published through a connection. */
+  permalink: string | null;
+  /** The brief's time zone, for showing `at`. */
+  timezone: string;
+  /** A carousel the owner asked for: how many slides (null for a single post). */
+  carouselSlides: number | null;
+}
+
 export interface HistoryPost {
   id: string;
   /** ISO time, millisecond precision. */
@@ -38,6 +72,8 @@ export interface HistoryPost {
   /** ig_feed image, else status image. Null when nothing was rendered. */
   thumbnail: { path: string; version: string } | null;
   outputs: HistoryOutput[];
+  /** Set for posts made by the v3 flow (brief → design → review → queue); absent for v1/v2 posts. */
+  v3?: HistoryV3;
 }
 
 export interface PostPage {
@@ -65,6 +101,89 @@ interface ListRow {
   input_text: string | null;
   post_language: ContentLanguage;
   items: { channel: Channel; language: ContentLanguage; caption: string | null; image_path: string | null; version: string }[];
+  // v3 posts only (null for v1/v2 rows)
+  brief_id: string | null;
+  v3_channel: string | null;
+  v3_caption: string | null;
+  v3_language: string | null;
+  v3_designed: boolean | null;
+  v3_approved_iso: string | null;
+  v3_posted_iso: string | null;
+  v3_timezone: string | null;
+  v3_format: string | null;
+  v3_slides: number | null;
+  v3_images: { format: string; path: string; version: string }[] | null;
+  q_status: string | null;
+  q_slot_iso: string | null;
+  q_done_iso: string | null;
+  q_permalink: string | null;
+}
+
+/** The status of a v3 post and the date that goes with it. Pure, so it is tested without a database. */
+export function deriveV3Status(r: {
+  postStatus: string;
+  designed: boolean;
+  queueStatus: string | null;
+  slotIso: string | null;
+  doneIso: string | null;
+  postedIso: string | null;
+}): { status: V3Status; at: string | null } {
+  switch (r.queueStatus) {
+    case "scheduled":
+    case "publishing":
+      return { status: "scheduled", at: r.slotIso };
+    case "published":
+      return { status: "published", at: r.doneIso ?? r.slotIso };
+    case "delivered":
+      return { status: "delivered", at: r.doneIso ?? r.slotIso };
+    case "skipped":
+      return { status: "skipped", at: null };
+    case "expired":
+      return { status: "expired", at: null };
+    case "missed":
+      return { status: "missed", at: null };
+    case "failed":
+      return { status: "failed", at: null };
+  }
+  if (r.postStatus === "posted") return { status: "published", at: r.postedIso };
+  if (r.postStatus === "skipped") return { status: "skipped", at: null };
+  if (r.postStatus === "approved") return { status: "approved", at: null };
+  return { status: r.designed ? "needs_approval" : "draft", at: null };
+}
+
+function toHistoryV3Post(r: ListRow): HistoryPost {
+  const { status, at } = deriveV3Status({
+    postStatus: r.status,
+    designed: r.v3_designed === true,
+    queueStatus: r.q_status,
+    slotIso: r.q_slot_iso,
+    doneIso: r.q_done_iso,
+    postedIso: r.v3_posted_iso,
+  });
+  const channel = r.v3_channel ?? "instagram";
+  const images = r.v3_images ?? [];
+  // The main picture of the channel (its first size), else whatever was drawn.
+  const thumb = channelFormats(channel).map((f) => images.find((i) => i.format === f)).find(Boolean) ?? images[0];
+  const lang = LANGUAGE_ORDER.find((l) => l === r.v3_language);
+  return {
+    id: r.id,
+    createdAt: new Date(r.created_iso).toISOString(),
+    status: status === "draft" ? "draft" : "ready",
+    inputType: "text",
+    title: firstLine(r.v3_caption),
+    languages: lang ? [lang] : [],
+    thumbnail: thumb ? { path: thumb.path, version: thumb.version } : null,
+    outputs: [],
+    v3: {
+      briefId: r.brief_id!,
+      channel,
+      status,
+      at: at ? new Date(at).toISOString() : null,
+      permalink: status === "published" ? r.q_permalink : null,
+      timezone: r.v3_timezone || "UTC",
+      carouselSlides: r.v3_format === "carousel" ? (r.v3_slides ?? null) : null,
+    },
+  };
 }
 
 function firstLine(text: string | null | undefined): string {
@@ -83,6 +202,7 @@ function decodeCursor(cursor: string | null | undefined): { createdIso: string; 
 }
 
 function toHistoryPost(r: ListRow): HistoryPost {
+  if (r.brief_id) return toHistoryV3Post(r);
   const items = r.items ?? [];
   const igCaption = items.find((i) => i.channel === "ig_feed")?.caption;
   const languages = LANGUAGE_ORDER.filter((l) => items.some((i) => i.language === l));
@@ -120,8 +240,33 @@ export async function listPosts(userId: string, brandId: string, opts: ListPosts
               p.input_type::text as input_type,
               p.input_text,
               p.language::text as post_language,
-              coalesce(o.items, '[]'::jsonb) as items
+              coalesce(o.items, '[]'::jsonb) as items,
+              p.brief_id::text as brief_id,
+              p.channel::text as v3_channel,
+              p.caption as v3_caption,
+              p.post_language as v3_language,
+              (p.theme_id is not null and p.design is not null) as v3_designed,
+              to_char(p.posted_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as v3_posted_iso,
+              b.timezone as v3_timezone,
+              b.content_format as v3_format,
+              b.slide_count as v3_slides,
+              im.imgs as v3_images,
+              q.status as q_status,
+              to_char(q.slot_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as q_slot_iso,
+              to_char(q.done_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as q_done_iso,
+              q.permalink as q_permalink
          from public.posts p
+         left join public.post_briefs b on b.id = p.brief_id and b.brand_id = p.brand_id
+         left join public.queue_items q on q.post_id = p.id and q.brand_id = p.brand_id
+         left join lateral (
+           select jsonb_agg(jsonb_build_object(
+                    'format', i.format::text,
+                    'path', i.image_path,
+                    'version', (extract(epoch from i.updated_at) * 1000)::bigint::text
+                  )) as imgs
+             from public.post_images i
+            where i.post_id = p.id and i.brand_id = p.brand_id and p.brief_id is not null
+         ) im on true
          left join lateral (
            select jsonb_agg(jsonb_build_object(
                     'channel', x.channel::text,
@@ -134,11 +279,18 @@ export async function listPosts(userId: string, brandId: string, opts: ListPosts
             where x.post_id = p.id
          ) o on true
         where p.brand_id = $1::uuid
+          and p.carousel_id is null
+          and (p.brief_id is null or not exists (
+                 select 1 from public.posts p2
+                  where p2.brief_id = p.brief_id and p2.brand_id = p.brand_id and p2.carousel_id is null
+                    and (coalesce(array_position(b.channels::text[], p2.channel::text), 99), p2.id)
+                      < (coalesce(array_position(b.channels::text[], p.channel::text), 99), p.id)))
           and ($2::timestamptz is null or p.created_at >= $2::timestamptz)
           and ($3::timestamptz is null or p.created_at < $3::timestamptz)
           and ($4::public.content_language is null
                or exists (select 1 from public.outputs l where l.post_id = p.id and l.language = $4::public.content_language)
-               or (not exists (select 1 from public.outputs l where l.post_id = p.id) and p.language = $4::public.content_language))
+               or (p.brief_id is not null and p.post_language = $4::public.content_language::text)
+               or (p.brief_id is null and not exists (select 1 from public.outputs l where l.post_id = p.id) and p.language = $4::public.content_language))
           and ($5::timestamptz is null or (p.created_at, p.id) < ($5::timestamptz, $6::uuid))
         order by p.created_at desc, p.id desc
         limit $7`,

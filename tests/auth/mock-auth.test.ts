@@ -37,9 +37,9 @@ import {
   SESSION_COOKIE,
   SESSION_MAX_AGE_SECONDS,
   needsRefresh,
-  signSession,
   verifySession,
 } from "@/lib/auth/session";
+import { signSession, signSessionNoRow } from "../helpers/session";
 
 let db: MockDb;
 let outbox: string;
@@ -222,7 +222,7 @@ describe("mock magic-link sign-in (Req 1)", () => {
     expect(await code(() => auth.consumeMagicLink(""))).toBe("invalid_link");
 
     // A session cookie is not a sign-in link.
-    const session = await signSession({ id: "11111111-1111-4111-8111-111111111111", email: NORMAL });
+    const session = await signSessionNoRow({ id: "11111111-1111-4111-8111-111111111111", email: NORMAL });
     expect(await code(() => auth.consumeMagicLink(session))).toBe("invalid_link");
 
     // A sign-in link signed with another secret.
@@ -317,7 +317,7 @@ describe("mock magic-link sign-in (Req 1)", () => {
   });
 
   it("a valid cookie for a user that no longer exists is treated as signed out", async () => {
-    const token = await signSession({ id: "00000000-0000-4000-8000-000000000000", email: NORMAL });
+    const token = await signSessionNoRow({ id: "00000000-0000-4000-8000-000000000000", email: NORMAL });
     jar.api.set(SESSION_COOKIE, token);
     expect(await auth.getCurrentUser()).toBeNull();
   });
@@ -450,25 +450,25 @@ describe("session token: 30 days, sliding", () => {
 
   it("is valid for 30 days and rejected after", async () => {
     const t0 = Date.parse("2026-10-12T00:00:00Z");
-    const token = await signSession(user, t0);
+    const token = await signSessionNoRow(user, t0);
     expect((await verifySession(token, t0 + 29 * DAY))?.sub).toBe(user.id);
     expect((await verifySession(token, t0 + 30 * DAY - 1000))?.sub).toBe(user.id);
     expect(await verifySession(token, t0 + 30 * DAY + 1000)).toBeNull();
   });
 
   it("carries the email, not a phone", async () => {
-    expect(await verifySession(await signSession(user))).toMatchObject({ sub: user.id, email: NORMAL });
+    expect(await verifySession(await signSessionNoRow(user))).toMatchObject({ sub: user.id, email: NORMAL });
   });
 
   it("is renewed only once it is more than a day old", async () => {
     const t0 = Date.parse("2026-10-12T00:00:00Z");
-    const p = (await verifySession(await signSession(user, t0), t0))!;
+    const p = (await verifySession(await signSessionNoRow(user, t0), t0))!;
     expect(needsRefresh(p, t0 + 12 * 60 * 60 * 1000)).toBe(false);
     expect(needsRefresh(p, t0 + DAY + 60 * 1000)).toBe(true);
   });
 
   it("rejects a token signed with another secret, a tampered token and garbage", async () => {
-    const token = await signSession(user);
+    const token = await signSessionNoRow(user);
     vi.stubEnv("AUTH_SECRET", "another-secret-another-secret-another");
     expect(await verifySession(token)).toBeNull();
     vi.unstubAllEnvs();

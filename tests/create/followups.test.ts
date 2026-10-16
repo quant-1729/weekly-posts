@@ -65,15 +65,13 @@ describe("channels: WhatsApp and YouTube", () => {
     expect(defaultChannels([])).toEqual(["instagram"]);
   });
 
-  it("the picker shows six channels, and the carousel warning appears when YouTube is on with two extra points", async () => {
+  it("the picker shows six channels (selling points, and their carousel warning, are no longer on Details)", async () => {
     const data = await loadEditorData(o.userId, o.brandId, { now: NOW });
     expect(data.defaults.channels).toEqual(["whatsapp"]);
     const brief = await createBrief(o.userId, o.brandId, { postType: "brand", primaryUspId: discount.id, secondaryUspIds: [family.id, open.id], channels: ["youtube"] }, { now: NOW });
     const h = renderToString(createElement(BriefEditor, { data, initialBrief: brief }));
     for (const label of ["Instagram", "Facebook", "WhatsApp", "YouTube", "LinkedIn", "Google Business"]) expect(h).toContain(`/>${label}</label>`);
-    expect(h).toContain("data-usp-warning");
-    expect(h).toContain("Too many points make the post hard to read");
-    expect(h).toContain("carousel");
+    expect(h).not.toContain("data-usp-warning");
   });
 });
 
@@ -104,11 +102,11 @@ describe("No end date for offers", () => {
     await expect(createBrief(o.userId, o.brandId, { postType: "offer", openEnded: "yes" }, { now: NOW })).rejects.toBeInstanceOf(BriefValidationError);
   });
 
-  it("still incomplete without an end date or the choice, and does not help other types", () => {
-    expect(checkCompleteness(bare()).map((m) => m.key)).toEqual(["dates"]);
+  it("dates are no longer required (owner change 2026-10-15): complete with or without an end date", () => {
+    expect(checkCompleteness(bare())).toEqual([]);
     expect(checkCompleteness(bare({ openEnded: true }))).toEqual([]);
-    const event = bare({ postType: "event", primaryUspId: null, uspSnapshot: [], cta: "book", openEnded: true });
-    expect(checkCompleteness(event).map((m) => m.key)).toEqual(["dates"]); // an event still needs a date
+    const event = bare({ postType: "event", primaryUspId: null, uspSnapshot: [], cta: "book", notes: "Live music on Friday 7pm" });
+    expect(checkCompleteness(event)).toEqual([]);
   });
 
   it("the editor: only offers send it, the date line says nothing about an end, and Next needs no end date", () => {
@@ -120,12 +118,12 @@ describe("No end date for offers", () => {
     expect(datesText("", "")).toBeNull();
   });
 
-  it("the description never sets it, and an end date it names replaces it", async () => {
+  it("the description never sets it, nor the dates (they stay in the owner's words since 2026-10-15)", async () => {
     const r = await briefFromText({ userId: o.userId, brandId: o.brandId, text: "20% off cakes, no end date", now: NOW });
     expect(r.brief).not.toHaveProperty("openEnded");
     const d = { ...emptyDraft({ blocks: {}, language: "en", channels: [] }), openEnded: true };
     expect(applyDescription(d, { brief: { postType: "offer" } }).openEnded).toBe(true);
-    expect(applyDescription(d, { brief: { postType: "offer", endsOn: "2026-10-20" } })).toMatchObject({ openEnded: false, endsOn: "2026-10-20" });
+    expect(applyDescription(d, { brief: { postType: "offer", endsOn: "2026-10-20" } })).toMatchObject({ openEnded: true, endsOn: "" });
   });
 
   it("the dates picker offers the checkbox for offers only, and turns the end date off", () => {
@@ -137,23 +135,23 @@ describe("No end date for offers", () => {
     expect(/<input[^>]*id="dates-end"[^>]*>/.exec(offer)?.[0]).toContain('disabled=""');
     const event = renderToString(createElement(DatesPicker, { ...props, canBeOpenEnded: false }));
     expect(event).not.toContain("data-open-ended");
-    expect(/<input[^>]*id="dates-end"[^>]*>/.exec(event)?.[0]).not.toContain("disabled");
+    expect(/<input[^>]*id="dates-end"[^>]*>/.exec(event)?.[0]).not.toContain('disabled=""');
   });
 
-  it("an existing open-ended offer loads with the box ticked and Next enabled", async () => {
+  it("an existing open-ended offer still loads, with no dates card and Next enabled", async () => {
     const data = await loadEditorData(o.userId, o.brandId, { now: NOW });
     const b = await createBrief(o.userId, o.brandId, { postType: "offer", primaryUspId: discount.id, cta: "visit", openEnded: true }, { now: NOW });
     const h = renderToString(createElement(BriefEditor, { data, initialBrief: b }));
-    expect(/<input[^>]*data-open-ended[^>]*>/.exec(h)?.[0]).toContain("checked");
-    expect(h).toContain("Everything needed is filled in.");
+    expect(h).not.toContain("data-open-ended");
+    expect(/<button[^>]*data-next[^>]*>/.exec(h)?.[0]).not.toContain(" disabled=\"\"");
   });
 });
 
 describe("voice hint", () => {
-  it("tells the owner not to say payment details", () => {
-    const h = renderToString(createElement(DescribeBox, { brandId: o.brandId, onResult: () => undefined, questions: [] }));
-    expect(h).toContain("data-voice-hint");
-    expect(h).toContain("don&#x27;t say payment details; set those on your Brand page.");
+  it("is gone (owner change 2026-10-15); payment IDs are still removed before any AI call", () => {
+    const h = renderToString(createElement(DescribeBox, { brandId: o.brandId, onResult: () => undefined, questions: [], value: "", onChange: () => undefined }));
+    expect(h).not.toContain("data-voice-hint");
+    expect(h).not.toContain("payment details");
   });
 });
 

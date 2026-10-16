@@ -111,8 +111,13 @@ export const postCopySchema = z.object({
   bubble: z.string().max(60),
   /** Mascot pose from the given list, only when a mascot is given; else "". */
   pose: z.string(),
+  /** Carousel only (CAROUSEL given): one entry per slide, in order; [] otherwise. */
+  slides: z
+    .array(z.object({ kind: z.enum(['cover', 'point', 'proof', 'cta']), headline: z.string().max(80), body: z.string().max(200) }))
+    .max(10)
+    .default([]),
 });
-export type PostCopy = z.infer<typeof postCopySchema>;
+export type PostCopy = z.input<typeof postCopySchema>;
 
 export const postCopyJsonSchema = {
   type: 'object',
@@ -131,8 +136,17 @@ export const postCopyJsonSchema = {
     hashtags: { type: 'array', items: { type: 'string' }, maxItems: 8 },
     bubble: { type: 'string' },
     pose: { type: 'string' },
+    slides: {
+      type: 'array',
+      maxItems: 10,
+      items: {
+        type: 'object',
+        properties: { kind: { type: 'string', enum: ['cover', 'point', 'proof', 'cta'] }, headline: { type: 'string' }, body: { type: 'string' } },
+        required: ['kind', 'headline', 'body'],
+      },
+    },
   },
-  required: ['headline', 'subline', 'cta_text', 'captions', 'hashtags', 'bubble', 'pose'],
+  required: ['headline', 'subline', 'cta_text', 'captions', 'hashtags', 'bubble', 'pose', 'slides'],
 } as const;
 
 // ---------------------------------------------------------------------------------------------

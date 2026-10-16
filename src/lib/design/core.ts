@@ -4,6 +4,7 @@
 import type { Box } from '@/lib/render';
 import type { Weight, FaceId } from '@/lib/render/shape';
 import type { BlockKey } from '@/lib/briefs/types';
+import type { CharacterRole } from '@/lib/characters/types';
 import type { DesignFormat, FontChoice, ThemeId } from './types';
 import type { Palette, Scheme } from './palette';
 
@@ -201,7 +202,19 @@ export interface ThemeDef {
   neighbours: ThemeId[];
 }
 
-export type Layer = { kind: 'svg'; svg: string } | { kind: 'photo'; frame: Box } | { kind: 'texture' };
+/**
+ * Layers, drawn first to last under the content. A photo layer is the owner's photo cover-cropped to "frame"; "fade"
+ * feathers one edge to transparent (the photo dissolves into the layer below instead of ending in a hard line); "free"
+ * is the part of the frame that no text, card or code sits on, where the photo's subject is placed; "blur" is the
+ * full-canvas blurred, enlarged copy that serves as the ground under a framed photo (so the photo is never just covered
+ * by a flat panel).
+ */
+export interface PhotoFade {
+  side: 'top' | 'bottom' | 'left' | 'right';
+  size: number;
+}
+/** `char` marks where the layout's character is drawn (CH-2): in front of everything, or just before the panel it peeks from behind. */
+export type Layer = { kind: 'svg'; svg: string } | { kind: 'photo'; frame: Box; fade?: PhotoFade; free?: Box; blur?: boolean } | { kind: 'texture' } | { kind: 'char' };
 
 export interface TextZone {
   box: Box;
@@ -234,6 +247,36 @@ export interface MascotZone {
   behind: string;
 }
 
+/** What the engine decided about the character before planning: its role, size in px and side (before mirroring for right-to-left). */
+export interface CharSpec {
+  role: CharacterRole;
+  /** Height of the drawn character (its tight bounds) in px. */
+  h: number;
+  /** Width the layouts reserve (a little over the widest pose). */
+  w: number;
+  /** A percher: the share of its height above the line it sits on (the rest, its legs, hangs over the edge). */
+  seat: number;
+  side: 'left' | 'right';
+}
+
+/** Where the character stands, and what it sits on or hides behind. */
+export interface CharZone {
+  role: CharacterRole;
+  /** The drawn character's box, frame-break overlap included. */
+  box: Box;
+  /** The part of it a viewer sees (a peeker's lower part is hidden behind the panel). */
+  visible: Box;
+  /** The line its feet (or seat) rest on. */
+  floorY: number;
+  side: 'left' | 'right';
+  /** Drawn before the panel, which clips it. */
+  behind: boolean;
+  /** A percher on a page without a panel gets a small ledge to sit on. */
+  ledge: Box | null;
+  /** Narrator: the speech bubble that holds the headline. */
+  bubble: { box: Box; tail: { x: number; y: number } } | null;
+}
+
 export interface Plan {
   layers: Layer[];
   text: TextZone;
@@ -243,6 +286,7 @@ export interface Plan {
   mascot: MascotZone | null;
   marker: { box: Box; bgs: string[] } | null;
   photoFrame: Box | null;
+  char?: CharZone | null;
 }
 
 export interface QrTile {
@@ -275,6 +319,8 @@ export interface PlanCtx {
   qr: QrTile | null;
   nBlocks: number;
   mascot: boolean;
+  /** CH-2: the character of this layout (replaces the header mascot). */
+  char?: CharSpec | null;
   marker: boolean;
   texture: boolean;
   radius: number;

@@ -12,7 +12,9 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["tests/**/*.test.ts"],
-    exclude: supabaseIt ? configDefaults.exclude : [...configDefaults.exclude, "tests/supabase/**"],
+    exclude: supabaseIt
+      ? [...configDefaults.exclude, "admin-dashboard/**"]
+      : [...configDefaults.exclude, "tests/supabase/**", "admin-dashboard/**"],
     globalSetup: supabaseIt ? ["tests/supabase/global.ts"] : [],
     setupFiles: ["tests/setup.ts"],
     // The real project is a network hop away (about 0.4 s per query), so its tests get more time.

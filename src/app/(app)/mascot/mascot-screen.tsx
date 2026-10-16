@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { setMascotInPostsAction } from "@/app/(app)/brand/actions";
-import { errorClass, hintClass, inputClass, labelClass, primaryButton, secondaryButton } from "@/components/ui";
+import { alertClass, cardClass, errorClass, hintClass, inputClass, labelClass, primaryButton, secondaryButton } from "@/components/ui";
 import { s } from "@/lib/i18n/strings";
 import { pickScarf, scarfSwatches, tweenColorsFor, type BrandColorsInput } from "@/lib/mascot/colors";
 import { fileUrl, type DownloadFile } from "@/lib/mascot/paths";
@@ -42,7 +42,7 @@ function Drawing({ pose, label, colors }: { pose: TweenPose; label: string; colo
         className="mx-auto w-full max-w-[180px] lg:max-w-[220px] [&_svg]:h-auto [&_svg]:w-full"
         dangerouslySetInnerHTML={{ __html: renderTween({ pose, colors, size: 360 }) }}
       />
-      <figcaption className="text-sm text-stone-600">{label}</figcaption>
+      <figcaption className="text-[13px] leading-[18px] text-desc">{label}</figcaption>
     </figure>
   );
 }
@@ -119,17 +119,17 @@ export function MascotScreen({ brandId, eligibility, mascot, inPosts: initialInP
     // Phones: one column. Desktop: the preview and downloads on the left, the controls beside them.
     <div className="space-y-5 lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10 lg:gap-y-5 lg:space-y-0">
       {regulated && (
-        <div className="space-y-1 rounded-lg border border-stone-300 bg-stone-50 p-4 lg:col-span-2">
-          <h2 className="font-semibold">{s.mascot.regulatedTitle}</h2>
-          <p className="text-stone-700">{s.mascot.regulatedBody}</p>
+        <div className={`space-y-1 lg:col-span-2 ${alertClass("grey")}`}>
+          <h2 className="text-ui text-title">{s.mascot.regulatedTitle}</h2>
+          <p>{s.mascot.regulatedBody}</p>
         </div>
       )}
 
       {formal && (
-        <div className="space-y-3 rounded-lg border border-stone-300 bg-stone-50 p-4 lg:col-span-2">
+        <div className={`space-y-3 lg:col-span-2 ${alertClass("grey")}`}>
           <div className="space-y-1">
-            <h2 className="font-semibold">{s.mascot.formalTitle}</h2>
-            <p className="text-stone-700">{s.mascot.formalBody}</p>
+            <h2 className="text-ui text-title">{s.mascot.formalTitle}</h2>
+            <p>{s.mascot.formalBody}</p>
           </div>
           {!tryAnyway && !mascot && eligibility.canOverride && (
             <button type="button" className={secondaryButton} onClick={() => setTryAnyway(true)}>
@@ -142,8 +142,8 @@ export function MascotScreen({ brandId, eligibility, mascot, inPosts: initialInP
       {canEdit && (
         <>
           <div className="lg:col-start-1">
-            <h2 className="mb-2 text-lg font-semibold">{s.mascot.previewTitle}</h2>
-            <div className="grid grid-cols-3 gap-2 rounded-xl border border-stone-200 bg-white p-3">
+            <h2 className="mb-2 text-card-title text-title">{s.mascot.previewTitle}</h2>
+            <div className={`grid grid-cols-3 gap-2 ${cardClass}`}>
               {PREVIEW_POSES.map((p) => (
                 <Drawing key={p.pose} pose={p.pose} label={p.label} colors={colors} />
               ))}
@@ -180,9 +180,9 @@ export function MascotScreen({ brandId, eligibility, mascot, inPosts: initialInP
                     aria-label={`${s.mascot.swatch[sw.kind]} ${sw.hex.toUpperCase()}`}
                     onClick={() => setPicked(sw.hex)}
                     disabled={busy !== null}
-                    className={`flex min-h-12 items-center gap-2 rounded-lg border px-3 py-2 text-base ${on ? "border-[#E4572E] ring-2 ring-[#E4572E]/30" : "border-stone-300"}`}
+                    className={`flex min-h-11 items-center gap-2 rounded-2xl border px-3 py-2 text-ui ${on ? "border-coral bg-coral-tint ring-1 ring-coral" : "border-line-input bg-white hover:border-line-input-hover"}`}
                   >
-                    <span className="size-7 rounded-full border border-stone-300" style={{ backgroundColor: sw.hex }} />
+                    <span className="size-7 rounded-full border border-line-input" style={{ backgroundColor: sw.hex }} />
                     <span>{s.mascot.swatch[sw.kind]}</span>
                   </button>
                 );
@@ -195,15 +195,15 @@ export function MascotScreen({ brandId, eligibility, mascot, inPosts: initialInP
           </button>
 
           <div className="space-y-1">
-            <label className="flex items-start gap-3">
+            <label className="flex items-start gap-3 text-[14px] leading-5">
               <input
                 type="checkbox"
-                className="mt-1 size-6"
+                className="mt-0.5"
                 checked={inPosts}
                 disabled={busy !== null}
                 onChange={(e) => void toggle(e.target.checked)}
               />
-              <span className="font-medium">{s.mascot.useInPosts}</span>
+              <span className="text-title">{s.mascot.useInPosts}</span>
             </label>
             <p className={hintClass}>{s.mascot.useInPostsHelp}</p>
           </div>
@@ -215,7 +215,7 @@ export function MascotScreen({ brandId, eligibility, mascot, inPosts: initialInP
         <div className="space-y-3 lg:col-start-1">
           {mascot.sheet_path && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={fileUrl(mascot.sheet_path)} alt={s.mascot.sheetAlt} className="w-full rounded-xl bg-stone-50" />
+            <img src={fileUrl(mascot.sheet_path)} alt={s.mascot.sheetAlt} className="w-full rounded-xl bg-well" />
           )}
           <p className={hintClass}>{s.mascot.downloadHelp}</p>
           <button type="button" className={primaryButton} onClick={onDownloadAll} disabled={busy !== null}>
@@ -227,7 +227,7 @@ export function MascotScreen({ brandId, eligibility, mascot, inPosts: initialInP
       )}
 
       {message && (
-        <p role={message.ok ? "status" : "alert"} className={`${message.ok ? "text-sm text-green-700" : errorClass} lg:col-span-2`}>
+        <p role={message.ok ? "status" : "alert"} className={`${message.ok ? "text-[13px] font-medium leading-[18px] text-ok-tx" : errorClass} lg:col-span-2`}>
           {message.text}
         </p>
       )}

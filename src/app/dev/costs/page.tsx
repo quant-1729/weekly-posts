@@ -13,11 +13,11 @@ export default async function CostsPage() {
 
   return (
     <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8">
-      <h1 className="text-2xl font-bold">Dev costs</h1>
+      <h1 className="text-2xl font-medium">Dev costs</h1>
       <p className="text-sm text-stone-600">
         AI cost per brand per local week (Monday to Monday). Cap: ${WEEKLY_USD_CAP.toFixed(2)} a week. In fixture mode every cost is $0.
       </p>
-      {rows.length === 0 && <p className="text-stone-600">No AI usage recorded yet.</p>}
+      {rows.length === 0 && <p className="text-[14px] leading-5 text-desc">No AI usage recorded yet.</p>}
       {rows.length > 0 && (
         <table className="w-full text-left text-sm">
           <thead>

@@ -16,6 +16,7 @@ vi.mock("@/lib/ai/client", async (orig) => {
 import type { PostCopy } from "@/lib/ai/schemas-v3";
 import { createBrief } from "@/lib/briefs/service";
 import { loadCreateBrand } from "@/lib/create/brand";
+import { factsForBrief } from "@/lib/create/content";
 import { CAPTION_MAX, PostCopyError, copyChannels, trimCaption, validateCopy, visibleLength, wordCount, writePostCopy } from "@/lib/create/copy";
 import type { CreateBrand } from "@/lib/create/types";
 import type { MockDb } from "@/lib/db/mock";
@@ -174,6 +175,20 @@ describe("writePostCopy", () => {
     expect(out.captions.instagram).toContain("[payment ID removed]");
   });
 
+  it("sends the owner's description as OWNER DESCRIPTION for every post type, payment IDs removed", async () => {
+    const brief = await readyBrief(b, { postType: "event", primaryUspId: null, cta: "book", endsOn: null, notes: "Cake tasting on Saturday 4pm, pay at corner.bakery@okhdfcbank" });
+    let sent = "";
+    await writePostCopy({ userId: b.userId, brandId: b.brandId, brief, now: NOW }, { fixture: (prompt) => ((sent = prompt.user), copy()) });
+    expect(sent).toContain("OWNER DESCRIPTION:");
+    expect(sent).toContain("Cake tasting on Saturday 4pm");
+    expect(sent).toContain("[payment ID removed]");
+    expect(sent.toLowerCase()).not.toContain("okhdfcbank");
+    const facts = factsForBrief(brief, await loadCreateBrand(b.userId, b.brandId));
+    const own = facts.find((f) => f.label === "Owner's description of this post");
+    expect(own?.value).toContain("Cake tasting on Saturday 4pm");
+    expect(own?.value.toLowerCase()).not.toContain("okhdfcbank");
+  });
+
   it("fixes a model answer with bad lengths and says what it fixed", async () => {
     const brief = await readyBrief(b, { channels: ["instagram", "facebook"] });
     const { copy: out } = await writePostCopy(
@@ -194,7 +209,7 @@ describe("writePostCopy", () => {
 
   it("stops at the weekly count cap (40 a week) without calling the model", async () => {
     const other = await makeOwner(db, { name: "Cap Bakery" });
-    const brief = await createBrief(other.userId, other.brandId, { postType: "brand", cta: "visit", channels: ["instagram"], status: "ready" }, { now: NOW });
+    const brief = await createBrief(other.userId, other.brandId, { postType: "brand", cta: "visit", channels: ["instagram"], notes: "Fresh bread daily", status: "ready" }, { now: NOW });
     await db.withAdmin((tx) => tx.query("update public.brands set daily_generation_cap = 1000 where id = $1", [other.brandId]));
     await db.withAdmin((tx) => tx.query("insert into public.usage_events (brand_id, kind, usd) select $1, 'post_copy'::public.usage_kind, 0 from generate_series(1, 40)", [other.brandId]));
     let called = false;
@@ -206,7 +221,7 @@ describe("writePostCopy", () => {
 
   it("stops at the daily cap", async () => {
     const other = await makeOwner(db, { name: "Daily Cap Bakery" });
-    const brief = await createBrief(other.userId, other.brandId, { postType: "brand", cta: "visit", channels: ["instagram"], status: "ready" }, { now: NOW });
+    const brief = await createBrief(other.userId, other.brandId, { postType: "brand", cta: "visit", channels: ["instagram"], notes: "Fresh bread daily", status: "ready" }, { now: NOW });
     await db.withAdmin((tx) => tx.query("update public.brands set daily_generation_cap = 0 where id = $1", [other.brandId]));
     await expect(writePostCopy({ userId: other.userId, brandId: other.brandId, brief, now: new Date() }, { fixture: copy() })).rejects.toBeInstanceOf(DailyCapError);
   });

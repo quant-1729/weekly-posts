@@ -10,7 +10,7 @@ import { requireBrandMember } from "@/lib/brand/current";
 import { getDb } from "@/lib/db";
 import { s } from "@/lib/i18n/strings";
 import { getStorage, type Storage } from "@/lib/storage";
-import { assertUnderDailyCap, failedCallUsd, recordUsage } from "@/lib/usage";
+import { assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage } from "@/lib/usage";
 import { assertUnderWeeklyCap } from "@/lib/usage/caps";
 import { UploadError } from "./errors";
 import { describeFixture, type PhotoDescription } from "./fixtures";
@@ -163,7 +163,7 @@ export async function addPhoto(args: {
       logContext: { brandId },
       fixture: args.fixture ?? (() => describeFixture(img.width, img.height)),
     });
-    await recordUsage(brandId, userId, "upload_extract", res.stats?.usd ?? 0);
+    await recordUsage(brandId, userId, "upload_extract", res.stats?.usd ?? 0, { model: res.stats?.model });
     const description = res.data.description.trim().slice(0, 300) || null;
     await getDb().withUser(userId, (tx) =>
       tx.query("update public.photos set description = $3, has_people = $4, usable = $5 where id = $1 and brand_id = $2", [
@@ -177,7 +177,7 @@ export async function addPhoto(args: {
     if (!res.data.usable) warning = s.uploads.photos.lowQuality;
   } catch (e) {
     const lost = failedCallUsd(e); // an answer that did not validate still cost money (H-2)
-    if (lost > 0) await recordUsage(brandId, userId, "upload_extract", lost).catch(() => undefined);
+    if (lost > 0) await recordUsage(brandId, userId, "upload_extract", lost, { ok: false, model: failedCallModel(e) }).catch(() => undefined);
     console.warn("[uploads] could not describe a photo; keeping it without a description", e instanceof Error ? e.message : e);
   }
 

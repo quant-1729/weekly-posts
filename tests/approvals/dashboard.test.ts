@@ -27,7 +27,8 @@ import {
   undoPostAction,
 } from "@/components/week/actions";
 import { WeekView } from "@/components/week/week-view";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import { createMockDb, setMockDbForTests, type MockDb } from "@/lib/db/mock";
 import { s } from "@/lib/i18n/strings";
 import { setStorageForTests } from "@/lib/storage";

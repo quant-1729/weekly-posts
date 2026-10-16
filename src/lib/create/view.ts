@@ -1,26 +1,30 @@
 // What the design and review pages show, as plain data (safe to send to client components).
 // Reads run as the signed-in user (row-level security); writes live in ./posts.ts.
 
+import { AI_DISCLOSURE_LINE } from '@/lib/publish/caption';
 import { requireBrandMember } from '@/lib/brand/current';
 import { blockLines } from '@/lib/briefs/editor-state';
 import type { Brief, BlockKey } from '@/lib/briefs/types';
 import { getDb } from '@/lib/db';
 import { listLayouts, needsCarousel } from '@/lib/design';
 import type { DesignFormat, DesignOption } from '@/lib/design/types';
+import type { PostFilter } from '@/lib/design/filter-presets';
 import type { Flag } from '@/lib/guardrail/types';
 import { getEnv } from '@/lib/env';
 import { fill, s } from '@/lib/i18n/strings';
-import { PostCopyError } from './copy';
-import { channelFormats, contentFromBrief, primaryFormat, showsLogo } from './content';
+import { CAPTION_MAX, PostCopyError, hashtagLimitFor } from './copy';
+import { channelFormats, contentFromBrief, designFormat, isCarouselBrief, postFormats, showsLogo } from './content';
 import {
   CreateError,
   ensureDraftPosts,
+  filterOf,
   listBriefPosts,
   wordsOf,
   type CreateDeps,
 } from './posts';
-import { loadDesignAssets, optionsFor, previewOption, reportLines, type DesignAssets } from './render';
+import { loadDesignAssets, optionsFor, previewOption, previewSlides, reportLines, reportLinesForSlides, type DesignAssets } from './render';
 import type { CreateBrand, CreatePost, DesignBlocker } from './types';
+import { parsePostFilter } from '@/lib/design/filter-presets';
 import { DailyCapError } from '@/lib/usage';
 import { WeeklyCapError } from '@/lib/usage/caps';
 import { QrContentError } from '@/lib/qr';
@@ -40,8 +44,10 @@ export interface OptionView {
   option: DesignOption;
   /** The layout and colours the engine actually used. */
   used: DesignOption;
-  /** Small JPEG as a data URL. */
+  /** Small JPEG as a data URL (a carousel: the cover). */
   src: string;
+  /** A carousel: one small JPEG per slide, in order (the strip under the option). Absent for a single picture. */
+  slides?: string[];
   lines: { noRoom: string[]; notShown: string[]; problems: string[] };
   /** The layouts of this option's theme for the shown size, for the next/previous buttons. */
   layouts: LayoutChoice[];
@@ -63,6 +69,10 @@ export interface DesignPageData {
   /** Every size the channels need. */
   formats: DesignFormat[];
   hasMascot: boolean;
+  /** The post's colour filter ("none" until the owner picks one). Previews and the drawn pictures use it. */
+  filter: PostFilter;
+  /** A filter has something to change: the post has a photo. Without one the picture is brand-colour shapes (and at most an abstract background), so hide the filter control. */
+  filterApplies: boolean;
   words: { headline: string; subline: string; ctaText: string; bubble: string };
   captions: { postId: string; channel: string; label: string; caption: string; hashtags: string[] }[];
   /** Open flags across the channels' posts (read-only here; decided in the review step). */
@@ -74,6 +84,8 @@ export interface DesignPageData {
   photoId: string | null;
   blocks: BlockView[];
   carousel: boolean;
+  /** A carousel the owner asked for: how many slides each option has; null for a single post. */
+  slideCount: number | null;
   /** The pictures were drawn already (a design was used). */
   designed: boolean;
   /** Changes whenever the words change, so client forms reset. */
@@ -103,9 +115,21 @@ export function describeCreateError(err: unknown): { state: 'not_ready' } | { st
   return null;
 }
 
-async function optionView(assets: DesignAssets, brief: Brief, brand: CreateBrand, post: CreatePost, option: DesignOption, format: DesignFormat): Promise<OptionView> {
-  const content = await contentFromBrief(brief, brand, wordsOf(post), { postCode: post.postCode, mascot: assets.mascotId !== null });
-  const p = await previewOption(assets, { format, option, content, pose: post.imageText.pose });
+async function optionView(assets: DesignAssets, brief: Brief, brand: CreateBrand, post: CreatePost, option: DesignOption, format: DesignFormat, filter: PostFilter): Promise<OptionView> {
+  const content = await contentFromBrief(brief, brand, wordsOf(post), { postCode: post.postCode, mascot: assets.faceOn });
+  if (isCarouselBrief(brief) && post.imageText.slides.length >= 2) {
+    // A slide set: every slide of the option drawn together, shown as a strip.
+    const set = await previewSlides(assets, { format, option, content, pose: post.imageText.pose, filter, slides: post.imageText.slides });
+    return {
+      option,
+      used: set.used,
+      src: set.srcs[0],
+      slides: set.srcs,
+      lines: reportLinesForSlides(set.reports),
+      layouts: listLayouts(set.used.themeId, format, !!assets.photo).map((l) => ({ id: l.id, name: l.name })),
+    };
+  }
+  const p = await previewOption(assets, { format, option, content, pose: post.imageText.pose, filter });
   return {
     option,
     used: p.used,
@@ -116,10 +140,10 @@ async function optionView(assets: DesignAssets, brief: Brief, brand: CreateBrand
 }
 
 /** One option's preview, for the layout and colour buttons. Never calls the AI. */
-export async function previewForOption(args: { userId: string; brandId: string; briefId: string; option: DesignOption }, deps: CreateDeps = {}): Promise<OptionView> {
+export async function previewForOption(args: { userId: string; brandId: string; briefId: string; option: DesignOption; filter?: PostFilter }, deps: CreateDeps = {}): Promise<OptionView> {
   const { brief, brand, posts } = await ensureDraftPosts(args, deps);
   const assets = await loadDesignAssets({ userId: args.userId, brandId: args.brandId, brief, brand, storage: deps.storage });
-  return optionView(assets, brief, brand, posts[0], args.option, primaryFormat(brief.channels));
+  return optionView(assets, brief, brand, posts[0], args.option, designFormat(brief), args.filter ? parsePostFilter(args.filter) : filterOf(posts[0]));
 }
 
 /**
@@ -138,14 +162,15 @@ export async function loadDesignPage(args: { userId: string; brandId: string; br
   }
   const { brief, brand, posts } = draft;
   const assets = await loadDesignAssets({ userId, brandId, brief, brand, storage: deps.storage });
-  const format = primaryFormat(brief.channels);
+  const format = designFormat(brief);
   const first = posts[0];
-  const content = await contentFromBrief(brief, brand, wordsOf(first), { postCode: first.postCode, mascot: assets.mascotId !== null });
-  const options = optionsFor(assets, content, format);
-  const views = await Promise.all(options.map((o) => optionView(assets, brief, brand, first, o, format)));
+  const content = await contentFromBrief(brief, brand, wordsOf(first), { postCode: first.postCode, mascot: assets.faceOn });
+  const options = optionsFor(assets, content, format, 3, { postType: brief.postType, extras: brief.extraPostTypes });
+  const filter = filterOf(first);
+  const views = await Promise.all(options.map((o) => optionView(assets, brief, brand, first, o, format, filter)));
 
   const stored = first.design?.option;
-  const usedIndex = stored ? options.findIndex((o) => o.themeId === stored.themeId && o.layoutId === stored.layoutId && o.scheme === stored.scheme) : -1;
+  const usedIndex = stored ? options.findIndex((o) => o.themeId === stored.themeId && o.layoutId === stored.layoutId && o.scheme === stored.scheme && (o.role ?? null) === (stored.role ?? null)) : -1;
 
   const flagMap = new Map<string, { flag: Flag; channels: string[] }>();
   for (const p of posts) {
@@ -172,8 +197,10 @@ export async function loadDesignPage(args: { userId: string; brandId: string; br
     briefId,
     brandName: brand.name,
     format,
-    formats: [...new Set(posts.flatMap((p) => channelFormats(p.channel)))],
-    hasMascot: assets.mascotId !== null,
+    formats: isCarouselBrief(brief) ? [...new Set(posts.flatMap((p) => postFormats(p.channel, true)))] : [...new Set(posts.flatMap((p) => channelFormats(p.channel)))],
+    hasMascot: assets.faceOn,
+    filter,
+    filterApplies: !!assets.photo,
     words: { headline: first.imageText.headline, subline: first.imageText.subline, ctaText: first.cta, bubble: first.imageText.bubble },
     captions: posts.map((p) => ({ postId: p.id, channel: p.channel, label: channelLabel(p.channel), caption: p.caption, hashtags: p.hashtags })),
     flags: [...flagMap.values()],
@@ -182,7 +209,8 @@ export async function loadDesignPage(args: { userId: string; brandId: string; br
     photos: photos.map((p) => ({ id: p.id, url: `/api/files/${p.storage_path}`, description: p.description ?? '', usable: p.usable !== false })),
     photoId: brief.photoId,
     blocks,
-    carousel: needsCarousel(content, format),
+    carousel: !isCarouselBrief(brief) && needsCarousel(content, format),
+    slideCount: isCarouselBrief(brief) && first.imageText.slides.length >= 2 ? first.imageText.slides.length : null,
     designed: posts.every((p) => p.themeId !== null) && posts.length > 0,
     version: [first.editedAt ?? first.createdAt, brief.photoId ?? '', JSON.stringify(brief.blocks)].join('|'),
   };
@@ -204,6 +232,9 @@ export interface ReviewPost {
   status: string;
   caption: string;
   hashtags: string[];
+  /** How many hashtags this channel takes (0 = none) and the longest caption, for the edit fields. */
+  hashtagsMax: number;
+  captionMax: number;
   cta: string;
   headline: string;
   flags: Flag[];
@@ -213,6 +244,8 @@ export interface ReviewPost {
   images: ReviewImage[];
   /** The carousel slides' pictures, when there is one. */
   slides: string[];
+  /** The owner asked for a carousel: the post's own picture is its cover, so the slides are the whole post. */
+  carouselAsked: boolean;
   /** Caption, call to action with the short link, hashtags: what Copy and Share send. */
   shareText: string;
   designed: boolean;
@@ -228,11 +261,18 @@ export interface ReviewData {
 /** Channels where a link in the caption is clickable. */
 const CLICKABLE = new Set(['facebook', 'linkedin', 'gbp', 'whatsapp', 'youtube']);
 
-/** What Copy and Share send for a post: caption, the call to action with its short link where links work, hashtags. */
-export function shareTextFor(p: Pick<CreatePost, 'channel' | 'caption' | 'cta' | 'hashtags' | 'postCode'>, baseUrl: string): string {
+/**
+ * What Copy and Share send for a post: caption, the call to action with its short link where links work, hashtags. A post
+ * that shows a realistic AI person (Brand Face, F-7) ends with the same disclosure line the publisher adds, so a post
+ * the owner shares by hand says it too.
+ */
+export function shareTextFor(p: Pick<CreatePost, 'channel' | 'caption' | 'cta' | 'hashtags' | 'postCode'> & { aiFace?: boolean }, baseUrl: string): string {
   const link = CLICKABLE.has(p.channel) && baseUrl ? `${baseUrl.replace(/\/$/, '')}/r/${p.postCode}` : '';
   const ctaLine = [p.cta.trim(), link].filter(Boolean).join(' ');
-  return [p.caption.trim(), ctaLine, p.hashtags.map((t) => t.trim()).filter(Boolean).join(' ')].filter(Boolean).join('\n\n');
+  let caption = p.caption.trim();
+  if (caption.endsWith(AI_DISCLOSURE_LINE)) caption = caption.slice(0, -AI_DISCLOSURE_LINE.length).trim();
+  const tags = p.hashtags.map((t) => t.trim()).filter(Boolean).join(' ');
+  return [caption, ctaLine, tags, p.aiFace ? AI_DISCLOSURE_LINE : ''].filter(Boolean).join('\n\n');
 }
 
 export async function loadReviewData(userId: string, brandId: string, briefId: string): Promise<ReviewData | null> {
@@ -250,7 +290,7 @@ export async function loadReviewData(userId: string, brandId: string, briefId: s
   const baseUrl = getEnv().appUrl;
   const posts: ReviewPost[] = main.map((p) => {
     const mine = images.filter((i) => i.post_id === p.id);
-    const order = channelFormats(p.channel);
+    const order = postFormats(p.channel, p.imageText.slides.length >= 2);
     const open = p.flags.filter((f) => f.status === 'open' && f.kind !== 'regulated_reminder');
     const blockers = p.design?.blockers ?? [];
     const mySlides = p.design?.carousel ? slides.filter((sl) => sl.carouselId === p.design!.carousel!.id).sort((a, b) => (a.slideIndex ?? 0) - (b.slideIndex ?? 0)) : [];
@@ -261,6 +301,8 @@ export async function loadReviewData(userId: string, brandId: string, briefId: s
       status: p.status,
       caption: p.caption,
       hashtags: p.hashtags,
+      hashtagsMax: hashtagLimitFor(p.channel),
+      captionMax: CAPTION_MAX[p.channel] ?? 1200,
       cta: p.cta,
       headline: p.imageText.headline,
       flags: p.flags,
@@ -275,7 +317,8 @@ export async function loadReviewData(userId: string, brandId: string, briefId: s
         const img = images.find((i) => i.post_id === sl.id);
         return img ? [`/api/files/${img.image_path}?v=${img.v}`] : [];
       }),
-      shareText: shareTextFor(p, baseUrl),
+      carouselAsked: p.imageText.slides.length >= 2 && mySlides.length > 0,
+      shareText: shareTextFor({ ...p, aiFace: p.design?.aiFace === true }, baseUrl),
       designed: p.themeId !== null && p.design !== null,
       canApprove: open.length === 0 && blockers.length === 0 && p.themeId !== null && p.design !== null,
     };

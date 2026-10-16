@@ -15,21 +15,29 @@ import { POST_COPY_SYSTEM, buildPostCopyUser } from '@/lib/ai/prompts/v3';
 import { postCopyJsonSchema, postCopySchema, POST_COPY_CHANNELS, type PostCopy } from '@/lib/ai/schemas-v3';
 import { requireBrandMember } from '@/lib/brand/current';
 import type { Brief } from '@/lib/briefs/types';
+import { neverSayHit } from '@/lib/faces/rules';
 import { TWEEN_POST_POSES, postPoseOrDefault } from '@/lib/mascot/poses';
 import { TWEEN_NAME } from '@/lib/mascot/spec';
 import { getDb } from '@/lib/db';
 import { redactPaymentIds } from '@/lib/payments';
-import { DailyCapError, assertUnderDailyCap, failedCallUsd, recordUsage } from '@/lib/usage';
+import { DailyCapError, assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage } from '@/lib/usage';
 import { WeeklyCapError, assertUnderWeeklyCap } from '@/lib/usage/caps';
 import { loadCreateBrand } from './brand';
 import { CTA_DEFAULT_TEXT, datesLineFor, offerLineFor, repeatsLines, shownBlocks, stripDatePhrase, uspReadable } from './content';
-import type { CreateBrand, PostCopyResult } from './types';
+import type { SlideKind, SlideText } from '@/lib/design/types';
+import type { CreateBrand, CreateFace, PostCopyResult } from './types';
 
 export const HEADLINE_MAX_WORDS = 7;
 export const SUBLINE_MAX_WORDS = 14;
 export const CTA_MAX_CHARS = 25;
 export const BUBBLE_MAX_CHARS = 30;
 export const HASHTAGS_MAX = 8;
+
+/** Longest slide headline and body per kind of slide, in words (the prompt asks for the same). */
+export const SLIDE_HEAD_MAX_WORDS: Record<SlideKind, number> = { cover: 7, point: 6, proof: 10, cta: 5 };
+export const SLIDE_BODY_MAX_WORDS: Record<SlideKind, number> = { cover: 10, point: 20, proof: 20, cta: 14 };
+/** A carousel needs at least a cover and a closing slide. */
+export const MIN_USABLE_SLIDES = 2;
 
 /** Longest caption per channel, in characters. */
 export const CAPTION_MAX: Record<string, number> = {
@@ -51,11 +59,17 @@ export class PostCopyError extends Error {
   }
 }
 
+/** How many slides the brief asks for (0 for a single post). */
+export const slidesWanted = (brief: Pick<Brief, 'contentFormat' | 'slideCount'>): number => (brief.contentFormat === 'carousel' ? (brief.slideCount ?? 0) : 0);
+
 /** Channels of the brief that have a caption, in the brief's order (Instagram when it has none). */
 export function copyChannels(brief: Pick<Brief, 'channels'>): string[] {
   const list = brief.channels.filter((c) => (POST_COPY_CHANNELS as readonly string[]).includes(c));
   return list.length > 0 ? list : ['instagram'];
 }
+
+/** How many hashtags a channel takes (0 = none). */
+export const hashtagLimitFor = (channel: string): number => HASHTAG_LIMIT[channel] ?? 0;
 
 /** The hashtags a channel's post keeps. */
 export function hashtagsFor(channel: string, hashtags: readonly string[]): string[] {
@@ -128,8 +142,102 @@ export interface ValidateContext {
   language: string;
   channels: string[];
   mascot: boolean;
+  /** Phrases the face never says (Brand Face): a bubble line that holds one is dropped. */
+  neverSay?: readonly string[];
   /** Contact lines the post shows, for the fallback captions. */
   contactLines: string[];
+}
+
+// ---------------------------------------------------------------------------------------------
+// Carousel slides
+// ---------------------------------------------------------------------------------------------
+
+/** The first `max` words of a text. With `ellipsis` (a body), a cut ends at a sentence end within the limit, else at a word with "…". */
+export function trimWords(text: string, max: number, language = 'en', opts: { ellipsis?: boolean } = {}): string {
+  const t = text.trim();
+  if (wordCount(t, language) <= max) return t;
+  let end = 0;
+  let n = 0;
+  try {
+    for (const seg of new Intl.Segmenter(language, { granularity: 'word' }).segment(t)) {
+      if (seg.isWordLike) {
+        n++;
+        if (n > max) break;
+      }
+      end = seg.index + seg.segment.length;
+    }
+  } catch {
+    end = t.split(/\s+/).slice(0, max).join(' ').length;
+  }
+  const head = t.slice(0, end).trim();
+  const sentence = Math.max(head.lastIndexOf('. '), head.lastIndexOf('! '), head.lastIndexOf('? '));
+  if (opts.ellipsis && sentence >= head.length * 0.4) return head.slice(0, sentence + 1);
+  const cut = head.replace(/[\s,;:\-–—]+$/, '');
+  return opts.ellipsis && !/[.!?]$/.test(cut) ? `${cut}…` : cut;
+}
+
+/**
+ * A slide set made only from the brief's own words: the cover is the post's headline (and subline), then one point per selling
+ * point, the offer line as the proof, and the closing slide with the call to action. Never writes anything new.
+ */
+export function fallbackSlides(args: { brief: Brief; brandName: string; language: string; headline: string; subline: string; ctaText: string; want: number }): SlideText[] {
+  const { brief, language, want } = args;
+  const cover: SlideText = { kind: 'cover', headline: args.headline, body: trimWords(args.subline, SLIDE_BODY_MAX_WORDS.cover, language) };
+  const cta: SlideText = { kind: 'cta', headline: args.ctaText || (brief.cta ? CTA_DEFAULT_TEXT[brief.cta] : clean(args.brandName)), body: '' };
+  const points: SlideText[] = [];
+  for (const u of brief.uspSnapshot) {
+    const title = clean(u.title);
+    if (!title || repeatsLines(title, [args.headline, ...points.map((p) => p.headline)])) continue;
+    points.push({ kind: 'point', headline: trimWords(title, 8, language), body: '' });
+  }
+  const offer = offerLineFor(brief, language);
+  const proof: SlideText[] = offer ? [{ kind: 'proof', headline: offer, body: '' }] : [];
+  const room = Math.max(0, want - 2 - proof.length);
+  return [cover, ...points.slice(0, room), ...proof, cta].slice(0, Math.max(want, MIN_USABLE_SLIDES));
+}
+
+/**
+ * Checks the model's slides and repairs them in code: no empty slide, at most `want`, the first is the cover and the last the
+ * call to action (a missing one is added from the post's own words), a cover or call to action in the middle becomes a point,
+ * and every length is inside its limit. Fewer than two usable slides are replaced by `fallbackSlides`. `fixes` gets what was repaired.
+ */
+export function validateSlides(raw: PostCopy['slides'], ctx: ValidateContext, v: { headline: string; subline: string; ctaText: string }, want: number, fixes: string[]): SlideText[] {
+  if (!want) return [];
+  const language = ctx.language;
+  const fallbackArgs = { brief: ctx.brief, brandName: ctx.brandName, language, headline: v.headline, subline: v.subline, ctaText: v.ctaText, want };
+  const asked = raw ?? [];
+  let list: SlideText[] = asked.flatMap((x) => {
+    const headline = clean(x.headline);
+    if (!headline) return [];
+    return [{ kind: x.kind, headline, body: clean(x.body) }];
+  });
+  if (list.length < asked.length) fixes.push('slide_empty');
+  if (list.length < MIN_USABLE_SLIDES) {
+    fixes.push('slides_fallback');
+    return fallbackSlides(fallbackArgs);
+  }
+  if (list[0].kind !== 'cover') {
+    fixes.push('slide_cover_added');
+    list = [{ kind: 'cover', headline: v.headline, body: trimWords(v.subline, SLIDE_BODY_MAX_WORDS.cover, language) }, ...list];
+  }
+  if (list[list.length - 1].kind !== 'cta') {
+    fixes.push('slide_cta_added');
+    list = [...list, fallbackSlides(fallbackArgs).at(-1)!];
+  }
+  // A cover or call to action in the middle is a point.
+  const last = list.length - 1;
+  list = list.map((x, i) => (i > 0 && i < last && (x.kind === 'cover' || x.kind === 'cta') ? { ...x, kind: 'point' as const } : x));
+  // Too many: keep the cover and the call to action, drop the last points.
+  if (list.length > want) {
+    fixes.push('slides_too_many');
+    list = [...list.slice(0, want - 1), list[list.length - 1]];
+  }
+  return list.map((x) => {
+    const headline = wordCount(x.headline, language) > SLIDE_HEAD_MAX_WORDS[x.kind] ? trimWords(x.headline, SLIDE_HEAD_MAX_WORDS[x.kind], language) : x.headline;
+    const body = wordCount(x.body, language) > SLIDE_BODY_MAX_WORDS[x.kind] ? trimWords(x.body, SLIDE_BODY_MAX_WORDS[x.kind], language, { ellipsis: true }) : x.body;
+    if (headline !== x.headline || body !== x.body) fixes.push('slide_trimmed');
+    return { kind: x.kind, headline, body };
+  });
 }
 
 function fallbackCaption(channel: string, v: { headline: string; subline: string; offerLine: string | null; ctaText: string }, contactLines: string[]): string {
@@ -185,6 +293,10 @@ export function validateCopy(raw: PostCopy, ctx: ValidateContext): PostCopyResul
     }
     pose = (TWEEN_POST_POSES as readonly string[]).includes(raw.pose) ? raw.pose : postPoseOrDefault(raw.pose);
     if (pose !== raw.pose) fixes.push('pose_unknown');
+    if (bubble && neverSayHit(bubble, ctx.neverSay ?? [])) {
+      fixes.push('bubble_never_say');
+      bubble = '';
+    }
   }
 
   const offerLine = offerLineFor(ctx.brief, ctx.language);
@@ -206,7 +318,8 @@ export function validateCopy(raw: PostCopy, ctx: ValidateContext): PostCopyResul
 
   const hashtags = cleanHashtags(raw.hashtags);
   if (hashtags.length < raw.hashtags.filter((h) => h.trim()).length) fixes.push('hashtags_cleaned');
-  return { headline, subline, ctaText, captions, hashtags, bubble, pose, fixes };
+  const slides = validateSlides(raw.slides, ctx, { headline, subline, ctaText }, slidesWanted(ctx.brief), fixes);
+  return { headline, subline, ctaText, captions, hashtags, bubble, pose, slides, fixes };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -246,16 +359,18 @@ function defaultFixture(ctx: ValidateContext): PostCopy {
     hashtags: [],
     bubble: ctx.mascot ? 'Come say hi!' : '',
     pose: ctx.mascot ? 'wave' : '',
+    slides: slidesWanted(ctx.brief) ? fallbackSlides({ brief: ctx.brief, brandName: ctx.brandName, language: ctx.language, headline, subline, ctaText, want: slidesWanted(ctx.brief) }) : [],
   };
 }
 
 /**
  * Writes the words for a ready brief. Throws PostCopyError('ai_failed'), DailyCapError, WeeklyCapError or
  * BrandAccessError. One `post_copy` usage event is recorded per call that reached the model.
- * `mascot` says whether the post will have the mascot (the brand switch AND a usable mascot).
+ * `mascot` says whether the post will have the brand's face (it is on AND usable); `face` is that face, for its name and
+ * the phrases it never says.
  */
 export async function writePostCopy(
-  args: { userId: string; brandId: string; brief: Brief; brand?: CreateBrand; mascot?: boolean; now?: Date },
+  args: { userId: string; brandId: string; brief: Brief; brand?: CreateBrand; mascot?: boolean; face?: CreateFace | null; now?: Date },
   deps: PostCopyDeps = {},
 ): Promise<{ copy: PostCopyResult; usd: number }> {
   const { userId, brandId, brief } = args;
@@ -264,9 +379,11 @@ export async function writePostCopy(
   const brand = args.brand ?? (await loadCreateBrand(userId, brandId));
   const language = brief.language ?? brand.language;
   const channels = copyChannels(brief);
-  const mascot = args.mascot ?? brand.mascotOn;
+  const mascot = args.mascot ?? brand.face !== null;
+  // The face that will be on the picture: the one given (it may be off for this type of post), else the brand's.
+  const face = args.face === undefined ? brand.face : args.face;
   const contactLines = shownBlocks(brief, brand).map((b) => b.text);
-  const vctx: ValidateContext = { brief, brandName: brand.name, language, channels, mascot, contactLines };
+  const vctx: ValidateContext = { brief, brandName: brand.name, language, channels, mascot, neverSay: face?.neverSay, contactLines };
 
   // Everything the owner typed goes through the payment-ID filter before it reaches a prompt.
   const uspTexts = brief.uspSnapshot.flatMap((u) => [u.title, uspReadable({ kind: u.kind, title: '', details: u.details }, language).replace(/^\.\s*/, '')]);
@@ -307,6 +424,7 @@ export async function writePostCopy(
       regulated: brand.regulated === 'other' ? 'none' : brand.regulated,
       language,
       postType: brief.postType,
+      extraPostTypes: brief.extraPostTypes ?? [],
       primary: uspPrompt('primary')[0] ?? null,
       secondary: uspPrompt('secondary'),
       offerLine: offer || null,
@@ -314,8 +432,9 @@ export async function writePostCopy(
       ctaKind: brief.cta,
       contactLines: lines,
       channels,
-      occasion: brief.postType === 'occasion' && notes ? notes : null,
-      mascot: mascot ? { name: TWEEN_NAME } : null,
+      ownerDescription: notes || null,
+      carouselSlides: slidesWanted(brief) || null,
+      mascot: mascot ? (face && face.kind !== 'mascot' ? { name: face.name, kind: face.kind } : { name: TWEEN_NAME }) : null,
     }),
   };
 
@@ -337,16 +456,17 @@ export async function writePostCopy(
     });
     data = res.data;
     usd = res.stats?.usd ?? 0;
-    await recordUsage(brandId, userId, 'post_copy', usd);
+    await recordUsage(brandId, userId, 'post_copy', usd, { model: res.stats?.model });
   } catch (err) {
     const lost = failedCallUsd(err); // an answer that did not validate still cost money
-    if (lost > 0) await recordUsage(brandId, userId, 'post_copy', lost).catch(() => undefined);
+    if (lost > 0) await recordUsage(brandId, userId, 'post_copy', lost, { ok: false, model: failedCallModel(err) }).catch(() => undefined);
     console.warn(`[create] post copy failed for brand ${brandId}: ${err instanceof AiError ? err.code : err instanceof Error ? err.name : 'error'}`);
     throw new PostCopyError('ai_failed');
   }
 
   // The answer is cleaned the same way as the input: a payment ID never stays in a post.
-  const outTexts = [data.headline, data.subline, data.cta_text, data.bubble, ...data.captions.map((c) => c.text), ...data.hashtags];
+  const slides = data.slides ?? [];
+  const outTexts = [data.headline, data.subline, data.cta_text, data.bubble, ...data.captions.map((c) => c.text), ...data.hashtags, ...slides.flatMap((x) => [x.headline, x.body])];
   const outClean = await redactMany(brandId, outTexts);
   let k = 0;
   const safe: PostCopy = {
@@ -357,6 +477,7 @@ export async function writePostCopy(
     bubble: outClean[k++],
     captions: data.captions.map((c) => ({ ...c, text: outClean[k++] })),
     hashtags: data.hashtags.map(() => outClean[k++]),
+    slides: slides.map((x) => ({ ...x, headline: outClean[k++], body: outClean[k++] })),
   };
   return { copy: validateCopy(safe, vctx), usd };
 }

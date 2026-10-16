@@ -8,6 +8,7 @@ export type EmailKind =
   | "missed_weeks"
   | "account_delete"
   | "payment_confirm"
+  | "face_consent"
   | "post_delivery"
   | "connection_problem";
 

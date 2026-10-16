@@ -1,10 +1,10 @@
 import { getDb } from "@/lib/db";
 
 /**
- * Where a signed-in user lands: /week once their business is set up, else /setup (no brand yet,
- * or setup not finished). One business per account. /create and /plan (v1) still work by URL.
+ * Where a signed-in user lands: /home (the Home page) once their business is set up, else /setup (no brand yet,
+ * or setup not finished). One business per account. /create, /week and /plan (v1) still work by URL.
  */
-export async function homePathFor(userId: string): Promise<"/setup" | "/week"> {
+export async function homePathFor(userId: string): Promise<"/setup" | "/home"> {
   const [row] = await getDb().withUser(userId, (tx) =>
     tx.query<{ n: number }>(
       `select count(*)::int as n
@@ -14,5 +14,5 @@ export async function homePathFor(userId: string): Promise<"/setup" | "/week"> {
       [userId],
     ),
   );
-  return row && row.n > 0 ? "/week" : "/setup";
+  return row && row.n > 0 ? "/home" : "/setup";
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useSyncExternalStore } from "react";
-import { hintClass } from "@/components/ui";
+import { hintClass, smallButton, strongButton } from "@/components/ui";
 import type { V2Channel } from "@/lib/ai/prompts/v2-weekly";
 import { s } from "@/lib/i18n/strings";
 import { createShareKit, type ShareKit } from "@/lib/share/core";
@@ -9,9 +9,6 @@ import { STORY_FORMAT, defaultShareFormat, shareFilename, type ShareFormat } fro
 
 const t = s.share;
 
-const smallButton =
-  "min-h-11 rounded-lg border border-stone-300 bg-white px-4 py-2 text-base font-medium text-stone-800 disabled:opacity-50";
-const strongButton = "min-h-11 rounded-lg bg-[#E4572E] px-4 py-2 text-base font-semibold text-white disabled:opacity-50";
 
 const FORMAT_ORDER: ShareFormat[] = ["square", "vertical", "landscape"];
 
@@ -173,13 +170,13 @@ export function ShareButtons({
       </div>
 
       {message ? (
-        <p role={message.kind === "error" ? "alert" : "status"} className={message.kind === "error" ? "text-sm font-medium text-red-700" : "text-sm font-medium text-green-800"}>
+        <p role={message.kind === "error" ? "alert" : "status"} className={message.kind === "error" ? "text-[13px] font-medium leading-[18px] text-err-tx" : "text-[13px] font-medium leading-[18px] text-ok-tx"}>
           {message.text}
         </p>
       ) : null}
 
-      <div className="space-y-2 border-t border-stone-200 pt-3">
-        {asked ? <p className="text-sm font-semibold text-stone-800">{t.didYouPost}</p> : null}
+      <div className="space-y-2 border-t border-divider pt-3">
+        {asked ? <p className="text-ui text-title">{t.didYouPost}</p> : null}
         <button type="button" className={asked ? strongButton : smallButton} disabled={busy} onClick={onMarkPosted}>
           {t.markPosted}
         </button>

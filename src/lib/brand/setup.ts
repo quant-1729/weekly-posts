@@ -5,7 +5,7 @@ import { TRANSCRIBE_INSTRUCTION, isTranscriptUsable } from "@/lib/ai/prompts/tra
 import { setupExtractJsonSchema, setupExtractSchema, type SetupExtract } from "@/lib/ai/schemas";
 import { MAX_WAV_BYTES, WAV_CHANNELS, WAV_SAMPLE_RATE, readWavInfo } from "@/lib/audio/wav";
 import { getStorage, type Storage } from "@/lib/storage";
-import { assertUnderDailyCap, failedCallUsd, recordUsage } from "@/lib/usage";
+import { assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage, type UsageMeta } from "@/lib/usage";
 import { requireBrandMember } from "./current";
 import { answersToTranscript, hasAnyAnswer, type SetupAnswers } from "./extract";
 import { SETUP_EXTRACT_FIXTURE, SETUP_TRANSCRIPT_FIXTURE } from "./fixtures";
@@ -58,6 +58,7 @@ export async function transcribeSetupAudio(args: {
 
   let text: string;
   let usd = 0;
+  let meta: UsageMeta = { ok: false };
   try {
     const res = await generateText({
       instruction: TRANSCRIBE_INSTRUCTION,
@@ -67,9 +68,10 @@ export async function transcribeSetupAudio(args: {
     });
     text = res.text;
     usd = res.stats?.usd ?? 0;
+    meta = { model: res.stats?.model };
   } finally {
     // The call was attempted, so it counts against the cap even if it failed.
-    await recordUsage(brandId, userId, "transcribe", usd);
+    await recordUsage(brandId, userId, "transcribe", usd, meta);
   }
   const transcript = text.trim();
   return { transcript, usable: isTranscriptUsable(transcript), audioPath: `inputs/${audioPath}` };
@@ -111,6 +113,7 @@ export async function extractSetupProfile(args: {
 
   await assertUnderDailyCap(brandId, args.now);
   let usd = 0;
+  let meta: UsageMeta = { ok: false };
   try {
     const { data, stats } = await generateJson({
       system: prompt.system,
@@ -122,11 +125,13 @@ export async function extractSetupProfile(args: {
       fixture: SETUP_EXTRACT_FIXTURE,
     });
     usd = stats?.usd ?? 0;
+    meta = { model: stats?.model };
     return { extract: data, setupTranscript };
   } catch (e) {
     usd = failedCallUsd(e); // an answer that did not validate still cost money (H-2)
+    meta = { ok: false, model: failedCallModel(e) };
     throw e;
   } finally {
-    await recordUsage(brandId, userId, "setup", usd);
+    await recordUsage(brandId, userId, "setup", usd, meta);
   }
 }

@@ -51,6 +51,20 @@ export interface AdminMetrics {
     failures: Array<{ kind: string; brandName: string; to: string; at: string; error: string }>;
   };
   deletions: { byStatus: Count[]; oldestPendingAt: string | null };
+  /** Ideas (trend research, R-10). Counts, cost and cleaned error codes only: no focus text, searches or card text. */
+  research: {
+    /** Monday 00:00 UTC of the current week (YYYY-MM-DD). */
+    weekStart: string;
+    runsThisWeek: number;
+    /** Runs started this week by status (running, done, failed, capped). */
+    byStatus: Count[];
+    costThisWeekUsd: number;
+    costTotalUsd: number;
+    /** Failed runs of the last 14 days, newest first. */
+    failures: Array<{ brandName: string; trigger: string; at: string; error: string }>;
+    /** Why runs were capped in the last 30 days, most common first (top 5). */
+    cappedReasons: Count[];
+  };
 }
 
 type Num = number | string | null;
@@ -173,6 +187,27 @@ export async function getAdminMetrics(admin: AdminUser, now: Date = new Date()):
     const delStatus = await q<Count>(`select status as key, count(*)::int as n from public.deletion_requests group by status order by status`, []);
     const [oldest] = await q<{ at: string | null }>(`select ${TS("min(created_at)")} as at from public.deletion_requests where status <> 'done'`, []);
 
+    // Research (Ideas). The week is the UTC week, like the rest of this page.
+    const weekFilter = `started_at >= (date_trunc('week', $1::timestamptz at time zone 'UTC')) at time zone 'UTC' and started_at <= $1::timestamptz`;
+    const [resWeek] = await q<{ week: string }>(`select to_char(date_trunc('week', $1::timestamptz at time zone 'UTC'), 'YYYY-MM-DD') as week`);
+    const resStatus = await q<Count>(
+      `select status as key, count(*)::int as n from public.research_runs where ${weekFilter} group by status order by status`,
+    );
+    const [resCost] = await q<{ week: Num; total: Num }>(
+      `select coalesce(sum(cost_usd) filter (where ${weekFilter}), 0) as week, coalesce(sum(cost_usd), 0) as total from public.research_runs`,
+    );
+    const resFails = await q<{ name: string; trigger: string; at: string; err: string | null }>(
+      `select b.name, r.trigger, ${TS("r.started_at")} as at, left(r.error, 300) as err
+         from public.research_runs r join public.brands b on b.id = r.brand_id
+        where r.status = 'failed' and r.started_at >= $1::timestamptz - interval '14 days'
+        order by r.started_at desc limit ${LIST_LIMIT}`,
+    );
+    const resCapped = await q<Count>(
+      `select coalesce(error, 'unknown') as key, count(*)::int as n from public.research_runs
+        where status = 'capped' and started_at >= $1::timestamptz - interval '30 days'
+        group by coalesce(error, 'unknown') order by n desc, key limit 5`,
+    );
+
     return {
       generatedAt: nowIso,
       overview: { owners: ov.owners, brands: ov.brands, newOwners7d: ov.n7, newOwners30d: ov.n30, activeBrands7d: ov.active },
@@ -200,6 +235,15 @@ export async function getAdminMetrics(admin: AdminUser, now: Date = new Date()):
         failures: mailFails.map((r) => ({ kind: r.kind, brandName: r.name ?? "(no brand)", to: maskEmail(r.to_email), at: r.at, error: cleanError(r.err) })),
       },
       deletions: { byStatus: delStatus, oldestPendingAt: oldest?.at ?? null },
+      research: {
+        weekStart: resWeek?.week ?? "",
+        runsThisWeek: resStatus.reduce((sum, r) => sum + r.n, 0),
+        byStatus: resStatus,
+        costThisWeekUsd: num(resCost?.week),
+        costTotalUsd: num(resCost?.total),
+        failures: resFails.map((r) => ({ brandName: r.name, trigger: r.trigger, at: r.at, error: cleanError(r.err) })),
+        cappedReasons: resCapped.map((r) => ({ key: cleanError(r.key), n: r.n })),
+      },
     };
   });
 }

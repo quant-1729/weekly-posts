@@ -1,7 +1,8 @@
 import { SignJWT } from "jose";
 import { describe, expect, it } from "vitest";
 import { signMagicToken } from "@/lib/auth/magic-link";
-import { signSession, verifySession } from "@/lib/auth/session";
+import { verifySession } from "@/lib/auth/session";
+import { signSessionNoRow as signSession } from "../helpers/session";
 import { CONNECT_STATE_TTL_SECONDS, nonceMatches, signConnectState, verifyConnectState } from "@/lib/connections/state";
 import { getEnv } from "@/lib/env";
 

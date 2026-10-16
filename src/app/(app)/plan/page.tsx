@@ -2,9 +2,9 @@ import { s } from "@/lib/i18n/strings";
 
 export default function Page() {
   return (
-    <section>
-      <h1 className="mb-2 text-xl font-bold md:text-2xl">{s.plan.title}</h1>
-      <p className="text-stone-600">{s.plan.comingSoon}</p>
+    <section className="mx-auto w-full max-w-page-sm">
+      <h1 className="text-section text-title">{s.plan.title}</h1>
+      <p className="mt-1 text-[14px] leading-5 text-desc">{s.plan.comingSoon}</p>
     </section>
   );
 }

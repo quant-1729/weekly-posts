@@ -58,22 +58,41 @@ export const USP_LIMITS = {
   link: { primary: 1, secondary: 1 },
 } as const;
 
-/** Fields a brief must have before design, per post type (B-8). */
+/**
+ * Fields a brief must have before design, per post type (B-8). Since the 2026-10-15 owner change the Details step no
+ * longer asks for selling points, a call to action or dates: the owner's description says what the post is about, so
+ * no type needs them (`checkCompleteness` asks for a description instead). Kept per type for when one comes back.
+ */
 export const REQUIRED_BY_TYPE: Record<PostType, ReadonlyArray<'primaryUsp' | 'dates' | 'cta'>> = {
-  offer: ['primaryUsp', 'dates', 'cta'],
-  new_product: ['primaryUsp', 'cta'],
-  event: ['dates', 'cta'],
-  announcement: ['dates'],
+  offer: [],
+  new_product: [],
+  event: [],
+  announcement: [],
   occasion: [],
-  testimonial: ['primaryUsp'],
-  hiring: ['cta'],
+  testimonial: [],
+  hiring: [],
   brand: [],
 };
+
+/** Content formats the owner chooses at the start of Create a post. 'reel' is shown as coming soon. */
+export const CONTENT_FORMATS = ['post', 'carousel', 'reel'] as const;
+export type ContentFormat = (typeof CONTENT_FORMATS)[number];
+/** Formats that can be made today. */
+export const AVAILABLE_CONTENT_FORMATS: readonly ContentFormat[] = ['post', 'carousel'];
+export const DEFAULT_SLIDE_COUNT = 5;
+export const MIN_SLIDES = 3;
+export const MAX_SLIDES = 10;
 
 export interface Brief {
   id: string;
   brandId: string;
   postType: PostType;
+  /** Extra types (owner change 2026-10-15): context for the copy; the main type drives layout and the default CTA. */
+  extraPostTypes?: PostType[];
+  /** What to make (owner change 2026-10-16): one picture, a carousel, or a reel (coming soon, not selectable yet). */
+  contentFormat?: ContentFormat;
+  /** Carousel only: how many slides (3-10), cover and closing slide included. */
+  slideCount?: number | null;
   primaryUspId: string | null;
   secondaryUspIds: string[];
   uspSnapshot: UspSnapshot[];

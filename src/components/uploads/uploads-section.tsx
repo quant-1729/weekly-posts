@@ -34,10 +34,10 @@ export async function UploadsSection({
     <section className={heading ? "space-y-6 border-t border-stone-200 pt-6" : "space-y-6"} aria-labelledby={heading ? "uploads-heading" : undefined}>
       {heading && (
         <div>
-          <h2 id="uploads-heading" className="text-xl font-bold">
+          <h2 id="uploads-heading" className="text-xl font-medium">
             {s.uploads.sectionTitle}
           </h2>
-          <p className="text-stone-600">{s.uploads.sectionIntro}</p>
+          <p className="text-[14px] leading-5 text-desc">{s.uploads.sectionIntro}</p>
         </div>
       )}
       <InstagramCard brandId={brandId} initial={instagram} />

@@ -41,7 +41,7 @@ export function PaymentCard({
   const [sent, setSent] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  if (!supported) return <p className="text-stone-600">{t.otherCountry}</p>;
+  if (!supported) return <p className="text-[14px] leading-5 text-desc">{t.otherCountry}</p>;
 
   function add() {
     setError(null);
@@ -79,7 +79,7 @@ export function PaymentCard({
 
   return (
     <div className="space-y-4">
-      <p className="text-stone-600">{t.intro}</p>
+      <p className="text-[14px] leading-5 text-desc">{t.intro}</p>
 
       {[...live, ...retired].length > 0 && (
         <ul className="space-y-2">
@@ -162,7 +162,7 @@ export function PaymentCard({
           )}
         </div>
       ) : (
-        <p className="text-stone-600">{t.noOwner}</p>
+        <p className="text-[14px] leading-5 text-desc">{t.noOwner}</p>
       )}
     </div>
   );

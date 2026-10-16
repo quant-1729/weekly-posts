@@ -228,7 +228,7 @@ describe.skipIf(!IT)("Supabase magic-link sign-in", () => {
 
   it("a signed cookie for a user that no longer exists is treated as signed out", async () => {
     const { signSession } = await import("@/lib/auth/session");
-    jar.api.set(SESSION_COOKIE, await signSession({ id: "00000000-0000-4000-8000-000000000000", email: "it-ghost@example.com" }));
+    jar.api.set(SESSION_COOKIE, await signSession({ id: "00000000-0000-4000-8000-000000000000", email: "it-ghost@example.com", sid: "00000000-0000-4000-8000-000000000001" }));
     expect(await auth().getCurrentUser()).toBeNull();
   });
 

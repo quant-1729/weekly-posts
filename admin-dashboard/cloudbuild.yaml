@@ -1,0 +1,51 @@
+# Cloud Build for the admin dashboard (its own Cloud Run service, next to the main app). Run from admin-dashboard/:
+#   gcloud builds submit --config cloudbuild.yaml --project=weekly-posts-471203 --region=australia-southeast1 \
+#     --service-account=projects/weekly-posts-471203/serviceAccounts/weekly-posts-build@weekly-posts-471203.iam.gserviceaccount.com \
+#     --substitutions=_ADMIN_EMAILS="a@x.com,b@y.com",_EMAIL_FROM="Weekly Posts <hello@your-domain>"
+# Secrets used (Secret Manager, readable by the runtime service account): SUPABASE_DB_URL (shared with the main app),
+# RESEND_API_KEY (shared), ADMIN_AUTH_SECRET (this app only).
+# One-time after the first deploy (the build account cannot set it): make it reachable; sign-in is the app's own email link.
+#   gcloud run services add-iam-policy-binding weekly-posts-admin --region=australia-southeast1 --member=allUsers --role=roles/run.invoker
+# Address: https://weekly-posts-admin-526531409571.australia-southeast1.run.app
+substitutions:
+  _REGION: australia-southeast1
+  _SERVICE: weekly-posts-admin
+  _REPO: weekly-posts
+  _RUNTIME_SA: weekly-posts-run
+  _ADMIN_EMAILS: ""
+  _EMAIL_FROM: ""
+
+options:
+  machineType: E2_HIGHCPU_8
+  logging: CLOUD_LOGGING_ONLY
+  substitution_option: ALLOW_LOOSE
+
+timeout: 1200s
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args: ["build", "-t", "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest", "."]
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args: ["push", "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest"]
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        URL="https://${_SERVICE}-${PROJECT_NUMBER}.${_REGION}.run.app"
+        gcloud run deploy "${_SERVICE}" \
+          --project="${PROJECT_ID}" --region="${_REGION}" \
+          --image="${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest" \
+          --service-account="${_RUNTIME_SA}@${PROJECT_ID}.iam.gserviceaccount.com" \
+          --allow-unauthenticated \
+          --cpu=1 --memory=512Mi --min-instances=0 --max-instances=2 --concurrency=40 \
+          --set-env-vars="^|^ADMIN_EMAILS=${_ADMIN_EMAILS}|EMAIL_FROM=${_EMAIL_FROM}|ADMIN_APP_URL=$${URL}" \
+          --set-secrets="ADMIN_DATABASE_URL=SUPABASE_DB_URL:latest,RESEND_API_KEY=RESEND_API_KEY:latest,ADMIN_AUTH_SECRET=ADMIN_AUTH_SECRET:latest"
+        echo "Admin dashboard: $${URL}"
+
+images:
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:latest

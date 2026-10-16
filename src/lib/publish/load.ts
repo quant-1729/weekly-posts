@@ -20,6 +20,8 @@ export interface LoadedPost {
   status: string;
   caption: string | null;
   hashtags: string[];
+  /** The picture shows a realistic AI person (posts.design.aiFace): the caption gets the AI disclosure line. */
+  aiFace: boolean;
 }
 
 /** One picture of a post: format -> path like "renders/{brand}/{post}/{format}.png". */
@@ -41,7 +43,7 @@ export async function loadForPublish(itemId: string, brandId: string): Promise<L
       [itemId, brandId],
     );
     if (!item) return null;
-    const [post] = await tx.query<{ id: string; status: string; caption: string | null; hashtags: string[] | null; carousel_id: string | null; design: { carousel?: { id?: string } } | null }>(
+    const [post] = await tx.query<{ id: string; status: string; caption: string | null; hashtags: string[] | null; carousel_id: string | null; design: { carousel?: { id?: string }; aiFace?: boolean } | null }>(
       `select id::text as id, status::text as status, caption, hashtags, carousel_id::text as carousel_id, design
          from public.posts where id = $1 and brand_id = $2`,
       [item.post_id, brandId],
@@ -73,7 +75,7 @@ export async function loadForPublish(itemId: string, brandId: string): Promise<L
         platformPostId: item.platform_post_id,
         permalink: item.permalink,
       },
-      post: { id: post.id, status: post.status, caption: post.caption, hashtags: post.hashtags ?? [] },
+      post: { id: post.id, status: post.status, caption: post.caption, hashtags: post.hashtags ?? [], aiFace: post.design?.aiFace === true },
       images: byPost.get(post.id) ?? {},
       slides: slideRows.map((r) => byPost.get(r.id) ?? {}),
     };

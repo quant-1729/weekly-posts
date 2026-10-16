@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AccountPanel } from "@/components/account/account-panel";
+import { BrandNav } from "@/components/brand/brand-nav";
 import { BrandSection } from "@/components/brand/section";
-import { DatesBlock, FactsBlock, LookBlock, MascotBlock, SettingsBlock } from "@/components/brand/blocks";
+import { DatesBlock, FactsBlock, LookBlock, SettingsBlock } from "@/components/brand/blocks";
 import { ContactsBlock, UspsBlock } from "@/components/brand/details-blocks";
+import { CompetitorsBlock } from "@/components/brand/competitors-block";
+import { FaceBlock } from "@/components/brand/face-block";
 import { PaymentBlock } from "@/components/brand/payment-block";
+import { linkButton } from "@/components/ui";
 import { UploadsSection, VoiceSection } from "@/components/uploads/uploads-section";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurrentBrand } from "@/lib/brand/current";
@@ -25,21 +29,38 @@ export default async function Page() {
   const t = s.brandV2;
   const ids = { userId: user.id, brandId: brand.id };
   return (
-    <section className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold md:text-2xl">{t.title}</h1>
-        <p className="text-stone-600">{t.intro}</p>
-        {/* Phones have four tabs; Connections and the mascot are reached from here. The wider layouts list them in the navigation. */}
+    <section className="mx-auto w-full max-w-page-lg">
+      <div className="mb-1">
+        <h1 className="sr-only">{t.title}</h1>
+        <p className="text-[14px] leading-5 text-desc">{t.intro}</p>
+        {/* Phones have four tabs; the mascot is reached from here (Connections is in the menu). */}
         <p className="mt-2 flex gap-4 md:hidden" data-brand-more>
           <span className="sr-only">{s.connections.brandLinks.label}:</span>
-          <Link href="/connections" className="min-h-11 py-2 font-medium underline">
+          <Link href="/connections" className={linkButton}>
             {s.connections.brandLinks.connections}
           </Link>
-          <Link href="/mascot" className="min-h-11 py-2 font-medium underline">
+          <Link href="/mascot" className={linkButton}>
             {s.connections.brandLinks.mascot}
           </Link>
         </p>
       </div>
+      <BrandNav
+        pills={[
+          { id: "facts", label: t.pills.facts },
+          { id: "usps", label: t.pills.usps },
+          { id: "contacts", label: t.pills.contacts },
+          { id: "voice", label: t.pills.voice },
+          { id: "look", label: t.pills.look },
+          { id: "mascot", label: t.pills.mascot },
+          { id: "uploads", label: t.pills.uploads },
+          { id: "dates", label: t.pills.dates },
+          { id: "payment", label: t.pills.payment },
+          { id: "competitors", label: t.pills.competitors },
+          { id: "settings", label: t.pills.settings },
+          { id: "data", label: t.pills.data },
+        ]}
+      />
+      <div className="space-y-4">
       <BrandSection id="facts" title={t.sections.facts} defaultOpen>
         <FactsBlock {...ids} />
       </BrandSection>
@@ -49,16 +70,14 @@ export default async function Page() {
       <BrandSection id="contacts" title={s.contacts.title}>
         <ContactsBlock {...ids} />
       </BrandSection>
-      {/* The facts stay full width; the other sections sit two to a row on desktop. */}
-      <div className="space-y-4 lg:grid lg:grid-cols-2 lg:items-start lg:gap-4 lg:space-y-0">
       <BrandSection id="voice" title={t.sections.voice}>
         <VoiceSection {...ids} />
       </BrandSection>
       <BrandSection id="look" title={t.sections.look}>
         <LookBlock {...ids} />
       </BrandSection>
-      <BrandSection id="mascot" title={s.mascot.brandLinkTitle}>
-        <MascotBlock {...ids} />
+      <BrandSection id="mascot" title={s.faces.title}>
+        <FaceBlock {...ids} />
       </BrandSection>
       <BrandSection id="uploads" title={t.sections.uploads}>
         <UploadsSection {...ids} voice={false} heading={false} />
@@ -68,6 +87,9 @@ export default async function Page() {
       </BrandSection>
       <BrandSection id="payment" title={paymentCopy.card.title}>
         <PaymentBlock {...ids} />
+      </BrandSection>
+      <BrandSection id="competitors" title={s.ideas.competitors.title}>
+        <CompetitorsBlock {...ids} />
       </BrandSection>
       <BrandSection id="settings" title={t.sections.settings}>
         <SettingsBlock {...ids} />

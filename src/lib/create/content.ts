@@ -11,7 +11,8 @@ import type { WeeklyFact } from '@/lib/ai/prompts/v2-weekly';
 import type { FormatFamily } from '@/lib/briefs/completeness';
 import { blockLines, CHANNEL_FORMATS, datesText, type ChannelKey } from '@/lib/briefs/editor-state';
 import type { Brief, CtaKind, UspSnapshot } from '@/lib/briefs/types';
-import type { DesignBlock, DesignContent, DesignFormat } from '@/lib/design/types';
+import { carouselFormat, type DesignBlock, type DesignContent, type DesignFormat } from '@/lib/design/types';
+import { redactPaymentIds } from '@/lib/payments/redact';
 import { qrContentFor } from '@/lib/qr';
 import { NEEDS_CONFIRMATION } from '@/lib/usps/types';
 import type { CreateBrand, DesignWords } from './types';
@@ -59,6 +60,25 @@ export function briefFormats(channels: readonly string[]): DesignFormat[] {
 /** The size the design step shows: the main size of the first channel. */
 export function primaryFormat(channels: readonly string[]): DesignFormat {
   return channelFormats(channels[0] ?? 'instagram')[0];
+}
+
+// A carousel the owner asked for (content format "carousel"): each channel's slides are one picture each, in `carouselFormat`.
+
+/** True when the brief is a carousel the owner asked for (not C-20's automatic split of too many points). */
+export const isCarouselBrief = (brief: Pick<Brief, 'contentFormat'>): boolean => brief.contentFormat === 'carousel';
+
+/** The sizes a channel's pictures are in: its slide size for a carousel, else the sizes the channel needs. */
+export const postFormats = (channel: string, carousel: boolean): DesignFormat[] => (carousel ? [carouselFormat(channel)] : channelFormats(channel));
+
+/** The size the design step shows: the first channel's slide size for a carousel, else its main size. */
+export const designFormat = (brief: Pick<Brief, 'channels' | 'contentFormat'>): DesignFormat =>
+  isCarouselBrief(brief) ? carouselFormat(brief.channels[0] ?? 'instagram') : primaryFormat(brief.channels);
+
+/** Every size a design of this brief may be drawn in (for checking an option). */
+export function designFormats(brief: Pick<Brief, 'channels' | 'contentFormat'>): DesignFormat[] {
+  const all = briefFormats(brief.channels);
+  if (!isCarouselBrief(brief)) return all;
+  return [...new Set([...brief.channels.map(carouselFormat), ...all])];
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -231,7 +251,7 @@ export async function contentFromBrief(
     const q = await qrContentFor(brief.qr, { brandId: brand.id, postCode: opts.postCode, baseUrl: opts.baseUrl });
     qr = { text: q.text, label: QR_LABEL[q.label], ...(q.payment ? { payment: q.payment } : {}) };
   }
-  const mascot = opts.mascot ?? brand.mascotOn;
+  const mascot = opts.mascot ?? brand.face !== null;
 
   // Each fact is said once on a picture: the date is in the offer line, so it is cut from the USP lines; a main point the
   // headline already carries is not repeated; a subline that only repeats the headline, the main point or the dates is dropped.
@@ -356,6 +376,8 @@ export function factsForBrief(brief: Brief, brand: CreateBrand): WeeklyFact[] {
     const f = CONTACT_FACT[b.kind];
     if (f) add(f.kind, f.label, b.text);
   }
+  // The owner's own description of this post is a source of facts too (payment IDs never reach the check).
+  if (brief.notes) add('other', "Owner's description of this post", redactPaymentIds(brief.notes));
   const { startsOn, endsOn } = postDates(brief);
   const when = datesText(startsOn, endsOn);
   if (when) add('offer', 'Offer dates', [when, startsOn && `starts ${startsOn}`, endsOn && `ends ${endsOn}`].filter(Boolean).join(', '));

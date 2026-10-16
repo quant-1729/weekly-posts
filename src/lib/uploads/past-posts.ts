@@ -8,7 +8,7 @@ import { screenshotJsonSchema, screenshotSchema, type Screenshot } from "@/lib/a
 import { requireBrandMember } from "@/lib/brand/current";
 import { getDb } from "@/lib/db";
 import { getStorage, type Storage } from "@/lib/storage";
-import { assertUnderDailyCap, failedCallUsd, recordUsage } from "@/lib/usage";
+import { assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage } from "@/lib/usage";
 import { assertUnderWeeklyCap } from "@/lib/usage/caps";
 import { UploadError } from "./errors";
 import { screenshotFixture } from "./fixtures";
@@ -146,11 +146,11 @@ export async function addPastPostScreenshot(args: {
       logContext: { brandId },
       fixture: args.fixture ?? (() => screenshotFixture(img.jpeg.byteLength)),
     });
-    await recordUsage(brandId, userId, "upload_extract", res.stats?.usd ?? 0);
+    await recordUsage(brandId, userId, "upload_extract", res.stats?.usd ?? 0, { model: res.stats?.model });
     shot = res.data;
   } catch (e) {
     const lost = failedCallUsd(e); // an answer that did not validate still cost money (H-2)
-    if (lost > 0) await recordUsage(brandId, userId, "upload_extract", lost).catch(() => undefined);
+    if (lost > 0) await recordUsage(brandId, userId, "upload_extract", lost, { ok: false, model: failedCallModel(e) }).catch(() => undefined);
     await storage.remove("photos", inBucket).catch(() => undefined);
     throw e;
   }

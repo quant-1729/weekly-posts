@@ -7,7 +7,7 @@ import { getBrief } from "@/lib/briefs/service";
 
 export const dynamic = "force-dynamic";
 
-/** Create a post, step 1 of 4 (Details), for an existing brief (draft or ready). Another brand's brief is "not found". */
+/** Create a post, step 1 of 5 (Details), for an existing brief (draft or ready). Another brand's brief is "not found". */
 export default async function Page({ params }: PageProps<"/create/[briefId]">) {
   const user = await getCurrentUser();
   if (!user) redirect("/login");

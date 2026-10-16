@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { hintClass, inputClass, labelClass } from "@/components/ui";
+import { hintClass, inputClass, labelClass, strongButton } from "@/components/ui";
 import { postPoseOrDefault, TWEEN_POST_POSES, type TweenPostPose } from "@/lib/mascot/poses";
 import { IMAGE_TEXT_LIMITS } from "@/lib/ai/prompts/shared";
 import { fill, s } from "@/lib/i18n/strings";
@@ -12,7 +12,6 @@ import { savePostMascotAction } from "./mascot-actions";
 const t = s.mascot.post;
 const BUBBLE_MAX_CHARS = IMAGE_TEXT_LIMITS.bubble;
 
-const strongButton = "min-h-11 rounded-lg bg-[#E4572E] px-4 py-2 text-base font-semibold text-white disabled:opacity-50";
 
 /**
  * "Your mascot on this post" for the dashboard editor (V-25, D9): show or hide the mascot, its pose (one of the
@@ -45,14 +44,14 @@ export function MascotControls({
       }}
     >
       <fieldset className="space-y-3">
-        <legend className="font-semibold">{t.title}</legend>
+        <legend className="text-card-title text-title">{t.title}</legend>
         <p className={hintClass}>{t.help}</p>
-        <label className="flex items-center gap-3">
-          <input type="radio" className="size-5" name={`mascot-${post.id}`} checked={show} onChange={() => setShow(true)} />
+        <label className="flex min-h-6 items-center gap-3 text-[14px]">
+          <input type="radio" name={`mascot-${post.id}`} checked={show} onChange={() => setShow(true)} />
           <span>{t.show}</span>
         </label>
-        <label className="flex items-center gap-3">
-          <input type="radio" className="size-5" name={`mascot-${post.id}`} checked={!show} onChange={() => setShow(false)} />
+        <label className="flex min-h-6 items-center gap-3 text-[14px]">
+          <input type="radio" name={`mascot-${post.id}`} checked={!show} onChange={() => setShow(false)} />
           <span>{t.hide}</span>
         </label>
         {show ? (

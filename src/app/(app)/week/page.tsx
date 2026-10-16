@@ -1,11 +1,12 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { IdeaSuggestions } from "@/components/ideas/idea-suggestions";
 import { QueueScreen } from "@/components/queue/queue-screen";
 import { CheckinCard } from "@/components/results/checkin-card";
 import { WeekView } from "@/components/week/week-view";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurrentBrand } from "@/lib/brand/current";
 import { s } from "@/lib/i18n/strings";
+import { topIdeaSuggestions } from "@/lib/ideas/suggest";
 import { loadQueueView } from "@/lib/queue/view";
 import { loadCheckinCard } from "@/lib/results/checkin";
 import { brandTimezone, buttonWeekStart } from "@/lib/weekly/schedule";
@@ -29,29 +30,27 @@ export default async function Page() {
 
   const timezone = (await brandTimezone(brand.id)) ?? "UTC";
   const weekStart = buttonWeekStart(new Date(), timezone);
-  const [queue, initial, checkin] = await Promise.all([
+  const [queue, initial, checkin, ideas] = await Promise.all([
     loadQueueView(user.id, brand.id),
     loadWeekView(user.id, brand.id, weekStart),
     // V-19: one-tap check-in for last week, until it is answered.
     loadCheckinCard(user.id, brand.id, new Date()),
+    // R-7: up to two unused ideas as suggestions. A problem here never stops the Queue from showing.
+    topIdeaSuggestions(user.id, brand.id, new Date()).catch(() => []),
   ]);
 
   return (
-    <section className="space-y-6">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <h1 className="text-xl font-bold md:text-2xl">{s.queue.title}</h1>
-          <p className="text-stone-600">{s.queue.intro}</p>
-        </div>
-        {/* Phones have no Create tab (the bottom nav keeps four items); wider screens list it in the navigation. */}
-        <Link href="/create" data-create-button className="inline-flex min-h-11 shrink-0 items-center rounded-lg bg-[#E4572E] px-4 py-2 font-semibold text-white md:hidden">
-          {s.create.title}
-        </Link>
+    <section className="mx-auto w-full max-w-page-xl space-y-8">
+      {/* The top bar names the page; the heading stays for screen readers. The intro line is the page's one sentence of help. */}
+      <div>
+        <h1 className="sr-only">{s.queue.title}</h1>
+        <p className="text-[14px] leading-5 text-desc">{s.queue.intro}</p>
       </div>
       {checkin.hadPosts && checkin.answer === null && <CheckinCard weekStart={checkin.weekStart} initial={null} />}
       <QueueScreen initial={queue} />
-      <section className="space-y-4 border-t border-stone-200 pt-6" aria-label={s.queue.sections.weekly} data-weekly-suggestions>
-        <h2 className="text-lg font-bold">{s.brandV2.week.title}</h2>
+      <section className="space-y-4 border-t border-divider pt-8" aria-label={s.queue.sections.weekly} data-weekly-suggestions>
+        <h2 className="text-section text-title">{s.brandV2.week.title}</h2>
+        <IdeaSuggestions suggestions={ideas} />
         <WeekView initial={initial} />
       </section>
     </section>

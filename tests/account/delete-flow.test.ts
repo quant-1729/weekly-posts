@@ -40,7 +40,8 @@ import { resetRateLimits } from "@/lib/auth/rate-limit";
 import { isPublicPath } from "@/lib/auth/public-paths";
 import { signMagicToken, verifyMagicToken } from "@/lib/auth/magic-link";
 import { newCsrfSecret } from "@/lib/auth/continue";
-import { SESSION_COOKIE, signSession, verifySession } from "@/lib/auth/session";
+import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import { createMockDb, setMockDbForTests, type MockDb } from "@/lib/db/mock";
 import { linksIn, listOutbox, setOutboxDirForTests } from "@/lib/email/outbox";
 import { HOLIDAY_DATA_ATTRIBUTION } from "@/lib/occasions";
@@ -404,8 +405,9 @@ describe("pages", () => {
     }
   });
 
-  it("the login page links to /terms", () => {
-    const html = renderToString(createElement(LoginPage));
+  it("the login page links to /terms", async () => {
+    jar.store.delete(SESSION_COOKIE); // the page sends a signed-in visitor on to /, so look at it signed out
+    const html = renderToString(await LoginPage());
     expect(html).toMatch(/href="\/terms"[^>]*>Terms and privacy</);
   });
 

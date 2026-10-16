@@ -55,6 +55,19 @@ describe("the ready page of a post made from a brief", () => {
     expect(wa.html).toContain("For WhatsApp");
   });
 
+  it("a carousel: Share sends every slide, and each slide has its own Download", async () => {
+    const x = await seedApproved(db, shop, ["instagram"], { carousel: 4 });
+    const page = await handleLinkGet(await ready(shop, x.posts[0].id), undefined, NOW);
+    expect(page.status).toBe(200);
+    expect(page.html).toContain("Share all 4 slides");
+    const urls = /data-urls="([^"]*)"/.exec(page.html)![1].split(" ");
+    expect(urls).toHaveLength(4);
+    expect(/data-filenames="([^"]*)"/.exec(page.html)![1].split(" ")).toEqual(["instagram-slide-1.png", "instagram-slide-2.png", "instagram-slide-3.png", "instagram-slide-4.png"]);
+    for (const n of [1, 2, 3, 4]) expect(page.html).toContain(`download="instagram-slide-${n}.png"`);
+    expect(page.html).toContain("Copy caption");
+    expect(page.html).toContain("Mark as posted");
+  });
+
   it("a post that is not approved has no share buttons", async () => {
     const briefId = await seedBrief(db, shop, { channels: ["facebook"] });
     const draft = await seedPost(db, shop, briefId, "facebook", { status: "draft" });

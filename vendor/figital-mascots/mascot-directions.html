@@ -1,0 +1,637 @@
+<meta charset="utf-8">
+<title>Figital Mascot Directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (~72ch) for research, widening to a three-up stage for the characters. Figital brand tokens. */
+:root {
+  --bg: #ffffff;
+  --surface: #f3f6fa;
+  --surface-2: #e9eff6;
+  --line: #e3e9f0;
+  --ink: #17253b;
+  --ink-2: #3a506b;
+  --muted: #586b82;
+  --accent: #2c5f8f;
+  --teal: #1f8f8b;
+  --stage: #f3f6fa;
+  --stage-line: #dde5ef;
+  --callout: #e6f4f3;
+  --callout-ink: #0f4f4c;
+  --display: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Geist", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1724; --surface: #162234; --surface-2: #1c2a3f; --line: #263650;
+    --ink: #e8eef6; --ink-2: #b9c7d8; --muted: #8fa1b8; --accent: #7fb2e0; --teal: #5ccfc9;
+    --stage: #eef3f9; --stage-line: #c9d6e6; --callout: #12332f; --callout-ink: #b4ece7;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1724; --surface: #162234; --surface-2: #1c2a3f; --line: #263650;
+  --ink: #e8eef6; --ink-2: #b9c7d8; --muted: #8fa1b8; --accent: #7fb2e0; --teal: #5ccfc9;
+  --stage: #eef3f9; --stage-line: #c9d6e6; --callout: #12332f; --callout-ink: #b4ece7;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.6; padding-inline: 20px; padding-block: 0 80px; }
+.wrap { max-width: 1120px; margin: 0 auto; }
+.col { max-width: 720px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-weight: 300; font-size: clamp(38px, 5.4vw, 64px); line-height: 1.02; letter-spacing: -0.035em; }
+h2 { font-weight: 300; font-size: clamp(28px, 3.4vw, 40px); line-height: 1.08; letter-spacing: -0.03em; }
+h3 { font-weight: 500; font-size: 19px; letter-spacing: -0.01em; }
+p { margin: 0; }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); }
+.lead { font-size: 19px; color: var(--ink-2); line-height: 1.55; }
+.muted { color: var(--muted); }
+section { padding-block: 64px 0; display: grid; gap: 28px; }
+header.hero { padding-block: 56px 8px; display: grid; gap: 22px; }
+.wordmark { font-weight: 600; letter-spacing: -0.02em; font-size: 18px; }
+.wordmark span { color: var(--teal); font-weight: 500; }
+
+/* research blocks */
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px 22px 24px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.panel ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); }
+.kv { display: grid; grid-template-columns: 84px 1fr; gap: 6px 14px; font-size: 15px; }
+.kv dt { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 3px; }
+.kv dd { margin: 0; color: var(--ink-2); }
+.need { border-top: 1px solid var(--line); padding-top: 12px; font-size: 15px; }
+.need b { font-weight: 600; color: var(--ink); }
+.callout { background: var(--callout); color: var(--callout-ink); border-radius: 16px; padding: 22px 24px; font-size: 18px; line-height: 1.5; }
+.callout b { font-weight: 600; }
+.principles { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 32px; }
+.principles div { border-top: 1px solid var(--line); padding-block: 16px; display: grid; gap: 4px; }
+.principles h3 { font-size: 17px; }
+.principles p { color: var(--ink-2); font-size: 15px; }
+
+/* stage */
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.toolbar .label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-right: 6px; }
+.toolbar button { font: 500 14px var(--body); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px; cursor: pointer; min-height: 40px; }
+.toolbar button:hover { background: var(--surface); }
+.toolbar button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.concepts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.concept { border: 1px solid var(--line); border-radius: 20px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; min-width: 0; background: var(--bg); }
+.concept.pick { border-color: var(--teal); box-shadow: 0 0 0 1px var(--teal); }
+.stage { background: var(--stage); border-bottom: 1px solid var(--stage-line); aspect-ratio: 240 / 250; max-width: 100%; position: relative; }
+.stage svg { width: 100%; height: 100%; display: block; }
+.badge { position: absolute; top: 12px; left: 12px; font: 500 11.5px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; background: #17253b; color: #ffffff; padding: 4px 9px; border-radius: 999px; }
+.cbody { padding: 20px 22px 24px; display: grid; gap: 14px; align-content: start; }
+.cname { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.cname h3 { font-size: 24px; font-weight: 500; letter-spacing: -0.02em; }
+.cname span { color: var(--muted); font-size: 14px; }
+.idea { font-size: 17px; color: var(--ink); }
+.cbody h4 { margin: 0; font: 500 11.5px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.cbody ul { margin: 0; padding-left: 18px; display: grid; gap: 5px; color: var(--ink-2); font-size: 15px; }
+.sizes { display: flex; align-items: end; gap: 14px; border-top: 1px solid var(--line); padding-top: 14px; }
+.sizes .chip { background: var(--stage); border-radius: 8px; display: grid; place-items: center; }
+.sizes small { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+/* action table */
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 16px; }
+table { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 14.5px; }
+th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 11.5px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); background: var(--surface); }
+td:first-child { font-family: var(--mono); font-size: 13px; color: var(--ink); white-space: nowrap; }
+td { color: var(--ink-2); }
+tr:last-child td { border-bottom: 0; }
+tr.group td { background: var(--surface-2); font: 500 11.5px var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+
+.rec { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; }
+@media (max-width: 760px) { .rec { grid-template-columns: 1fr; } }
+.steps { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--ink-2); }
+.ask { background: var(--ink); color: var(--bg); border-radius: 20px; padding: 26px 28px; display: grid; gap: 10px; }
+.ask h3 { font-size: 22px; font-weight: 400; }
+.ask ol { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.sources { font-size: 14px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="wordmark">Figital <span>LABS</span></div>
+    <p class="eyebrow">Brand mascot · discovery and three directions</p>
+    <h1>Who should stand beside Hospital OS?</h1>
+    <p class="lead col">A mascot that works on the website, in marketing templates and as part of the brand, the way Duo works for Duolingo. It needs to do everything Tween does in the kit you shared (19 actions, the same file formats), but it must look nothing like Tween. Below: what the kit teaches, who the mascot has to win over, the rules that follow, and three characters to choose from. Each one is live: switch the pose to see it act.</p>
+  </header>
+
+  <section aria-labelledby="kit">
+    <div class="col" style="display:grid;gap:12px">
+      <p class="eyebrow">1 · The reference</p>
+      <h2 id="kit">What Tween's kit teaches us</h2>
+      <p class="lead">Tween works because it is a system, not a drawing. We keep the system and replace the character.</p>
+    </div>
+    <div class="grid3">
+      <div class="panel">
+        <h3>A fixed action set</h3>
+        <ul>
+          <li>10 core states: idle, walk, wave, point (left, right, up), talk, think, celebrate, sleep, shrug, peek.</li>
+          <li>4 intro poses: reach, present, climb, perch.</li>
+          <li>2 extras: cover (hands over eyes) and land (squash).</li>
+          <li>Every clip shares one 550 × 550 canvas, so actions cut together without re-aligning.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>One rig, every format</h3>
+        <ul>
+          <li>Built as a rigged SVG: parts with pivots, poses as angle variables.</li>
+          <li>Exports: still PNG and SVG, animated SVG, GIF, MP4, transparent WebM, sprite sheets.</li>
+          <li>Brand art (favicon, avatar, character sheet) is rendered from the same rig, so it never drifts.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Behaviour with limits</h3>
+        <ul>
+          <li>Scripted lines only, written as content. No AI.</li>
+          <li>At most 1 unprompted bubble per page and 3 per visit; easy to hide or pause.</li>
+          <li>No motion under reduced-motion settings.</li>
+          <li>Known weak spots to avoid: thin arms that read abstract, a scarf that crosses the legs mid-walk, no true turn.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="users">
+    <div class="col" style="display:grid;gap:12px">
+      <p class="eyebrow">2 · Empathy</p>
+      <h2 id="users">Who the mascot has to win over</h2>
+      <p class="lead">Figital sells to hospital leaders, but its products are used by the staff on the floor. The mascot speaks to both, and they want different things from it.</p>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <p class="eyebrow">Buyer</p>
+        <h3>Hospital leadership</h3>
+        <p class="muted" style="font-size:14.5px">CEO and COO, CFO and revenue head, medical director, quality and NABH head, L&amp;D head. Enterprise hospitals across India.</p>
+        <dl class="kv">
+          <dt>Says</dt><dd>“Show me the leakage in rupees.” “Will my doctors actually use this?” “Where does our patient data sit?”</dd>
+          <dt>Thinks</dt><dd>Another AI vendor promising the world. If this pilot goes wrong, it is my name on it.</dd>
+          <dt>Does</dt><dd>Reads MIS and complaint reports, prepares for NABH audits, signs off pilots, presents to promoters.</dd>
+          <dt>Feels</dt><dd>Accountable for revenue, accreditation and patient complaints at the same time. Wary of anything that looks like a gimmick.</dd>
+        </dl>
+        <p class="need"><b>From the mascot they need:</b> calm competence. It can be likeable, but it must never make Figital look less serious in a board deck.</p>
+      </div>
+      <div class="panel">
+        <p class="eyebrow">User</p>
+        <h3>Frontline staff</h3>
+        <p class="muted" style="font-size:14.5px">Nurses, guest relations (GRE / PWO / MOD), front office, financial counsellors, billing teams. They practise in AI Guru, record feedback in NotedAI, and work at counters with an Ambient Scribe recorder.</p>
+        <dl class="kv">
+          <dt>Says</dt><dd>“One more app to learn?” “Will this score go to my manager?”</dd>
+          <dt>Thinks</dt><dd>The recorder is listening to me. I am already doing two people's work.</dd>
+          <dt>Does</dt><dd>Long shifts, anxious families, forms and handovers; practises scenarios on a phone between tasks.</dd>
+          <dt>Feels</dt><dd>Stretched and under-thanked, uneasy about being scored, proud when a patient says thank you.</dd>
+        </dl>
+        <p class="need"><b>From the mascot they need:</b> a friendly colleague who has their back, celebrates effort and never scolds.</p>
+      </div>
+    </div>
+    <p class="callout col"><b>The insight.</b> Figital's products record and score people. A mascot that looks like it is watching would make that feel like surveillance. Ours should be the teammate who remembers the next step so the person doesn't have to carry it, which is exactly the brand promise: <b>every next step followed, nothing slips.</b></p>
+  </section>
+
+  <section aria-labelledby="rules">
+    <div class="col" style="display:grid;gap:12px">
+      <p class="eyebrow">3 · Design rules</p>
+      <h2 id="rules">What any direction must do</h2>
+    </div>
+    <div class="principles">
+      <div><h3>A teammate, not a supervisor</h3><p>Never shown watching, checking or scoring a person. No camera eyes, no clipboards held over someone.</p></div>
+      <div><h3>It remembers, so people don't have to</h3><p>Its signature move is catching something just before it slips.</p></div>
+      <div><h3>Calm enough for a hospital</h3><p>Small, slow movement. A celebration is a hop, not fireworks. Never jokey near illness or a bill.</p></div>
+      <div><h3>Indian, not religious, not clinical</h3><p>Familiar across India. No deity imagery, no doctor's coat or stethoscope: it supports staff, it isn't one of them.</p></div>
+      <div><h3>Reads at 16 px</h3><p>A clear silhouette in the navy and teal brand with one warm accent, so it works as a favicon and an avatar.</p></div>
+      <div><h3>Honest like the site</h3><p>It never states a number, result or customer the site hasn't approved. Lines are written content, as with Tween.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="dirs">
+    <div class="col" style="display:grid;gap:12px">
+      <p class="eyebrow">4 · Three directions</p>
+      <h2 id="dirs">Three characters, same actions</h2>
+      <p class="lead">Rough concepts to choose a direction, not final art. Names are working names.</p>
+    </div>
+    <div class="toolbar" role="group" aria-label="Pose">
+      <span class="label">Pose</span>
+      <button type="button" id="pose-idle" data-pose="idle" aria-pressed="true">Idle</button>
+      <button type="button" id="pose-wave" data-pose="wave" aria-pressed="false">Wave</button>
+      <button type="button" id="pose-point" data-pose="point" aria-pressed="false">Point</button>
+      <button type="button" id="pose-talk" data-pose="talk" aria-pressed="false">Talk</button>
+      <button type="button" id="pose-think" data-pose="think" aria-pressed="false">Think</button>
+      <button type="button" id="pose-celebrate" data-pose="celebrate" aria-pressed="false">Celebrate</button>
+      <button type="button" id="pose-shrug" data-pose="shrug" aria-pressed="false">Shrug</button>
+      <button type="button" id="pose-sleep" data-pose="sleep" aria-pressed="false">Sleep</button>
+      <button type="button" id="pose-cover" data-pose="cover" aria-pressed="false">Cover</button>
+    </div>
+    <div class="concepts">
+      <article class="concept pick" aria-labelledby="c1">
+        <div class="stage"><span class="badge">Recommended</span><svg id="s-yaadu" viewBox="0 0 240 250" role="img" aria-label="Yaadu, a baby elephant with a teal lanyard"></svg></div>
+        <div class="cbody">
+          <div class="cname"><h3 id="c1">Yaadu</h3><span>baby elephant · from “yaad”, memory</span></div>
+          <p class="idea">An elephant never forgets. Yaadu remembers every next step so the team doesn't have to.</p>
+          <h4>Why it fits</h4>
+          <ul>
+            <li>Memory is the brand promise: nothing slips.</li>
+            <li>Gentle strength reads as reliable to a CFO and kind to a nurse.</li>
+            <li>The trunk is a second pointer and a hand: it can point, present, tap its head to think and trumpet to celebrate.</li>
+            <li>Ears give big emotion cheaply: they droop, flap and fold over the eyes for cover.</li>
+            <li>The teal lanyard with a tick card makes it one of the team.</li>
+          </ul>
+          <h4>Watch out for</h4>
+          <ul>
+            <li>Some viewers link elephants with Ganesha: no crown, tilak or sweets, ever.</li>
+            <li>Appu, the 1982 Asian Games mascot, was an elephant, so the shape must stay distinct.</li>
+            <li>The most parts to animate (trunk and ears).</li>
+          </ul>
+          <div class="sizes" aria-label="Yaadu at icon sizes"><div class="chip" style="width:56px;height:56px"><svg id="i-yaadu-48" width="48" height="48" aria-hidden="true"></svg></div><div class="chip" style="width:40px;height:40px"><svg id="i-yaadu-32" width="32" height="32" aria-hidden="true"></svg></div><div class="chip" style="width:24px;height:24px"><svg id="i-yaadu-16" width="16" height="16" aria-hidden="true"></svg></div><small>48 · 32 · 16 px</small></div>
+        </div>
+      </article>
+      <article class="concept" aria-labelledby="c2">
+        <div class="stage"><svg id="s-mynu" viewBox="0 0 240 250" role="img" aria-label="Mynu, an Indian myna bird with a yellow beak and eye patches"></svg></div>
+        <div class="cbody">
+          <div class="cname"><h3 id="c2">Mynu</h3><span>Indian myna</span></div>
+          <p class="idea">The bird that listens and speaks up: the voice of the patient, carried to the right desk.</p>
+          <h4>Why it fits</h4>
+          <ul>
+            <li>Every Indian has seen a myna; it lives where people work.</li>
+            <li>Talking is natural to it, which suits NotedAI and AI Guru.</li>
+            <li>Yellow beak and eye patches give a warm accent that reads at any size.</li>
+            <li>Perching on the header and flying in are natural moves.</li>
+          </ul>
+          <h4>Watch out for</h4>
+          <ul>
+            <li>Mynas are known for mimicry, which can hint “just repeats”.</li>
+            <li>“Chatty” may undercut seriousness with the CFO audience.</li>
+            <li>Wings limit hand gestures for present, reach and point.</li>
+          </ul>
+          <div class="sizes" aria-label="Mynu at icon sizes"><div class="chip" style="width:56px;height:56px"><svg id="i-mynu-48" width="48" height="48" aria-hidden="true"></svg></div><div class="chip" style="width:40px;height:40px"><svg id="i-mynu-32" width="32" height="32" aria-hidden="true"></svg></div><div class="chip" style="width:24px;height:24px"><svg id="i-mynu-16" width="16" height="16" aria-hidden="true"></svg></div><small>48 · 32 · 16 px</small></div>
+        </div>
+      </article>
+      <article class="concept" aria-labelledby="c3">
+        <div class="stage"><svg id="s-tiko" viewBox="0 0 240 250" role="img" aria-label="Tiko, a teal and navy capsule with a check-mark sprout"></svg></div>
+        <div class="cbody">
+          <div class="cname"><h3 id="c3">Tiko</h3><span>capsule with a tick</span></div>
+          <p class="idea">A capsule topped with a check mark: done, every time.</p>
+          <h4>Why it fits</h4>
+          <ul>
+            <li>Says healthcare at a glance, in the exact brand colours.</li>
+            <li>The tick is “every next step followed”, and it can bend into a question mark to think.</li>
+            <li>Simplest to animate and the strongest favicon of the three.</li>
+          </ul>
+          <h4>Watch out for</h4>
+          <ul>
+            <li>A capsule says pharmacy or medicine, and Figital is neither.</li>
+            <li>Less warmth and story than an animal; abstract mascots are easier to forget.</li>
+            <li>Shares Tween's body-plus-limbs build, so it needs care to feel different.</li>
+          </ul>
+          <div class="sizes" aria-label="Tiko at icon sizes"><div class="chip" style="width:56px;height:56px"><svg id="i-tiko-48" width="48" height="48" aria-hidden="true"></svg></div><div class="chip" style="width:40px;height:40px"><svg id="i-tiko-32" width="32" height="32" aria-hidden="true"></svg></div><div class="chip" style="width:24px;height:24px"><svg id="i-tiko-16" width="16" height="16" aria-hidden="true"></svg></div><small>48 · 32 · 16 px</small></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section aria-labelledby="map">
+    <div class="col" style="display:grid;gap:12px">
+      <p class="eyebrow">5 · Action parity</p>
+      <h2 id="map">How each one performs Tween's 19 actions</h2>
+      <p class="lead">Same names, same timings and the same file formats as the kit, so the site code and templates carry over. What changes is each character's signature way of doing it.</p>
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th scope="col">Action</th><th scope="col">Yaadu</th><th scope="col">Mynu</th><th scope="col">Tiko</th></tr></thead>
+        <tbody>
+          <tr class="group"><td colspan="4">Core states</td></tr>
+          <tr><td>idle</td><td>Slow ear sway, trunk swings</td><td>Head tilts, tail flicks</td><td>Gentle sway, tick bobs</td></tr>
+          <tr><td>walk-left / walk-right</td><td>Soft plod, ears bounce</td><td>Struts, as real mynas walk rather than hop</td><td>Waddle on short legs</td></tr>
+          <tr><td>wave</td><td>Arm waves while the trunk curls hello</td><td>Wing waves</td><td>Mitten waves</td></tr>
+          <tr><td>point-left / right / up</td><td>Arm and trunk point together</td><td>Wing tip points like a finger</td><td>Mitten points; tick leans to the target</td></tr>
+          <tr><td>talk</td><td>Trunk gestures with the words</td><td>Beak opens and closes</td><td>Mouth cycles, mitten gestures</td></tr>
+          <tr><td>think</td><td>Trunk tip taps its forehead</td><td>Wing to chin, head tilt</td><td>Tick bends into a question mark</td></tr>
+          <tr><td>celebrate</td><td>Trunk up, a small trumpet burst</td><td>Wings up, flutters off the ground</td><td>Tick glows, small hop</td></tr>
+          <tr><td>sleep</td><td>Ears droop, trunk curls in</td><td>Head sinks into the chest</td><td>Tick droops, slow breathing</td></tr>
+          <tr><td>shrug</td><td>Ears droop, arms out</td><td>Wings out, crest flattens</td><td>Mittens out, tick sags</td></tr>
+          <tr><td>peek</td><td>Trunk and one ear appear first</td><td>Crest and one eye first</td><td>Tick sprout first</td></tr>
+          <tr class="group"><td colspan="4">Intro sequence</td></tr>
+          <tr><td>reach</td><td>Feels for the card on its lanyard</td><td>Pulls a letter from under a wing</td><td>Opens at the seam to take out a note</td></tr>
+          <tr><td>present</td><td>Holds the letter out with its trunk</td><td>Holds the letter in its beak</td><td>Holds the note in both mittens</td></tr>
+          <tr><td>climb</td><td>Trunk hooks the edge and pulls up</td><td>Flutters up the page</td><td>Hops up step by step</td></tr>
+          <tr><td>perch</td><td>Sits on the header, legs dangle, trunk swings</td><td>Perches on the header like a wire</td><td>Sits on the header edge</td></tr>
+          <tr class="group"><td colspan="4">Extras</td></tr>
+          <tr><td>cover</td><td>Folds its ears over its eyes</td><td>Wings over the eyes</td><td>Mittens over the eyes</td></tr>
+          <tr><td>land</td><td>Belly squash, ears flop</td><td>Flutter-land with a bounce</td><td>Capsule squash and stretch</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="pick">
+    <div class="col" style="display:grid;gap:12px">
+      <p class="eyebrow">6 · Recommendation</p>
+      <h2 id="pick">Go with Yaadu</h2>
+    </div>
+    <div class="rec">
+      <div style="display:grid;gap:14px">
+        <p class="lead">Yaadu turns the brand promise into a character in one line, “an elephant never forgets”, and every audience gets it without explanation. It is warm with frontline staff and credible in a board deck. Its trunk and ears give it the widest acting range of the three, which matters for 19 actions and for marketing templates.</p>
+        <p class="muted">Tiko is the fallback if you want something more abstract and icon-first. Mynu is the most charming but the hardest to keep serious for a CFO.</p>
+      </div>
+      <div style="display:grid;gap:12px">
+        <h3>After you choose, I build</h3>
+        <ol class="steps">
+          <li>Final character sheet: proportions, palette, construction rules, do and don't.</li>
+          <li>The rig, with the same pose variables and all 19 actions.</li>
+          <li>Exports in every format the Tween kit has: PNG and SVG poses, animated SVG, GIF, MP4, transparent WebM, sprite sheets.</li>
+          <li>Brand pack: favicon, social avatar and marketing templates (presenting, dashboard, banner, 9:16 story).</li>
+          <li>A site spec adapted from Tween's: where it appears on figitallabs.com, scripted lines, speech limits and honesty rules.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="ask">
+      <h3>Three decisions from you</h3>
+      <ol>
+        <li>Which direction: Yaadu, Mynu, Tiko, or a mix?</li>
+        <li>Keep the working name, or should the team propose names? Check them with speakers of the main regional languages before launch.</li>
+        <li>Where must it never appear? I'd exclude clinical notes, bills, patient complaint replies and any data-privacy message.</li>
+      </ol>
+    </div>
+    <p class="sources">Sources: Tween mascot kit (README, ACTIONS.md, mascot.md, DECISIONS-mascot.md, STATUS.md), beta.figitallabs.com as reviewed on 13–14 Oct 2026, the AI Guru and Revenue Control Management decks, and the reviewer's recorded feedback. Personas are drawn from that material, not from interviews; validate them with two or three customers.</p>
+  </section>
+</div>
+
+<script>
+(() => {
+  const NAVY = "#17253b";
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const f = n => n.toFixed(1);
+  const R = Math.PI / 180;
+  let pose = "idle";
+  let pointer = null;
+
+  const ARMS = {
+    idle: [[-18, -8], [18, 8]],
+    wave: [[-18, -8], [155, 20]],
+    point: [[-18, -8], [90, 0]],
+    talk: [[-18, -8], [70, 45]],
+    think: [[-18, -8], [150, 80]],
+    celebrate: [[-160, -10], [160, 10]],
+    shrug: [[-55, -85], [55, 85]],
+    sleep: [[-10, -4], [10, 4]],
+    cover: [[-18, -8], [18, 8]]
+  };
+  const FACE = {
+    idle: ["open", "smile"], wave: ["open", "grin"], point: ["open", "smile"], talk: ["open", "talk"],
+    think: ["think", "small"], celebrate: ["happy", "open"], shrug: ["worried", "wavy"],
+    sleep: ["sleep", "small"], cover: ["open", "grin"]
+  };
+  const LOOK = { point: [3.5, 0], think: [2.6, -3], shrug: [0, 1], celebrate: [0, 0] };
+
+  function arm(sx, sy, a1, a2, L1, L2) {
+    const ex = sx + L1 * Math.sin(a1 * R), ey = sy + L1 * Math.cos(a1 * R);
+    const hx = ex + L2 * Math.sin((a1 + a2) * R), hy = ey + L2 * Math.cos((a1 + a2) * R);
+    return { d: `M${f(sx)},${f(sy)} L${f(ex)},${f(ey)} L${f(hx)},${f(hy)}`, hx, hy };
+  }
+
+  function eyes(pts, r, type, look, blink, line, browCol) {
+    let s = "";
+    const shut = blink && (type === "open" || type === "worried" || type === "think");
+    pts.forEach(([x, y], i) => {
+      const side = i === 0 ? -1 : 1;
+      if (type === "happy") {
+        s += `<path d="M${f(x - r * .8)},${f(y + 3)} Q${f(x)},${f(y - r)} ${f(x + r * .8)},${f(y + 3)}" stroke="${line}" stroke-width="3.6" fill="none" stroke-linecap="round"/>`;
+      } else if (type === "sleep" || shut) {
+        s += `<path d="M${f(x - r * .8)},${f(y)} Q${f(x)},${f(y + r * .65)} ${f(x + r * .8)},${f(y)}" stroke="${line}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
+      } else {
+        s += `<circle cx="${f(x)}" cy="${f(y)}" r="${r}" fill="#ffffff"/>` +
+             `<circle cx="${f(x + look[0])}" cy="${f(y + look[1])}" r="${f(r * .52)}" fill="${NAVY}"/>` +
+             `<circle cx="${f(x + look[0] + r * .2)}" cy="${f(y + look[1] - r * .22)}" r="${f(r * .17)}" fill="#ffffff"/>`;
+      }
+      if (type === "worried") {
+        s += `<path d="M${f(x - side * r * 1.0)},${f(y - r - 3)} L${f(x + side * r * .6)},${f(y - r - 9)}" stroke="${browCol}" stroke-width="3" stroke-linecap="round"/>`;
+      }
+      if (type === "think") {
+        s += side === 1
+          ? `<path d="M${f(x - r * .8)},${f(y - r - 8)} Q${f(x)},${f(y - r - 14)} ${f(x + r * .8)},${f(y - r - 9)}" stroke="${browCol}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+          : `<path d="M${f(x - r * .7)},${f(y - r - 4)} L${f(x + r * .7)},${f(y - r - 5)}" stroke="${browCol}" stroke-width="3" stroke-linecap="round"/>`;
+      }
+    });
+    return s;
+  }
+
+  function mouth(x, y, type, col, t) {
+    if (type === "talk") type = ["open", "small", "grin"][Math.floor(t / 0.16) % 3];
+    switch (type) {
+      case "grin": return `<path d="M${f(x - 9)},${f(y - 1)} Q${f(x)},${f(y + 12)} ${f(x + 9)},${f(y - 1)} Z" fill="${col}"/>`;
+      case "open": return `<ellipse cx="${f(x)}" cy="${f(y + 3)}" rx="5.5" ry="6.5" fill="${col}"/>`;
+      case "wavy": return `<path d="M${f(x - 9)},${f(y + 3)} q2.25,-4 4.5,0 t4.5,0 t4.5,0 t4.5,0" stroke="${col}" stroke-width="2.8" fill="none" stroke-linecap="round"/>`;
+      case "small": return `<path d="M${f(x - 4)},${f(y + 1)} Q${f(x)},${f(y + 3.5)} ${f(x + 4)},${f(y + 1)}" stroke="${col}" stroke-width="2.8" fill="none" stroke-linecap="round"/>`;
+      default: return `<path d="M${f(x - 7)},${f(y)} Q${f(x)},${f(y + 7)} ${f(x + 7)},${f(y)}" stroke="${col}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    }
+  }
+
+  function props(p, t, col) {
+    let s = "";
+    if (p === "think") {
+      [[180, 58, 4], [192, 42, 5.5], [206, 24, 7]].forEach(([x, y, r], i) => {
+        const o = reduce ? 1 : .35 + .65 * Math.max(0, Math.sin(t * 2.6 - i * .9));
+        s += `<circle cx="${x}" cy="${y}" r="${r}" fill="#2c5f8f" opacity="${f(o)}"/>`;
+      });
+    }
+    if (p === "sleep") {
+      [[176, 64, 13], [190, 46, 17], [206, 26, 21]].forEach(([x, y, sz], i) => {
+        const k = reduce ? 0 : ((t / 3 + i / 3) % 1);
+        s += `<text x="${x}" y="${f(y - k * 8)}" font-family="Geist, sans-serif" font-weight="600" font-size="${sz}" fill="#2c5f8f" opacity="${f(reduce ? 1 : 1 - k * .6)}">z</text>`;
+      });
+    }
+    if (p === "celebrate") {
+      const bits = [[44, 70, "#2BB5B0"], [196, 64, "#F2B33D"], [60, 34, "#F08A6C"], [182, 30, "#2c5f8f"], [30, 120, "#F2B33D"], [210, 112, "#2BB5B0"]];
+      bits.forEach(([x, y, c], i) => {
+        const o = reduce ? 1 : .4 + .6 * Math.abs(Math.sin(t * 3 + i));
+        s += i % 2 ? `<rect x="${x}" y="${y}" width="7" height="7" rx="1.5" fill="${c}" opacity="${f(o)}" transform="rotate(${20 + i * 25} ${x + 3} ${y + 3})"/>`
+                   : `<circle cx="${x}" cy="${y}" r="4" fill="${c}" opacity="${f(o)}"/>`;
+      });
+    }
+    return s;
+  }
+
+  function motion(p, t) {
+    if (reduce) return { bob: 0, hop: 0, osc: 0 };
+    const bob = 1.8 * Math.sin(t * 2 * Math.PI / 3.6);
+    const hop = p === "celebrate" ? -12 * Math.abs(Math.sin(Math.PI * t / 0.56)) : 0;
+    const osc = Math.sin(t * 2 * Math.PI / 0.7);
+    return { bob: p === "celebrate" ? 0 : bob, hop, osc };
+  }
+
+  /* ---------- Yaadu: baby elephant ---------- */
+  function yaadu(st) {
+    const B = "#86A3C4", BD = "#5F80A8", IN = "#F3C6B6", TEAL = "#2BB5B0", CREAM = "#FFF4E2";
+    const p = st.pose, m = motion(p, st.t);
+    let [L, Rr] = ARMS[p].map(a => a.slice());
+    if (p === "wave") Rr[1] += 22 * m.osc;
+    if (p === "talk") Rr[1] += 10 * m.osc;
+    if (p === "celebrate") { L[0] -= 6 * m.osc; Rr[0] += 6 * m.osc; }
+    if (p === "think") Rr = [18, 8];
+    const [eyeT, mouthT] = FACE[p];
+    const look = st.look;
+    let ear = reduce ? 0 : 2 * Math.sin(st.t * 1.7);
+    if (p === "celebrate") ear = reduce ? 8 : 10 * m.osc;
+    if (p === "shrug" || p === "sleep") ear = -14;
+    const trunk = {
+      idle: [120, 136, 116, 150, 128, 156], wave: [122, 136, 142, 148, 146, 134], point: [126, 134, 146, 144, 162, 134],
+      talk: [120, 136, 116 + 6 * m.osc, 150, 128 + 6 * m.osc, 156], think: [152, 112, 178, 68, 146, 52],
+      celebrate: [118, 80, 140, 50, 166, 36], shrug: [120, 136, 120, 150, 118, 160], sleep: [118, 136, 112, 154, 100, 158],
+      cover: [120, 136, 116, 150, 128, 156]
+    }[p];
+    const tip = [trunk[4], trunk[5]];
+    const tdrop = p === "sleep" ? 6 : 0;
+    const a1 = arm(86, 170, L[0], L[1], 22, 18), a2 = arm(154, 170, Rr[0], Rr[1], 22, 18);
+    const ears = (front) => {
+      if (front) {
+        return `<g><ellipse cx="100" cy="94" rx="25" ry="30" fill="${BD}" transform="rotate(-18 100 94)"/><ellipse cx="102" cy="96" rx="16" ry="20" fill="${IN}" transform="rotate(-18 102 96)"/>` +
+               `<ellipse cx="140" cy="97" rx="25" ry="30" fill="${BD}" transform="rotate(18 140 97)"/><ellipse cx="138" cy="99" rx="16" ry="20" fill="${IN}" transform="rotate(18 138 99)"/></g>`;
+      }
+      return `<g transform="rotate(${f(-ear)} 78 92)"><ellipse cx="62" cy="106" rx="32" ry="40" fill="${BD}" transform="rotate(-12 62 106)"/><ellipse cx="66" cy="108" rx="21" ry="29" fill="${IN}" transform="rotate(-12 66 108)"/></g>` +
+             `<g transform="rotate(${f(ear)} 162 92)"><ellipse cx="178" cy="106" rx="32" ry="40" fill="${BD}" transform="rotate(12 178 106)"/><ellipse cx="174" cy="108" rx="21" ry="29" fill="${IN}" transform="rotate(12 174 108)"/></g>`;
+    };
+    const tr = `M120,${112 + tdrop} C${trunk[0]},${trunk[1] + tdrop} ${trunk[2]},${trunk[3] + tdrop} ${tip[0]},${tip[1] + tdrop}`;
+    let burst = "";
+    if (p === "celebrate") burst = `<path d="M172,30 l10,-6 M174,40 l12,0 M170,22 l4,-10" stroke="#F2B33D" stroke-width="3" stroke-linecap="round"/>`;
+    const brow = NAVY;
+    return `<ellipse cx="120" cy="244" rx="${f(48 + m.hop * .6)}" ry="6.5" fill="${NAVY}" opacity=".12"/>` +
+      `<g transform="translate(0 ${f(m.bob + m.hop + tdrop * .5)})">` +
+        `<rect x="94" y="204" width="22" height="36" rx="10" fill="${BD}"/><rect x="124" y="204" width="22" height="36" rx="10" fill="${BD}"/>` +
+        `<circle cx="100" cy="236" r="3" fill="${CREAM}"/><circle cx="109" cy="236" r="3" fill="${CREAM}"/><circle cx="131" cy="236" r="3" fill="${CREAM}"/><circle cx="140" cy="236" r="3" fill="${CREAM}"/>` +
+        `<ellipse cx="120" cy="188" rx="44" ry="36" fill="${B}"/>` +
+        `<path d="M101,150 L120,182 L139,150" stroke="${TEAL}" stroke-width="4" fill="none" stroke-linejoin="round"/>` +
+        `<rect x="107" y="180" width="26" height="20" rx="4" fill="#ffffff" stroke="${TEAL}" stroke-width="1.6"/>` +
+        `<path d="M113,190 l4.5,4.5 l8,-8" stroke="${TEAL}" stroke-width="2.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>` +
+        (p === "cover" ? "" : ears(false)) +
+        `<circle cx="120" cy="100" r="56" fill="${B}"/>` +
+        `<path d="M114,46 q-2,-8 2,-12 M121,45 q0,-9 4,-12 M128,47 q2,-7 7,-9" stroke="${BD}" stroke-width="2.4" fill="none" stroke-linecap="round"/>` +
+        `<circle cx="88" cy="120" r="7" fill="${IN}" opacity=".75"/><circle cx="152" cy="118" r="7" fill="${IN}" opacity=".75"/>` +
+        eyes([[100, 96], [140, 96]], 11, eyeT, look, st.blink, NAVY, brow) +
+        mouth(142, 136, mouthT, NAVY, st.t) +
+        `<path d="${tr}" stroke="${BD}" stroke-width="22" fill="none" stroke-linecap="round"/>` +
+        `<path d="${tr}" stroke="${B}" stroke-width="17.5" fill="none" stroke-linecap="round"/>` +
+        `<ellipse cx="${tip[0]}" cy="${tip[1] + tdrop}" rx="2.6" ry="2" fill="${NAVY}" opacity=".55"/>` + burst +
+        (p === "cover" ? ears(true) : "") +
+        `<path d="${a1.d}" stroke="${BD}" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${f(a1.hx)}" cy="${f(a1.hy)}" r="8.5" fill="${BD}"/>` +
+        `<path d="${a2.d}" stroke="${BD}" stroke-width="13" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${f(a2.hx)}" cy="${f(a2.hy)}" r="8.5" fill="${BD}"/>` +
+      `</g>` + props(p, st.t);
+  }
+
+  /* ---------- Mynu: Indian myna ---------- */
+  function mynu(st, id) {
+    const SL = "#3a506b", BEL = "#C9D6E6", Y = "#F2B33D", YD = "#C98A1B";
+    const p = st.pose, m = motion(p, st.t);
+    const W = { idle: [-12, 12], wave: [-12, 150 + 15 * m.osc], point: [-12, 95], talk: [-12, 60 + 10 * m.osc],
+      think: [-12, -146], celebrate: [-160 - 12 * m.osc, 160 + 12 * m.osc], shrug: [-70, 70], sleep: [-6, 6], cover: [148, -148] }[p];
+    const [eyeT] = FACE[p];
+    const open = p === "talk" ? Math.floor(st.t / 0.16) % 2 === 0 : (p === "celebrate" || p === "wave" || p === "cover");
+    const sink = p === "sleep" ? 8 : 0;
+    const wing = (sx, sy, a) => `<g transform="translate(${sx} ${sy}) rotate(${f(-a)})"><path d="M-12,0 C-17,26 -8,46 0,54 C8,46 17,26 12,0 Z" fill="${NAVY}"/><ellipse cx="0" cy="38" rx="5.5" ry="8" fill="#ffffff"/></g>`;
+    const beak = open
+      ? `<path d="M106,${122 + sink} Q120,${115 + sink} 134,${122 + sink} L120,${135 + sink} Z" fill="${Y}" stroke="${YD}" stroke-width="1.4"/><path d="M110,${137 + sink} L130,${137 + sink} L120,${150 + sink} Z" fill="${Y}" stroke="${YD}" stroke-width="1.4"/>`
+      : `<path d="M106,${124 + sink} Q120,${117 + sink} 134,${124 + sink} Q128,${138 + sink} 120,${147 + sink} Q112,${138 + sink} 106,${124 + sink} Z" fill="${Y}" stroke="${YD}" stroke-width="1.4"/>`;
+    return `<defs><clipPath id="${id}-egg"><ellipse cx="120" cy="142" rx="58" ry="74"/></clipPath></defs>` +
+      `<ellipse cx="120" cy="244" rx="${f(42 + m.hop * .6)}" ry="6" fill="${NAVY}" opacity=".12"/>` +
+      `<g transform="translate(0 ${f(m.bob + m.hop)})">` +
+        `<path d="M108,210 L106,238 M106,238 l-8,4 M106,238 l8,4 M106,238 l0,6 M132,210 L134,238 M134,238 l-8,4 M134,238 l8,4 M134,238 l0,6" stroke="${Y}" stroke-width="4.5" stroke-linecap="round" fill="none"/>` +
+        `<ellipse cx="120" cy="142" rx="58" ry="74" fill="${SL}"/>` +
+        `<g clip-path="url(#${id}-egg)"><path d="M50,${136 + sink} Q120,${156 + sink} 190,${136 + sink} L190,40 L50,40 Z" fill="${NAVY}"/><ellipse cx="120" cy="186" rx="36" ry="30" fill="${BEL}"/></g>` +
+        `<path d="M114,72 C108,58 115,52 120,46 C120,56 125,61 122,72 Z" fill="${NAVY}" transform="rotate(${p === "shrug" ? 30 : 0} 118 72)"/>` +
+        `<ellipse cx="91" cy="${110 + sink}" rx="18" ry="15" fill="${Y}" transform="rotate(-10 91 ${110 + sink})"/><ellipse cx="149" cy="${110 + sink}" rx="18" ry="15" fill="${Y}" transform="rotate(10 149 ${110 + sink})"/>` +
+        eyes([[96, 108 + sink], [144, 108 + sink]], 10, eyeT, st.look, st.blink, "#ffffff", "#ffffff") +
+        beak +
+        wing(68, 150, W[0]) + wing(172, 150, W[1]) +
+      `</g>` + props(p, st.t);
+  }
+
+  /* ---------- Tiko: capsule with a tick ---------- */
+  function tiko(st, id) {
+    const TEAL = "#2BB5B0", TD = "#16807C", ARM = "#2F4A6B";
+    const p = st.pose, m = motion(p, st.t);
+    let [L, Rr] = ARMS[p].map(a => a.slice());
+    if (p === "wave") Rr[1] += 22 * m.osc;
+    if (p === "talk") Rr[1] += 10 * m.osc;
+    if (p === "celebrate") { L[0] -= 6 * m.osc; Rr[0] += 6 * m.osc; }
+    const toEye = (sx, sy, ex, ey) => [Math.atan2(ex - sx, ey - sy) / R, 0];
+    if (p === "cover") { L = toEye(78, 150, 102, 92); Rr = toEye(162, 150, 138, 92); }
+    if (p === "think") Rr = [150, 85];
+    const [eyeT, mouthT] = FACE[p];
+    const a1 = arm(78, 150, L[0], L[1], 28, 28), a2 = arm(162, 150, Rr[0], Rr[1], 28, 28);
+    const tilt = p === "sleep" ? 6 : 0;
+    let sprout;
+    if (p === "think") sprout = `<path d="M106,24 Q106,8 121,8 Q136,8 134,21 Q132,31 120,33 L119,40" stroke="${TD}" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    else {
+      const rot = p === "sleep" || p === "shrug" ? 28 : p === "point" ? 14 : (reduce ? 0 : 4 * Math.sin(st.t * 2.2));
+      sprout = (p === "celebrate" ? `<circle cx="118" cy="24" r="22" fill="${TEAL}" opacity=".25"/>` : "") +
+        `<g transform="rotate(${f(rot)} 116 40)"><path d="M102,24 L114,36 L136,12" stroke="${TD}" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M114,36 L116,42" stroke="${TD}" stroke-width="6" stroke-linecap="round"/></g>`;
+    }
+    return `<defs><clipPath id="${id}-cap"><rect x="72" y="40" width="96" height="176" rx="48"/></clipPath></defs>` +
+      `<ellipse cx="120" cy="244" rx="${f(44 + m.hop * .6)}" ry="6" fill="${NAVY}" opacity=".12"/>` +
+      `<g transform="translate(0 ${f(m.bob + m.hop)}) rotate(${tilt} 120 230)">` +
+        `<rect x="98" y="204" width="16" height="28" rx="8" fill="${NAVY}"/><rect x="126" y="204" width="16" height="28" rx="8" fill="${NAVY}"/>` +
+        `<ellipse cx="104" cy="234" rx="14" ry="7" fill="${NAVY}"/><ellipse cx="136" cy="234" rx="14" ry="7" fill="${NAVY}"/>` +
+        sprout +
+        `<g clip-path="url(#${id}-cap)"><rect x="72" y="40" width="96" height="88" fill="${TEAL}"/><rect x="72" y="128" width="96" height="88" fill="${NAVY}"/>` +
+        `<line x1="72" y1="128" x2="168" y2="128" stroke="#ffffff" stroke-opacity=".55" stroke-width="2"/></g>` +
+        `<rect x="86" y="56" width="10" height="44" rx="5" fill="#ffffff" opacity=".35"/>` +
+        `<circle cx="90" cy="110" r="6" fill="#F7A8A0" opacity=".75"/><circle cx="150" cy="110" r="6" fill="#F7A8A0" opacity=".75"/>` +
+        eyes([[102, 92], [138, 92]], 11, eyeT, st.look, st.blink, NAVY, NAVY) +
+        mouth(120, 113, mouthT, NAVY, st.t) +
+        `<path d="${a1.d}" stroke="${ARM}" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${f(a1.hx)}" cy="${f(a1.hy)}" r="10" fill="${TEAL}" stroke="${TD}" stroke-width="2"/>` +
+        `<path d="${a2.d}" stroke="${ARM}" stroke-width="12" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${f(a2.hx)}" cy="${f(a2.hy)}" r="10" fill="${TEAL}" stroke="${TD}" stroke-width="2"/>` +
+      `</g>` + props(p, st.t);
+  }
+
+  const chars = [
+    { el: document.getElementById("s-yaadu"), draw: yaadu, id: "y" },
+    { el: document.getElementById("s-mynu"), draw: mynu, id: "m" },
+    { el: document.getElementById("s-tiko"), draw: tiko, id: "k" }
+  ];
+  const icons = [
+    ["yaadu", yaadu, "34 30 172 172"], ["mynu", mynu, "40 40 160 160"], ["tiko", tiko, "50 6 140 140"]
+  ];
+
+  function lookFor(el) {
+    if (pose !== "idle" || !pointer) return LOOK[pose] || [0, 0];
+    const b = el.getBoundingClientRect();
+    const dx = pointer[0] - (b.left + b.width / 2), dy = pointer[1] - (b.top + b.height * .4);
+    const d = Math.max(1, Math.hypot(dx, dy));
+    const k = Math.min(1, d / 220);
+    return [3.4 * k * dx / d, 2.8 * k * dy / d];
+  }
+
+  function render(t) {
+    const blink = !reduce && (t % 4.2) < 0.13;
+    chars.forEach(c => { c.el.innerHTML = c.draw({ pose, t, blink, look: lookFor(c.el) }, c.id); });
+  }
+
+  icons.forEach(([name, draw, vb]) => {
+    [48, 32, 16].forEach(sz => {
+      const el = document.getElementById(`i-${name}-${sz}`);
+      el.setAttribute("viewBox", vb);
+      el.innerHTML = draw({ pose: "idle", t: 0, blink: false, look: [0, 0] }, `${name}${sz}`);
+    });
+  });
+
+  document.querySelectorAll("[data-pose]").forEach(b => b.addEventListener("click", () => {
+    pose = b.dataset.pose;
+    document.querySelectorAll("[data-pose]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    if (reduce) render(0);
+  }));
+  if (matchMedia("(pointer: fine)").matches) {
+    addEventListener("pointermove", e => { pointer = [e.clientX, e.clientY]; if (reduce) render(0); }, { passive: true });
+  }
+
+  render(0);
+  if (!reduce) {
+    const start = performance.now();
+    const loop = now => { render((now - start) / 1000); requestAnimationFrame(loop); };
+    requestAnimationFrame(loop);
+  }
+})();
+</script>

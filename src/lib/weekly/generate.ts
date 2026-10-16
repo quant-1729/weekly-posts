@@ -25,7 +25,7 @@ import { runGuardrail, type Flag, type GuardrailPostInput, type PostGuardrailRes
 import { addDaysIso, isValidIsoDate, weekDays } from '@/lib/occasions/dates';
 import type { Format } from '@/lib/render';
 import { getStorage, type Storage } from '@/lib/storage';
-import { DailyCapError, assertUnderDailyCap, failedCallUsd, recordUsage } from '@/lib/usage';
+import { DailyCapError, assertUnderDailyCap, failedCallModel, failedCallUsd, recordUsage, type UsageMeta } from '@/lib/usage';
 import { WeeklyCapError, assertUnderWeeklyCap } from '@/lib/usage/caps';
 import { fixtureFactCheck, fixtureRewrite, fixtureWeeklyBatch, type FixtureContext } from './fixtures';
 import { mascotForRender } from '@/lib/mascot/posts';
@@ -444,10 +444,11 @@ async function callWeekly(args: GenerateArgs, inputs: WeekInputs, actor: string,
   // What a failed attempt cost (H-2). It goes on the run's single `weekly_batch` event, so a run
   // with a retry still counts as one run against the weekly limit.
   let lostUsd = 0;
+  let lostModel: string | null = null;
   let recorded = false;
-  const record = async (usd: number) => {
+  const record = async (usd: number, meta: UsageMeta = {}) => {
     recorded = true;
-    await recordUsage(args.brandId, actor, 'weekly_batch', usd);
+    await recordUsage(args.brandId, actor, 'weekly_batch', usd, meta);
   };
   try {
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -463,11 +464,12 @@ async function callWeekly(args: GenerateArgs, inputs: WeekInputs, actor: string,
           logContext: { brandId: args.brandId },
           fixture: () => (deps.fixtures?.weekly ?? fixtureWeeklyBatch)(fixtureCtx),
         });
-        await record(lostUsd + (res.stats?.usd ?? 0));
+        await record(lostUsd + (res.stats?.usd ?? 0), { model: res.stats?.model });
         return res.data;
       } catch (e) {
         if (recorded) throw e;
         lostUsd += failedCallUsd(e);
+        lostModel = failedCallModel(e) ?? lostModel;
         if (e instanceof DailyCapError || e instanceof WeeklyCapError) throw e; // retrying cannot help
         lastError = e;
         console.warn(`[weekly] LLM call ${attempt + 1} of 2 failed for ${args.brandId}: ${e instanceof Error ? e.message : String(e)}`);
@@ -475,7 +477,7 @@ async function callWeekly(args: GenerateArgs, inputs: WeekInputs, actor: string,
     }
     throw new Error(`The AI call failed twice: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
   } finally {
-    if (!recorded && lostUsd > 0) await record(lostUsd).catch(() => undefined);
+    if (!recorded && lostUsd > 0) await record(lostUsd, { ok: false, model: lostModel }).catch(() => undefined);
   }
 }
 
@@ -517,10 +519,10 @@ async function rewriteOne(
       });
     } catch (e) {
       const lost = failedCallUsd(e); // an answer that did not validate still cost money (H-2)
-      if (lost > 0) await recordUsage(brandId, actor, 'auto_rewrite', lost).catch(() => undefined);
+      if (lost > 0) await recordUsage(brandId, actor, 'auto_rewrite', lost, { ok: false, model: failedCallModel(e) }).catch(() => undefined);
       throw e;
     }
-    await recordUsage(brandId, actor, 'auto_rewrite', res.stats?.usd ?? 0);
+    await recordUsage(brandId, actor, 'auto_rewrite', res.stats?.usd ?? 0, { model: res.stats?.model });
     const r = res.data;
     const spec = V2_CHANNEL_SPECS[post.channel];
     const brand = { name: inputs.brand.name, city: inputs.brand.city, region: inputs.brand.region };

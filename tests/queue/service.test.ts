@@ -202,12 +202,12 @@ describe("scheduling approved posts", () => {
     expect(after.lines[1].proposedWhen).toBe("Thu 15 Oct, 10:00"); // WhatsApp has its own slot on the day Instagram uses
   });
 
-  it("the owner can pick another of the offered times, and nothing else", async () => {
+  it("the owner can pick another of the offered times (any time is allowed now: see schedule-picker.test.ts for the rules)", async () => {
     const shop = await makeShop(db);
     const { briefId, posts } = await seedApproved(db, shop, ["instagram"]);
     const offered = await listFreeSlotsForPost({ userId: shop.userId, brandId: shop.brandId, postId: posts[0].id, now: NOW });
     expect(offered.slice(0, 3)).toEqual(["2026-10-15T09:00:00.000Z", "2026-10-17T09:00:00.000Z", "2026-10-20T09:00:00.000Z"]);
-    const bad = await scheduleApproved({ ...args(shop), briefId, overrides: { [posts[0].id]: "2026-10-16T09:00:00.000Z" } }); // Friday: not a chosen day
+    const bad = await scheduleApproved({ ...args(shop), briefId, overrides: { [posts[0].id]: "garbage" } });
     expect(bad).toMatchObject({ ok: false, code: "invalid_slot" });
     expect(await itemOf(db, posts[0].id)).toBeNull();
     const ok = await scheduleApproved({ ...args(shop), briefId, overrides: { [posts[0].id]: offered[2] } });

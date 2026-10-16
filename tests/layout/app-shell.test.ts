@@ -1,6 +1,7 @@
-// The signed-in page frame (decision D10): sidebar from 1024 px, top bar from 768 px, bottom nav below 768 px, and a
-// minimal shell during setup. Rendered to HTML with react-dom/server; vitest runs in the node environment, so the
-// breakpoints are checked through the responsive classes, and the geometry through tests/tween/motion.test.ts.
+// The signed-in page frame (fish-style theme): a 224 px sidebar and 52 px top bar from 768 px, a drawer sidebar plus the
+// bottom nav below 768 px, and a minimal shell during setup. Rendered to HTML with react-dom/server; vitest runs in the
+// node environment, so the breakpoints are checked through the responsive classes, and Tween's geometry through
+// tests/tween/motion.test.ts.
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -9,7 +10,7 @@ const jar = vi.hoisted(() => ({ path: { value: "/week" } }));
 vi.mock("next/navigation", () => ({ usePathname: () => jar.path.value }));
 
 import { AppShell } from "@/components/app-shell/app-shell";
-import { isActive, phoneNavItems, wideNavItems } from "@/components/app-shell/nav-items";
+import { isActive, isNavActive, pageTitle, phoneNavItems, sidebarBrand, sidebarMain, sidebarTop, wideNavItems } from "@/components/app-shell/nav-items";
 import { Sidebar } from "@/components/app-shell/sidebar";
 import { TopBar } from "@/components/app-shell/top-bar";
 import { BottomNav } from "@/components/bottom-nav";
@@ -17,6 +18,7 @@ import { s } from "@/lib/i18n/strings";
 
 const signOut = async () => undefined;
 const props = { businessName: "Corner Bakery", signOutAction: signOut };
+const topBarProps = { ...props, expanded: true, onToggle: () => undefined };
 
 /** [href, label] of every link inside the first <nav> of the html. */
 function navLinks(html: string): string[][] {
@@ -30,112 +32,148 @@ beforeEach(() => {
 });
 
 describe("nav items", () => {
-  it("the phone nav has four destinations; the sidebar and top bar add Create first, the mascot and Connections", () => {
-    expect(phoneNavItems.map((i) => i.href)).toEqual(["/week", "/brand", "/results", "/history"]);
-    expect(phoneNavItems.map((i) => i.label)).toEqual(["Queue", "Brand", "Results", "History"]);
-    expect(wideNavItems.map((i) => i.href)).toEqual(["/create", "/week", "/brand", "/mascot", "/results", "/history", "/connections"]);
-    expect(wideNavItems.map((i) => i.label)).toEqual(["Create", "Queue", "Brand", "Mascot", "Results", "History", "Connections"]);
+  it("the phone nav has four destinations: Create, Queue, Brand, Results", () => {
+    expect(phoneNavItems.map((i) => i.href)).toEqual(["/create", "/week", "/brand", "/results"]);
+    expect(phoneNavItems.map((i) => i.label)).toEqual(["Create", "Queue", "Brand", "Results"]);
   });
-  it("Create is the first item on wide screens; on phones it is a button on the Queue page, not a fifth tab", () => {
-    expect(wideNavItems[0]).toMatchObject({ href: "/create", label: "Create" });
-    expect(phoneNavItems.map((i) => i.href)).not.toContain("/create");
+  it("the sidebar has a top block (Create a post, Queue), the everyday pages, and a Brand group (Brand, Connections)", () => {
+    expect(sidebarTop.map((i) => [i.href, i.label])).toEqual([
+      ["/create", "Create a post"],
+      ["/week", "Queue"],
+    ]);
+    expect(sidebarMain.map((i) => [i.href, i.label])).toEqual([
+      ["/home", "Home"],
+      ["/ideas", "Ideas"],
+      ["/results", "Results"],
+      ["/history", "History"],
+    ]);
+    expect(sidebarBrand.map((i) => [i.href, i.label])).toEqual([
+      ["/brand", "Brand"],
+      ["/connections", "Connections"],
+    ]);
+    expect(wideNavItems.map((i) => i.href)).toEqual(["/create", "/week", "/home", "/ideas", "/results", "/history", "/brand", "/connections"]);
+  });
+  it("Ideas is in the sidebar (and so the phone drawer) after Home, not in the phone bottom nav", () => {
+    expect(sidebarMain.map((i) => i.href).slice(0, 2)).toEqual(["/home", "/ideas"]);
+    expect(phoneNavItems.map((i) => i.href)).not.toContain("/ideas");
+    expect(pageTitle("/ideas")).toBe("Ideas");
+  });
+  it("the mascot is reached from the Brand page, not from the sidebar or the bottom nav", () => {
+    expect(wideNavItems.map((i) => i.href)).not.toContain("/mascot");
+    expect(phoneNavItems.map((i) => i.href)).not.toContain("/mascot");
   });
   it("a page is active on its own path and below it, not on a path that merely starts the same", () => {
     expect(isActive("/week", "/week")).toBe(true);
     expect(isActive("/review/abc", "/review")).toBe(true);
     expect(isActive("/weekend", "/week")).toBe(false);
   });
+  it("Brand stays lit on the mascot screen, and Create through all five steps", () => {
+    expect(isNavActive("/mascot", "/brand")).toBe(true);
+    expect(isNavActive("/create/abc/review", "/create")).toBe(true);
+    expect(isNavActive("/history", "/brand")).toBe(false);
+  });
+  it("the top bar title names the page", () => {
+    expect(pageTitle("/home")).toBe("Home");
+    expect(pageTitle("/create/abc/design")).toBe("Create a post");
+    expect(pageTitle("/week")).toBe("Queue");
+    expect(pageTitle("/mascot")).toBe("Mascot");
+  });
 });
 
-describe("sidebar (1024 px and up)", () => {
-  it("lists the destinations, the app name, the business, and a Sign out form", () => {
-    const html = renderToString(createElement(Sidebar, props));
+describe("sidebar (768 px and up; a drawer on phones)", () => {
+  it("lists the destinations in groups, with the app name; sign out lives in the account menu", () => {
+    const html = renderToString(createElement(Sidebar));
     expect(navLinks(html)).toEqual([
-      ["/create", s.nav.create],
+      ["/create", s.nav.createPost],
       ["/week", s.nav.queue],
-      ["/brand", s.nav.brand],
-      ["/mascot", s.nav.mascot],
+      ["/home", s.nav.home],
+      ["/ideas", s.nav.ideas],
       ["/results", s.nav.results],
       ["/history", s.nav.history],
+      ["/brand", s.nav.brand],
       ["/connections", s.nav.connections],
     ]);
     expect(html).toContain(s.appName);
-    expect(html).toContain("Corner Bakery");
-    expect(html).toMatch(/<form[^>]*>[\s\S]*<button[^>]*type="submit"[^>]*>[\s\S]*Sign out[\s\S]*<\/button>/);
+    expect(html).toContain(s.nav.brandGroup); // the "Brand" group label
     expect(html).toContain(`aria-label="${s.nav.label}"`);
     expect(html).toContain("data-app-sidebar"); // Tween keeps out of this column
-    expect(html).toMatch(/class="hidden [^"]*lg:flex/); // shown from 1024 px only
+    expect(html).toContain("md:sticky"); // beside the page from 768 px
+    expect(html).toContain("-translate-x-full"); // a closed drawer on phones
+    expect(html).toContain("md:w-56"); // 224 px
   });
-  it("marks only the current page, with aria-current, and has a visible keyboard focus ring", () => {
+  it("marks only the current page, with aria-current", () => {
     jar.path.value = "/brand";
-    const html = renderToString(createElement(Sidebar, props));
-    expect(current(html)).toEqual(["/brand"]);
-    expect(html).toContain("focus-visible:outline");
+    expect(current(renderToString(createElement(Sidebar)))).toEqual(["/brand"]);
     jar.path.value = "/review/abc"; // not a nav destination
-    expect(current(renderToString(createElement(Sidebar, props)))).toEqual([]);
-    jar.path.value = "/mascot";
-    expect(current(renderToString(createElement(Sidebar, props)))).toEqual(["/mascot"]);
+    expect(current(renderToString(createElement(Sidebar)))).toEqual([]);
+    jar.path.value = "/mascot"; // part of Brand
+    expect(current(renderToString(createElement(Sidebar)))).toEqual(["/brand"]);
     jar.path.value = "/connections";
-    expect(current(renderToString(createElement(Sidebar, props)))).toEqual(["/connections"]);
+    expect(current(renderToString(createElement(Sidebar)))).toEqual(["/connections"]);
+    jar.path.value = "/create/abc/schedule";
+    expect(current(renderToString(createElement(Sidebar)))).toEqual(["/create"]); // Create stays lit through the five steps
+  });
+  it("is hidden from keyboards when it is closed (inert), and open when the drawer is open", () => {
+    expect(renderToString(createElement(Sidebar, { hidden: true }))).toContain("inert");
+    const open = renderToString(createElement(Sidebar, { drawerOpen: true }));
+    expect(open).toContain("translate-x-0");
+    expect(open).not.toContain("inert");
   });
   it("is empty during setup", () => {
     jar.path.value = "/setup";
-    expect(renderToString(createElement(Sidebar, props))).toBe("");
-  });
-  it("leaves out the business name when there is none yet", () => {
-    const html = renderToString(createElement(Sidebar, { ...props, businessName: null }));
-    expect(html).not.toContain("Corner Bakery");
-    expect(html).toContain(s.appName);
+    expect(renderToString(createElement(Sidebar))).toBe("");
   });
 });
 
-describe("top bar (768 to 1023 px)", () => {
-  it("has the same destinations and a Sign out form, and shows only between md and lg", () => {
+describe("top bar", () => {
+  it("has the toggle, the page title and the account menu with a Sign out form", () => {
     jar.path.value = "/history";
-    const html = renderToString(createElement(TopBar, props));
-    expect(navLinks(html).map((l) => l[0])).toEqual(["/create", "/week", "/brand", "/mascot", "/results", "/history", "/connections"]);
-    expect(current(html)).toEqual(["/history"]);
-    expect(html).toContain("Sign out");
-    expect(html).toMatch(/class="hidden [^"]*md:block lg:hidden/);
+    const html = renderToString(createElement(TopBar, topBarProps));
+    expect(html).toContain(`aria-label="${s.nav.toggleSidebar}"`);
+    expect(html).toContain('aria-expanded="true"');
+    expect(html).toMatch(/data-page-title[^>]*>History</);
+    expect(html).toContain("Corner Bakery");
+    expect(html).toMatch(/<form[^>]*>[\s\S]*<button[^>]*type="submit"[^>]*>[\s\S]*Sign out[\s\S]*<\/button>/);
+    expect(html).toContain("h-[52px]");
   });
-  it("is empty during setup", () => {
-    jar.path.value = "/setup/x";
-    expect(renderToString(createElement(TopBar, props))).toBe("");
+  it("shows the initials of the business in the account pill", () => {
+    expect(renderToString(createElement(TopBar, topBarProps))).toContain(">CB<");
+    expect(renderToString(createElement(TopBar, { ...topBarProps, businessName: null }))).toContain(">WP<");
   });
 });
 
 describe("bottom nav (phones)", () => {
-  it("keeps its four items and is hidden from 768 px", () => {
+  it("has its four items and is hidden from 768 px", () => {
     const html = renderToString(createElement(BottomNav));
     expect(navLinks(html)).toEqual([
+      ["/create", "Create"],
       ["/week", "Queue"],
       ["/brand", "Brand"],
       ["/results", "Results"],
-      ["/history", "History"],
     ]);
-    expect(html).not.toContain("/connections"); // reached from the Brand page on phones
+    expect(html).not.toContain("/connections"); // reached from the sidebar drawer
     expect(html).toContain("md:hidden");
     expect(html).toContain('aria-current="page"');
+  });
+  it("is empty during setup", () => {
+    jar.path.value = "/setup";
+    expect(renderToString(createElement(BottomNav))).toBe("");
   });
 });
 
 describe("app shell", () => {
   const shell = () => renderToString(createElement(AppShell, props, createElement("p", null, "page body")));
 
-  it("carries the page, the sidebar, the top bar, the phone header and the bottom nav", () => {
+  it("carries the page, the sidebar, the top bar and the bottom nav", () => {
     const html = shell();
     expect(html).toContain("page body");
     expect(html).toContain("data-app-sidebar");
-    expect((html.match(/<nav /g) ?? []).length).toBe(3); // sidebar, top bar, bottom nav: CSS shows one at a time
-    expect((html.match(/Sign out/g) ?? []).length).toBe(3); // each with a form, so it works without JavaScript
-    expect((html.match(/<form /g) ?? []).length).toBe(3);
+    expect((html.match(/<nav /g) ?? []).length).toBe(2); // sidebar and bottom nav: CSS shows the bottom nav on phones only
+    expect((html.match(/Sign out/g) ?? []).length).toBe(1); // in the account menu, a form so it works without JavaScript
+    expect((html.match(/<form /g) ?? []).length).toBe(1);
     expect(html).toContain("data-app-main");
-    expect(html).toContain("max-w-[1200px]"); // the main area is up to 1200 px wide
-    expect(html).toContain("max-md:max-w-[480px]"); // the phone column is kept below 768 px
-  });
-
-  it("shows the business name in the phone header", () => {
-    expect(shell()).toMatch(/<header[^>]*md:hidden[^>]*>[\s\S]*Corner Bakery/);
+    expect(html).toContain("<header"); // the top bar
+    expect(html).toContain("Queue"); // the page title for /week
   });
 
   it("is minimal during setup: the app name and Sign out, no navigation", () => {
@@ -154,5 +192,9 @@ describe("app shell", () => {
     expect(withOverlay).toContain('id="ov"');
     expect(withOverlay).toContain("pb-40");
     expect(shell()).toContain("pb-24");
+  });
+
+  it("has no floating Tween pill of its own", () => {
+    expect(shell()).not.toMatch(/Ask Tween|data-tween-pill/);
   });
 });

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurrentBrand } from "@/lib/brand/current";
+import { alertClass } from "@/components/ui";
 import { s } from "@/lib/i18n/strings";
 import { mascotDownloads } from "@/lib/mascot/paths";
 import { getMascotScreen, refreshSheetIfStale } from "@/lib/mascot/service";
@@ -21,12 +22,12 @@ export default async function Page() {
   const screen = await getMascotScreen(user.id, brand.id);
 
   return (
-    <section className="space-y-4">
+    <section className="mx-auto w-full max-w-page-lg space-y-4">
       <div>
-        <h1 className="text-xl font-bold md:text-2xl">{s.mascot.title}</h1>
-        <p className="text-stone-600">{s.mascot.intro}</p>
+        <h1 className="sr-only">{s.mascot.title}</h1>
+        <p className="text-[14px] leading-5 text-desc">{s.mascot.intro}</p>
       </div>
-      <p className="rounded-lg bg-emerald-50 px-3 py-2 text-emerald-900">{s.mascot.ownership}</p>
+      <p className={alertClass("ok")}>{s.mascot.ownership}</p>
       <MascotScreen
         brandId={brand.id}
         eligibility={{ eligible: screen.eligibility.eligible, reason: screen.eligibility.reason, canOverride: screen.eligibility.canOverride }}

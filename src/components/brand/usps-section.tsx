@@ -301,8 +301,8 @@ export function UspsSection({ brandId, usps, defaultCurrency }: { brandId: strin
 
   return (
     <div className="space-y-4">
-      <p className="text-stone-600">{t.intro}</p>
-      {usps.length === 0 && !adding && <p className="text-stone-600">{t.empty}</p>}
+      <p className="text-[14px] leading-5 text-desc">{t.intro}</p>
+      {usps.length === 0 && !adding && <p className="text-[14px] leading-5 text-desc">{t.empty}</p>}
       <ul className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-2 lg:space-y-0">
         {usps.map((u, i) =>
           editingId === u.id ? (

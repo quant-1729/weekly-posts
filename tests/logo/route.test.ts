@@ -18,7 +18,8 @@ const jar = vi.hoisted(() => {
 vi.mock("next/headers", () => ({ cookies: async () => jar.api, headers: async () => new Headers() }));
 
 import { DELETE, POST } from "@/app/api/brand/logo/route";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import type { MockDb } from "@/lib/db/mock";
 import { setStorageForTests } from "@/lib/storage";
 import { createMockStorage } from "@/lib/storage/mock";

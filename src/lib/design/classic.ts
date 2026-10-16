@@ -109,6 +109,8 @@ export async function renderClassicV2(input: DesignInput): Promise<DesignDetail 
     dir: r.dir,
     faces: { head: 'sans', body: 'sans' },
     mascotDropped: r.mascotDropped,
+    freeSpace: 1,
+    character: null,
     engine: 'v2',
   };
 }

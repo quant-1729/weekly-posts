@@ -70,17 +70,17 @@ export function continuePageHtml(args: { token: string; nonce: string }): string
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>${title}</title>
-<style>@media (min-width:768px){body{background:#fafaf9 !important}main{max-width:560px !important;min-height:0 !important;margin:10vh auto !important;padding:40px 48px !important;background:#ffffff;border:1px solid #e7e5e4;border-radius:16px}}</style>
+<style>@media (min-width:768px){body{background:#fbfaf9 !important}main{max-width:560px !important;min-height:0 !important;margin:10vh auto !important;padding:40px 48px !important;background:#ffffff;border:1px solid rgba(0,0,0,0.05);box-shadow:0 1px 3px rgba(0,0,0,0.04);border-radius:16px}}</style>
 </head>
-<body style="margin:0;background:#ffffff;color:#1c1917;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;">
+<body style="margin:0;background:#fbfaf9;color:#1d1d1c;font-family:Onest,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;">
 <main style="box-sizing:border-box;max-width:480px;min-height:100vh;margin:0 auto;padding:32px 20px;display:flex;flex-direction:column;justify-content:center;">
-<p style="margin:0 0 4px;font-size:24px;font-weight:700;color:#E4572E;">${esc(APP_NAME)}</p>
-<h1 style="margin:16px 0 8px;font-size:20px;font-weight:600;">${title}</h1>
-<p style="margin:0 0 24px;color:#57534e;">${esc(c.body)}</p>
+<p style="margin:0 0 4px;font-size:16px;font-weight:600;color:#1d1d1c;">${esc(APP_NAME)}</p>
+<h1 style="margin:16px 0 8px;font-size:20px;line-height:28px;font-weight:500;">${title}</h1>
+<p style="margin:0 0 24px;color:#554f4c;">${esc(c.body)}</p>
 <form method="post" action="/auth/callback">
 <input type="hidden" name="token" value="${esc(args.token)}">
 <input type="hidden" name="nonce" value="${esc(args.nonce)}">
-<button type="submit" style="width:100%;border:0;border-radius:8px;background:#E4572E;color:#ffffff;font-size:18px;font-weight:600;padding:12px 16px;cursor:pointer;">${esc(c.button)}</button>
+<button type="submit" style="width:100%;border:0;border-radius:9999px;background:#1d1d1c;color:#ffffff;font-size:16px;font-weight:500;padding:12px 16px;cursor:pointer;">${esc(c.button)}</button>
 </form>
 </main>
 </body>

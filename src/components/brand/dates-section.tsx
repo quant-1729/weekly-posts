@@ -50,10 +50,10 @@ export function DatesPanel({ brandId, dates }: { brandId: string; dates: OwnerDa
 
   return (
     <div className="space-y-4">
-      <p className="text-stone-600">{t.intro}</p>
+      <p className="text-[14px] leading-5 text-desc">{t.intro}</p>
 
       {dates.length === 0 ? (
-        <p className="text-stone-600">{t.empty}</p>
+        <p className="text-[14px] leading-5 text-desc">{t.empty}</p>
       ) : (
         <ul className="space-y-2">
           {dates.map((d) => (

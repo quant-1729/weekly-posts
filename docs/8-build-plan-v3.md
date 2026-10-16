@@ -59,3 +59,33 @@ C-22, C-23, C-29, C-30, C-34, C-35, C-36, C-37.
 ## Phase 5: Legal, docs, acceptance (week 4)
 
 C-38, C-39, C-40; stretch C-21 (Veo) if time.
+
+## Phase 6: Ideas (trend research) and Brand Face (owner-approved 2026-10-15)
+
+Spec: `docs/10-plan-research-and-brand-face.md`. References: `docs/12-research-repos-and-proposal.md`. Order: Ideas first; Brand Face is built alongside it where the files don't overlap.
+
+| ID | Task | Owner | Status |
+|---|---|---|---|
+| P6-0 | Migration 0021 (competitors, research_runs, trend_cards, post_ideas, competitor_snapshots, post_metrics, growth_reports, brand_faces, brand_face_poses, brand_memory research/face columns, mascot brands moved over, usage and email kinds) | orchestrator | Done 2026-10-15 (mock DB, RLS and account tests pass); not applied to Supabase yet |
+| UI-15 | Simpler Create a post (owner request) | builder | Done and deployed 2026-10-15 (revision 00006) |
+| DS-1 | Fish-style theme spec and HTML prototype (`docs/design/`) | orchestrator + builder | Prototype ready for owner review |
+| R-1 | Competitors card on the Brand page (up to 5) plus the service | builder | **Done 2026-10-15**, with the focus line and the on/off switch |
+| R-2 | Search planner and Gemini Google-grounded search; date window set in code; cost recorded; weekly research cap | builder | **Done 2026-10-15**: research has its own $0.50 a week budget, left out of post making's weekly total (orchestrator); source dates asked for in the search prompt |
+| R-3 | Competitor sources: websites (existing reader) and Instagram Business Discovery snapshots (behind a switch until App Review) | builder | **Done 2026-10-15**: a page with no date counts as read today (orchestrator); Business Discovery off until `IDEAS_BUSINESS_DISCOVERY=on` |
+| R-4 | YouTube search source | builder | **Done 2026-10-15** (skipped without `YOUTUBE_API_KEY`) |
+| R-5 | Merge and score, then trend cards and ideas: prompts (orchestrator), reviewer (no undated source), numbers and claims removed from ideas, guardrail | orchestrator + builder | **Done 2026-10-15**: about $0.34-0.39 per full run; 106 tests |
+| R-6 | Ideas page and "Make this post" into Create a post | builder | **Done 2026-10-15**: /ideas with cards, sources, ideas, Research now (with its limits shown), competitors, empty states |
+| R-7 | Weekly run (Cloud Scheduler), "Research now" (2 a week), ideas into the Queue as suggestions | builder | **Done 2026-10-15**: `/api/cron/research` on Mondays, hourly 06:00-09:00 UTC (12 brands per call, idempotent); up to 2 "From your ideas" suggestions in Queue, nothing created automatically |
+| R-8 | Insights fetch into post_metrics; Meta App Review text drafts | builder | **Done 2026-10-15** (fixtures): hourly job `/api/cron/insights`, fetched at 24 h, 72 h and 7 days; draft in `docs/meta-app-review-insights.md`. Not live until the insights scopes are added to Connect after App Review and owners reconnect; response shapes need a live check |
+| R-9 | Growth report (Results page); BigQuery benchmarks (with C-30) | builder | Todo |
+| R-10 | Admin dashboard: research runs, cost, failures | builder | **Done 2026-10-15** |
+| F-1 | Face types and service; mascot moved into faces (code side) | orchestrator + builder | **Done 2026-10-15**: validation (photoreal blocked for regulated brands, famous-name and fame-word refusal), approval needs 7 owner-approved poses, consent for owner photo, mascot_in_posts kept in sync, retire deletes pose files, export and delete include faces; DB consent check fixed (coalesce) |
+| F-2 | Design engine: face layer (Tween rig or pose PNGs) | builder | **Done 2026-10-15**: Tween byte-identical; pose PNG in the same slot; "AI" pill on photoreal; no photoreal on testimonials; only `placement.size` honoured (side stays fixed, like Tween); no face on landscape, thumbnail or banner (no slot) |
+| F-3 | Copy prompt FACE block and the regulated-brand rules | orchestrator | **Done 2026-10-15**: persona per kind; the bubble never gives advice, promises results or poses as a customer or professional |
+| F-4 | Brand page Face card: kind, description, 4 options with the price first, approve | builder | **Done 2026-10-15**: "Your face in posts" card replaces Mascot (Tween embedded unchanged); priced buttons per step; poses made two at a time; approve and redo per pose; active face summary and Retire |
+| F-5 | Pose set: Gemini 3.1 Flash Image with references, character sheet, vision check, rembg + BiRefNet cut-out job | builder | **Done 2026-10-15** (fixtures): options, master, sheet and poses, each step refusing without the owner's approved price; $2 cap per face; $1.32 estimate shown, checks included; chroma-key cut-out for AI images; `services/cutout` (rembg + BiRefNet) for photos, not deployed; face creation left out of the weekly and daily post caps (orchestrator). Live checks pending: model at `global`, real green keying, price |
+| F-6 | Owner as the face: upload, consent plus email confirmation, cut-out | builder | **Done 2026-10-15**: consent email `/f/[token]`; photos through `/api/faces/photo`, cut out by matting, originals not kept; a DB trigger stops members confirming consent themselves (orchestrator) |
+| F-7 | Realistic AI person: "AI" tag drawn by code, Meta AI disclosure, blocked for regulated brands and testimonials | builder | **Done 2026-10-15**: the Graph API has no AI-label field for organic posts, so the caption ends with "Image made with AI." (auto-publish and hand-shared text, orchestrator); check Meta docs live |
+| F-8 | Guardrail: bubble lines, credential cues, named-person refusal | builder | Todo |
+| F-9 | Terms and privacy wording (with C-38) | helper | Todo |
+| F-10 | Tests, admin counts and cost | builder | Todo |

@@ -12,7 +12,10 @@ import {
   loadReviewData,
   logCreateShare,
   previewForOption,
+  setPostFilter,
+  type SetFilterResult,
   removePostFlag,
+  resetToBase,
   saveCopy,
   undoCreateApproval,
   chooseDesign,
@@ -21,6 +24,7 @@ import {
   type ReviewData,
 } from "@/lib/create";
 import type { DesignOption } from "@/lib/design/types";
+import { parsePostFilter, postFilterSchema, type PostFilter } from "@/lib/design/filter-presets";
 import { s } from "@/lib/i18n/strings";
 import { formatSlot, listFreeSlotsForPost, loadBrandTimezone, loadScheduleStep, postNowApproved, scheduleApproved, autoApproveBrief, type ScheduleStep } from "@/lib/queue";
 
@@ -56,7 +60,7 @@ function failure(err: unknown): { ok: false; message: string } {
 const option = (o: unknown): DesignOption | null => {
   if (!o || typeof o !== "object") return null;
   const x = o as Record<string, unknown>;
-  return typeof x.themeId === "string" && typeof x.layoutId === "string" && typeof x.scheme === "string" ? ({ themeId: x.themeId, layoutId: x.layoutId, scheme: x.scheme } as DesignOption) : null;
+  return typeof x.themeId === "string" && typeof x.layoutId === "string" && typeof x.scheme === "string" ? ({ themeId: x.themeId, layoutId: x.layoutId, scheme: x.scheme, ...(x.role === null || typeof x.role === "string" ? { role: x.role } : {}) } as DesignOption) : null;
 };
 
 // ---------------------------------------------------------------------------------------------
@@ -64,13 +68,30 @@ const option = (o: unknown): DesignOption | null => {
 // ---------------------------------------------------------------------------------------------
 
 /** A new preview for one option (layout or colours changed). Never calls the AI. */
-export async function previewOptionAction(briefId: string, o: DesignOption): Promise<{ ok: true; view: OptionView } | { ok: false; message: string }> {
+export async function previewOptionAction(briefId: string, o: DesignOption, filter?: PostFilter): Promise<{ ok: true; view: OptionView } | { ok: false; message: string }> {
   const me = await who();
   const id = uuid(briefId);
   const opt = option(o);
   if (!me || !id || !opt) return { ok: false, message: me ? e.invalidOption : s.errors.signedOut };
   try {
-    return { ok: true, view: await previewForOption({ ...me, briefId: id, option: opt }) };
+    return { ok: true, view: await previewForOption({ ...me, briefId: id, option: opt, filter: filter === undefined ? undefined : parsePostFilter(filter) }) };
+  } catch (err) {
+    return failure(err);
+  }
+}
+
+/**
+ * The Design step's filter control (UX-2): sets the post's colour filter (preset + intensity 0-100) and draws again, with no AI.
+ * Pass the option being looked at to get its fresh preview (before "Use this design"); once a design is used, the stored
+ * pictures are redrawn and their new URLs come back in `images`. A redrawn post is a draft again (approve it again).
+ */
+export async function setFilterAction(briefId: string, filter: PostFilter, o?: DesignOption): Promise<({ ok: true } & SetFilterResult) | { ok: false; message: string }> {
+  const me = await who();
+  const id = uuid(briefId);
+  const opt = o === undefined ? undefined : option(o);
+  if (!me || !id || (o !== undefined && !opt) || !postFilterSchema.safeParse(filter).success) return { ok: false, message: me ? e.invalidOption : s.errors.signedOut };
+  try {
+    return { ok: true, ...(await setPostFilter({ ...me, briefId: id, filter, option: opt ?? undefined })) };
   } catch (err) {
     return failure(err);
   }
@@ -139,13 +160,13 @@ export async function setBlockAction(briefId: string, key: string, on: boolean):
 }
 
 /** "Use this design": draws every picture and stores the posts. */
-export async function chooseDesignAction(briefId: string, o: DesignOption): Promise<{ ok: true } | { ok: false; message: string }> {
+export async function chooseDesignAction(briefId: string, o: DesignOption, filter?: PostFilter): Promise<{ ok: true } | { ok: false; message: string }> {
   const me = await who();
   const id = uuid(briefId);
   const opt = option(o);
   if (!me || !id || !opt) return { ok: false, message: me ? e.invalidOption : s.errors.signedOut };
   try {
-    await chooseDesign({ ...me, briefId: id, option: opt });
+    await chooseDesign({ ...me, briefId: id, option: opt, filter: filter === undefined ? undefined : parsePostFilter(filter) });
     // S-4 / C-28: a channel with "auto-approve posts with no flags" on approves and queues what has nothing to check.
     await autoApproveBrief({ ...me, briefId: id }).catch((err) => console.error("[create] auto-approve failed", err));
     return { ok: true };
@@ -232,6 +253,32 @@ export async function undoApprovalAction(briefId: string, postId: string): Promi
   });
 }
 
+/**
+ * Saves one channel's caption and hashtags (the edit button in the review step). Goes through the same `saveCopy` as every
+ * edit of the words, so the fact check runs again and a changed post needs approving again; other channels are untouched.
+ */
+export async function saveCaptionAction(briefId: string, channel: string, caption: string, hashtags: string): Promise<ReviewActionResult> {
+  const me = await who();
+  const b = uuid(briefId);
+  if (!me || !b || typeof channel !== "string" || typeof caption !== "string" || typeof hashtags !== "string") return { ok: false, message: me ? e.notFound : s.errors.signedOut };
+  return review(me, b, async () => {
+    const r = await saveCopy({ ...me, briefId: b, edit: { captions: { [channel]: caption }, hashtagsByChannel: { [channel]: hashtags } } });
+    if (!r.ok) return { ok: false, message: r.errors.join(" ") };
+    return { ok: true, message: r.changed ? s.create.design.words.saved : s.create.design.words.unchanged };
+  });
+}
+
+/** "Undo all": every post of the brief goes back to its first generated words and design; approval is withdrawn. */
+export async function undoAllAction(briefId: string): Promise<ReviewActionResult> {
+  const me = await who();
+  const b = uuid(briefId);
+  if (!me || !b) return { ok: false, message: me ? e.notFound : s.errors.signedOut };
+  return review(me, b, async () => {
+    const r = await resetToBase({ ...me, briefId: b });
+    return r.ok ? { ok: true, message: s.create.review.undoAll.done } : { ok: false, message: r.message };
+  });
+}
+
 /** Records that the owner shared or downloaded a picture (Copy is not recorded). Never throws. */
 export async function logShareAction(postId: string, kind: "share" | "download", format?: string): Promise<{ ok: boolean }> {
   try {
@@ -269,7 +316,7 @@ export async function slotOptionsForPostAction(postId: string): Promise<{ ok: tr
   const p = uuid(postId);
   if (!me || !p) return { ok: false, message: me ? e.notFound : s.errors.signedOut };
   try {
-    const [at, step] = await Promise.all([listFreeSlotsForPost({ ...me, postId: p, n: 12 }), loadBrandTimezone(me.userId, me.brandId)]);
+    const [at, step] = await Promise.all([listFreeSlotsForPost({ ...me, postId: p, n: 60 }), loadBrandTimezone(me.userId, me.brandId)]);
     return { ok: true, options: at.map((iso) => ({ at: iso, label: formatSlot(iso, step) })) };
   } catch (err) {
     console.error("[create] slot options failed", err);

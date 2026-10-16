@@ -35,6 +35,11 @@ export interface Flag {
   highlight: boolean;
   status: 'open' | 'confirmed' | 'removed';
   decided_at: string | null;
+  /**
+   * Carousel only: the flag is about this slide (0-based) of the post. `field` is then `image_text.headline` for the slide's
+   * headline and `image_text.subline` for its body, and `text` is a piece of that slide's text.
+   */
+  slide?: number;
 }
 
 /** The copy the guardrail looks at. `bubble` is the mascot's speech bubble, when the post has one. */

@@ -1,15 +1,35 @@
 // The text that goes with a post: the approved caption, then the hashtags on their own paragraph. Only words the owner
-// approved are used; nothing is added except the "#" in front of a tag.
+// approved are used; nothing is added except the "#" in front of a tag, and the AI disclosure line for a post that shows
+// a realistic AI person.
 
 export const IG_CAPTION_MAX = 2200;
 export const IG_HASHTAG_MAX = 30;
+
+/**
+ * Added as the last line of the caption of a post that shows a realistic AI person (Brand Face, F-7). The Graph API has no
+ * field that sets Instagram's or Facebook's "AI info" label on an organic post, so the post says it in words.
+ */
+export const AI_DISCLOSURE_LINE = "Image made with AI.";
 
 const norm = (tag: string): string | null => {
   const t = tag.trim().replace(/^#+/, "").replace(/\s+/g, "");
   return t ? `#${t}` : null;
 };
 
-export function composeCaption(caption: string | null | undefined, hashtags: readonly string[] | null | undefined, max = IG_CAPTION_MAX, maxTags = IG_HASHTAG_MAX): string {
+export function composeCaption(
+  caption: string | null | undefined,
+  hashtags: readonly string[] | null | undefined,
+  max = IG_CAPTION_MAX,
+  maxTags = IG_HASHTAG_MAX,
+  opts: { aiDisclosure?: boolean } = {},
+): string {
+  if (opts.aiDisclosure) {
+    // The line always fits: the rest of the caption is made to leave room for it, and it is never added twice.
+    const own = (caption ?? "").trim();
+    const without = own.endsWith(AI_DISCLOSURE_LINE) ? own.slice(0, -AI_DISCLOSURE_LINE.length) : own;
+    const body = composeCaption(without, hashtags, max - AI_DISCLOSURE_LINE.length - 2, maxTags);
+    return body ? `${body}\n\n${AI_DISCLOSURE_LINE}` : AI_DISCLOSURE_LINE;
+  }
   const text = (caption ?? "").trim();
   const seen = new Set((text.match(/#[\p{L}\p{N}_]+/gu) ?? []).map((h) => h.toLowerCase()));
   const tags: string[] = [];

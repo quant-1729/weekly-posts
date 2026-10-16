@@ -15,9 +15,11 @@
 import { requireBrandMember } from '@/lib/brand/current';
 import { getDb, type Tx } from '@/lib/db';
 import { activeProviders, brandZone, ITEM_COLUMNS, lockBrandQueue, modeFor, occupiedSlots, postWithSlides, toItem, type ItemRow } from './data';
-import { queueFail, type QueueResult } from './errors';
+import { fill, s } from '@/lib/i18n/strings';
+import { queueFail, queueFailWith, type QueueResult } from './errors';
+import { formatSlot } from './format';
 import { readQueueSettings } from './settings';
-import { findSlot, freeSlotsFor, hasEnded, type SlotContext } from './slots';
+import { HORIZON_DAYS, MIN_LEAD_MS, findSlot, freeSlotsFor, hasEnded, localDateOf, type SlotContext } from './slots';
 import { QUEUE_CHANNELS, type QueueChannel, type QueueItem, type QueueMode } from './types';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -59,7 +61,10 @@ export interface ScheduleArgs {
   postIds?: string[];
   briefId?: string;
   now?: Date;
-  /** The owner picked another time for these posts (must be one of the free slots offered). */
+  /**
+   * The owner picked a time for these posts. Any time is accepted that is at least 10 minutes ahead, not after the brief's
+   * end date (in the brand's zone) and at least 30 minutes from another scheduled post of the same channel.
+   */
   overrides?: Record<string, string>;
   /** Put the posts at `now` instead of the next free slot ("post now"). */
   at?: 'now';
@@ -97,6 +102,23 @@ async function loadCandidates(tx: Tx, args: ScheduleArgs): Promise<{ rows: PostR
   );
   return { rows, unknown };
 }
+
+/** A scheduled or publishing post of the same channel less than 30 minutes from `at` (or a pick made earlier in this call), else null. */
+const CLASH_MS = 30 * 60 * 1000;
+async function nearbyOnChannel(tx: Tx, brandId: string, channel: QueueChannel, postId: string, at: Date, picks: Placement[]): Promise<Date | null> {
+  const rows = await tx.query<{ slot_at: Date | string }>(
+    `select slot_at from public.queue_items
+      where brand_id = $1 and channel = $2::public.post_channel and post_id <> $3::uuid and status in ('scheduled', 'publishing')
+        and slot_at > $4::timestamptz - interval '30 minutes' and slot_at < $4::timestamptz + interval '30 minutes'
+      order by abs(extract(epoch from slot_at - $4::timestamptz)) limit 1`,
+    [brandId, channel, postId, at.toISOString()],
+  );
+  if (rows[0]) return new Date(rows[0].slot_at);
+  const mine = picks.find((p) => p.channel === channel && p.postId !== postId && Math.abs(new Date(p.slotAt).getTime() - at.getTime()) < CLASH_MS);
+  return mine ? new Date(mine.slotAt) : null;
+}
+
+const channelName = (c: QueueChannel): string => s.create.channels.options[c as keyof typeof s.create.channels.options] ?? c;
 
 /**
  * Chooses slots for the approved posts and (unless `dryRun`) saves them. Shared by `scheduleApproved` and
@@ -151,15 +173,18 @@ async function plan(tx: Tx, args: ScheduleArgs, write: boolean): Promise<QueueRe
     occupied.push({ channel: post.channel, slotAt: at });
   };
 
-  // The owner's own picks first: each has to be one of the free slots we offer.
+  // The owner's own picks first. The server decides what is acceptable (the picker's list of suggestions is only a hint).
   const overrides = args.overrides ?? {};
   for (const g of groups) {
     for (const post of [...g.posts]) {
       const picked = overrides[post.id];
       if (picked === undefined) continue;
       const at = new Date(picked);
-      const offered = freeSlotsFor(ctxFor(g.endsOn), post.channel, 60);
-      if (Number.isNaN(at.getTime()) || !offered.some((d) => d.getTime() === at.getTime())) return queueFail('invalid_slot');
+      if (Number.isNaN(at.getTime()) || at.getTime() > now.getTime() + HORIZON_DAYS * 86_400_000) return queueFail('invalid_slot');
+      if (at.getTime() < now.getTime() + MIN_LEAD_MS) return queueFail('too_soon');
+      if (g.endsOn && localDateOf(at, timezone) > g.endsOn) return queueFail('after_end');
+      const near = await nearbyOnChannel(tx, brandId, post.channel, post.id, at, outcome.placed);
+      if (near) return queueFailWith('clash', fill(s.queue.errors.clash, { channel: channelName(post.channel), when: formatSlot(near, timezone) }));
       place(g, post, at);
       g.posts = g.posts.filter((p) => p.id !== post.id);
     }

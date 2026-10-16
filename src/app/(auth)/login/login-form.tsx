@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
+import { errorClass, hintClass, inputClass, labelClass, linkButton, primaryButtonFull, secondaryButton } from "@/components/ui";
 import { fill, s } from "@/lib/i18n/strings";
 import { requestLinkAction } from "./actions";
 
@@ -42,16 +43,11 @@ export function LoginForm({ showDevLink }: { showDevLink: boolean }) {
     });
   }
 
-  const inputClass =
-    "w-full rounded-lg border border-stone-300 bg-white px-3 py-3 text-lg outline-none focus:border-[#E4572E] focus:ring-2 focus:ring-[#E4572E]/30";
-  const buttonClass =
-    "w-full rounded-lg bg-[#E4572E] px-4 py-3 text-lg font-semibold text-white disabled:opacity-60";
-
   if (step === "email") {
     return (
-      <form onSubmit={send} className="space-y-4">
+      <form onSubmit={send} className="space-y-5">
         <div>
-          <label htmlFor="email" className="mb-1 block font-medium">
+          <label htmlFor="email" className={labelClass}>
             {s.login.emailLabel}
           </label>
           <input
@@ -68,32 +64,32 @@ export function LoginForm({ showDevLink }: { showDevLink: boolean }) {
             required
             autoFocus
           />
-          <p className="mt-1 text-sm text-stone-500">{s.login.emailHint}</p>
+          <p className={`${hintClass} mt-1`}>{s.login.emailHint}</p>
         </div>
 
-        <label className="flex items-start gap-3 text-sm">
+        <label className="flex items-start gap-2.5 text-[13px] leading-[18px] text-sub">
           <input
             type="checkbox"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 h-5 w-5 shrink-0 accent-[#E4572E]"
+            className="shrink-0"
             required
           />
           <span>
             {s.login.consent}{" "}
-            <Link href="/terms" className="underline">
+            <Link href="/terms" className="underline underline-offset-2 hover:text-title">
               {s.login.termsLink}
             </Link>
           </span>
         </label>
 
         {error && (
-          <p role="alert" className="text-sm text-red-700">
+          <p role="alert" className={errorClass}>
             {error}
           </p>
         )}
 
-        <button type="submit" disabled={pending || !consent} className={buttonClass}>
+        <button type="submit" disabled={pending || !consent} className={primaryButtonFull}>
           {pending ? s.login.sending : s.login.sendLink}
         </button>
       </form>
@@ -103,25 +99,25 @@ export function LoginForm({ showDevLink }: { showDevLink: boolean }) {
   return (
     <div className="space-y-4">
       <div role="status">
-        <h2 className="mb-2 text-xl font-semibold">{s.login.checkInboxTitle}</h2>
-        <p>{fill(s.login.checkInboxBody, { email })}</p>
-        <p className="mt-2 text-sm text-stone-500">{s.login.checkSpam}</p>
+        <h2 className="mb-2 text-dialog text-title">{s.login.checkInboxTitle}</h2>
+        <p className="text-[14px] leading-5">{fill(s.login.checkInboxBody, { email })}</p>
+        <p className={`${hintClass} mt-2`}>{s.login.checkSpam}</p>
       </div>
 
-      {notice && <p className="text-sm text-green-800">{notice}</p>}
+      {notice && <p className="text-[13px] font-medium leading-[18px] text-ok-tx">{notice}</p>}
       {error && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className={errorClass}>
           {error}
         </p>
       )}
 
-      <button type="button" onClick={() => send()} disabled={pending || wait > 0} className={buttonClass}>
+      <button type="button" onClick={() => send()} disabled={pending || wait > 0} className={`${secondaryButton} w-full`}>
         {wait > 0 ? fill(s.login.resendIn, { seconds: wait }) : pending ? s.login.sending : s.login.resend}
       </button>
 
       {showDevLink && (
         <p className="text-center">
-          <Link href="/dev/outbox" className="text-sm font-medium text-[#E4572E] underline">
+          <Link href="/dev/outbox" className={linkButton}>
             {s.login.devOpenLink}
           </Link>
         </p>
@@ -134,7 +130,7 @@ export function LoginForm({ showDevLink }: { showDevLink: boolean }) {
           setError(null);
           setNotice(null);
         }}
-        className="w-full py-2 text-sm text-stone-600 underline"
+        className={linkButton}
       >
         {s.login.changeEmail}
       </button>

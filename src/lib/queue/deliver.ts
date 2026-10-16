@@ -7,7 +7,7 @@ import { getDb } from '@/lib/db';
 import { sendEmail as realSendEmail } from '@/lib/email';
 import { button, COLORS, esc, FONT, footerParts, footerRow, footerText, headerRow, paragraph, row, shell } from '@/lib/email/layout';
 import type { BuiltEmail } from '@/lib/email/notices';
-import { channelFormats } from '@/lib/create/content';
+import { postFormats } from '@/lib/create/content';
 import { shareTextFor } from '@/lib/create/view';
 import type { DesignFormat } from '@/lib/design/types';
 import { getEnv } from '@/lib/env';
@@ -30,13 +30,17 @@ export interface DeliveryPost {
   formats: DesignFormat[];
   /** The carousel slides' post ids, in order (empty when there is no carousel). */
   slideIds: string[];
+  /** The post shows a realistic AI person: the shared text ends with the AI disclosure line. */
+  aiFace: boolean;
 }
 
 /** Loads what the email and the ready page show for one v3 post. Service role: the caller has the proof (a queue row or a signed link). */
 export async function loadDeliveryPost(brandId: string, postId: string): Promise<DeliveryPost | null> {
   return getDb().withService(async (tx) => {
-    const [p] = await tx.query<{ id: string; channel: string; caption: string | null; cta: string | null; hashtags: string[] | null; post_code: string; carousel_id: string | null }>(
-      `select id::text as id, channel::text as channel, caption, cta, hashtags, post_code, design -> 'carousel' ->> 'id' as carousel_id
+    const [p] = await tx.query<{ id: string; channel: string; caption: string | null; cta: string | null; hashtags: string[] | null; post_code: string; carousel_id: string | null; ai_face: boolean | null; asked_carousel: boolean | null }>(
+      `select id::text as id, channel::text as channel, caption, cta, hashtags, post_code, design -> 'carousel' ->> 'id' as carousel_id,
+              (design ->> 'aiFace') = 'true' as ai_face,
+              coalesce(jsonb_array_length(case when jsonb_typeof(image_text -> 'slides') = 'array' then image_text -> 'slides' end), 0) >= 2 as asked_carousel
          from public.posts where id = $1 and brand_id = $2 and brief_id is not null and batch_id is null and carousel_id is null`,
       [postId, brandId],
     );
@@ -54,8 +58,10 @@ export async function loadDeliveryPost(brandId: string, postId: string): Promise
       cta: p.cta ?? '',
       hashtags: p.hashtags ?? [],
       postCode: p.post_code,
-      formats: channelFormats(p.channel).filter((f) => have.has(f)),
+      // A carousel the owner asked for is drawn in its slide size (portrait for Instagram and Facebook), not the channel's usual sizes.
+      formats: postFormats(p.channel, p.asked_carousel === true).filter((f) => have.has(f)),
       slideIds: slides.map((x) => x.id),
+      aiFace: p.ai_face === true,
     };
   });
 }
@@ -104,7 +110,7 @@ export async function buildDeliveryEmail(input: BuildDeliveryInput): Promise<Bui
     ? await Promise.all(post.slideIds.slice(0, 10).map(async (id) => imageUrl(await signLink({ brandId: brand.id, postId: id, act: 'img', extra: { format: main }, now }))))
     : [];
 
-  const text = shareTextFor({ channel: post.channel, caption: post.caption, cta: post.cta, hashtags: post.hashtags, postCode: post.postCode }, getEnv().appUrl);
+  const text = shareTextFor({ channel: post.channel, caption: post.caption, cta: post.cta, hashtags: post.hashtags, postCode: post.postCode, aiFace: post.aiFace }, getEnv().appUrl);
 
   const picture = mainUrl
     ? `<img src="${esc(mainUrl)}" width="560" alt="${esc(fill(t.imageAlt, { channel }))}" style="display:block;width:100%;max-width:560px;height:auto;border:0;outline:none;text-decoration:none;background-color:${COLORS.page};">`

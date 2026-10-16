@@ -1,22 +1,18 @@
 import Link from "next/link";
+import { AuthCard } from "@/components/auth/auth-card";
+import { primaryButtonFull } from "@/components/ui";
 import { s } from "@/lib/i18n/strings";
 
 export const dynamic = "force-dynamic";
 
 export default function InvalidLinkPage() {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-[480px] flex-col justify-center px-5 py-8 md:max-w-[560px]">
-      <div className="md:rounded-2xl md:border md:border-stone-200 md:bg-white md:p-10 md:shadow-sm">
-      <h1 className="mb-1 text-2xl font-bold text-[#E4572E]">{s.appName}</h1>
-      <h2 className="mb-2 mt-4 text-xl font-semibold">{s.login.invalidLink.title}</h2>
-      <p className="mb-6 text-stone-600">{s.login.invalidLink.body}</p>
-      <Link
-        href="/login"
-        className="block w-full rounded-lg bg-[#E4572E] px-4 py-3 text-center text-lg font-semibold text-white"
-      >
+    <AuthCard>
+      <h1 className="mt-6 text-dialog text-title">{s.login.invalidLink.title}</h1>
+      <p className="mb-6 mt-2 text-[14px] leading-5 text-desc">{s.login.invalidLink.body}</p>
+      <Link href="/login" className={primaryButtonFull}>
         {s.login.invalidLink.button}
       </Link>
-      </div>
-    </main>
+    </AuthCard>
   );
 }

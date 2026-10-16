@@ -25,6 +25,15 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
+# 2b. Offline city/country lookup for sign-in sessions: the DB-IP "IP to City Lite" database (CC BY 4.0, "IP geolocation
+#     by DB-IP"). GEOIP_MONTH pins the month (blank = the current month); the script falls back to the previous two
+#     months and never fails the build: with no file the app just records no city or country.
+FROM node:${NODE_VERSION}-bookworm-slim AS geoip
+ARG GEOIP_MONTH=
+WORKDIR /geoip-src
+COPY scripts/fetch-geoip.mjs ./fetch-geoip.mjs
+RUN mkdir -p /geoip && node fetch-geoip.mjs /geoip/dbip-city-lite.mmdb "$GEOIP_MONTH"
+
 # 3. Runtime: only the traced server, the static files, public/ and the Noto fonts.
 FROM node:${NODE_VERSION}-bookworm-slim AS runner
 WORKDIR /app
@@ -41,6 +50,9 @@ COPY --from=build --chown=node:node /app/assets/fonts ./assets/fonts
 # sharp's native files are loaded by path, which the tracer misses (it copies the .node but not libvips), so
 # take the whole @img folder; `npm ci` above installed the linux-x64 variants.
 COPY --from=build --chown=node:node /app/node_modules/@img ./node_modules/@img
+# The geolocation database (may be missing if the download failed; the app copes). GEOIP_DB_PATH tells the app where it is.
+COPY --from=geoip --chown=node:node /geoip ./geoip
+ENV GEOIP_DB_PATH=/app/geoip/dbip-city-lite.mmdb
 # Proves the shipped fonts, HarfBuzz (wasm), resvg and sharp (native) work from /app. A failure stops the build.
 COPY --chown=node:node scripts/smoke-render.mjs ./smoke-render.mjs
 RUN node smoke-render.mjs

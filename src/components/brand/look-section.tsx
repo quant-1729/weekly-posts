@@ -70,7 +70,7 @@ export function LookPanel({
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold">{t.logoTitle}</h3>
+        <h3 className="text-card-title text-title">{t.logoTitle}</h3>
         <LogoUploader
           key={version}
           version={version || undefined}
@@ -122,8 +122,8 @@ export function WebsiteLogoOffer({ brandId }: { brandId: string }) {
   }
 
   return (
-    <div className="space-y-2 rounded-xl border border-[#E4572E]/40 bg-[#E4572E]/5 p-3" data-offer="website-logo">
-      <p className="font-semibold">{t.offerTitle}</p>
+    <div className="space-y-2 rounded-xl border border-coral/40 bg-coral-50 p-3" data-offer="website-logo">
+      <p className="font-medium">{t.offerTitle}</p>
       <p className="text-sm text-stone-700">{t.offerBody}</p>
       <div className="flex gap-2">
         <button type="button" className={primaryButton} disabled={pending} onClick={use}>

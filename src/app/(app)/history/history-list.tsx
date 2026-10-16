@@ -53,7 +53,7 @@ export function HistoryList({
         <HistoryTable posts={posts} brandName={brandName} />
       </div>
       {failed && (
-        <p role="alert" className="text-sm text-red-700">
+        <p role="alert" className="text-[13px] leading-[18px] text-err-tx">
           {s.history.loadMoreFailed}
         </p>
       )}

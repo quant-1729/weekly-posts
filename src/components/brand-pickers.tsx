@@ -140,7 +140,7 @@ export function PalettePicker({
               aria-pressed={selected}
               onClick={() => onChange(o.palette)}
               className={`flex flex-col gap-1 rounded-lg border p-2 text-left text-sm ${
-                selected ? "border-[#E4572E] ring-2 ring-[#E4572E]/40" : "border-stone-300"
+                selected ? "border-coral ring-2 ring-coral/40" : "border-stone-300"
               }`}
             >
               <Swatch palette={o.palette} />

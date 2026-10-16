@@ -26,8 +26,8 @@ export const WALK_MAX_MS = 1700;
 /** Shell breakpoints, the same as Tailwind's md and lg (src/components/app-shell). */
 export const TOP_BAR_MIN_WIDTH = 768;
 export const SIDEBAR_MIN_WIDTH = 1024;
-/** The sidebar's width (w-64 in src/components/app-shell/sidebar.tsx). */
-export const SIDEBAR_W = 256;
+/** The sidebar's width (md:w-56 in src/components/app-shell/sidebar.tsx). */
+export const SIDEBAR_W = 224;
 /** Distance from the viewport bottom that clears the phone bottom nav bar (about 59 px tall) with a small gap. */
 export const NAV_CLEARANCE = 70;
 /** Distance from the viewport bottom where Tween stands when there is no bottom nav bar (768 px and up). */

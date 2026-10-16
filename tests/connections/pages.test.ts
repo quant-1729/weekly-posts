@@ -22,7 +22,8 @@ vi.mock("next/navigation", () => ({
 
 import MetaDeletionPage from "@/app/meta/deletion/[code]/page";
 import PickPage from "@/app/(app)/connections/facebook/page";
-import { SESSION_COOKIE, signSession } from "@/lib/auth/session";
+import { SESSION_COOKIE } from "@/lib/auth/session";
+import { signSession } from "../helpers/session";
 import { resetTokenKeyForTests } from "@/lib/connections/crypto";
 import { handleDataDeletion } from "@/lib/connections/deletion";
 import { sealPending } from "@/lib/connections/facebook";
