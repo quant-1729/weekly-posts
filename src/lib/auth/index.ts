@@ -18,6 +18,7 @@ export const requestMagicLink = (email: string, consent: boolean, opts?: { ip?: 
 export const checkMagicLink = (token: string) => getAuth().checkMagicLink(token);
 export const consumeMagicLink = (token: string) => getAuth().consumeMagicLink(token);
 export const signOut = () => getAuth().signOut();
+export const startDemoSession = (email: string) => getAuth().startDemoSession(email);
 
 const currentUserCached = cache(() => getAuth().getCurrentUser());
 /** Per-request cached, so a layout and its page share one lookup. */

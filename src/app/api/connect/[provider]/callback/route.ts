@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { isDemoUser } from "@/lib/demo";
 import { appUrl } from "@/lib/connections/config";
 import { FB_PENDING_COOKIE, FB_PENDING_TTL_SECONDS } from "@/lib/connections/facebook";
 import { finishConnect } from "@/lib/connections/oauth";
@@ -22,6 +23,7 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ provider: s
 
   const user = await getCurrentUser();
   if (!user) return go("/login");
+  if (isDemoUser(user)) return go("/connections?connect_error=demo"); // nothing is stored in a demo session
 
   const q = req.nextUrl.searchParams;
   const out = await finishConnect({

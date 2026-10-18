@@ -23,8 +23,11 @@ export interface HeaderReader {
   get(name: string): string | null;
 }
 
-/** Inserts a session row for `userId` and returns its id. */
-export async function createSession(userId: string, headers: HeaderReader | null): Promise<string> {
+/**
+ * Inserts a session row for `userId` and returns its id. `demo: true` marks a session started from the demo page
+ * (docs/15-demo-login.md): the app refuses account-level and paid actions in it.
+ */
+export async function createSession(userId: string, headers: HeaderReader | null, opts: { demo?: boolean } = {}): Promise<string> {
   const ua = headers?.get("user-agent") ?? null;
   const ip = headers ? clientIpFromHeaders(headers) : null;
   const parsed = parseUserAgent(ua);
@@ -32,10 +35,10 @@ export async function createSession(userId: string, headers: HeaderReader | null
   const ipHash = hashIp(ip); // the raw address goes no further than this function
   const [row] = await getDb().withService((tx) =>
     tx.query<{ id: string }>(
-      `insert into public.user_sessions (user_id, user_agent, browser, os, device_type, country, city, ip_hash)
-       values ($1, $2, $3, $4, $5, $6, $7, $8)
+      `insert into public.user_sessions (user_id, user_agent, browser, os, device_type, country, city, ip_hash, demo)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        returning id::text as id`,
-      [userId, ua ? ua.slice(0, 400) : null, parsed.browser, parsed.os, parsed.deviceType, geo.country, geo.city, ipHash],
+      [userId, ua ? ua.slice(0, 400) : null, parsed.browser, parsed.os, parsed.deviceType, geo.country, geo.city, ipHash, opts.demo === true],
     ),
   );
   return row.id;

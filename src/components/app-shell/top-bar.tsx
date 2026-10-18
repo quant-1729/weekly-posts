@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { s } from "@/lib/i18n/strings";
+import { DemoPill } from "./demo-pill";
 import { NavIcon } from "./nav-icon";
 import { pageTitle } from "./nav-items";
 
@@ -22,12 +23,14 @@ function initials(name: string | null): string {
  */
 export function TopBar({
   businessName,
+  demo = false,
   signOutAction,
   controls = "app-sidebar",
   expanded,
   onToggle,
 }: {
   businessName: string | null;
+  demo?: boolean;
   signOutAction: () => Promise<void>;
   controls?: string;
   expanded: boolean;
@@ -75,6 +78,7 @@ export function TopBar({
         {pageTitle(pathname)}
       </span>
       <span className="flex-1" />
+      {demo && <DemoPill />}
       <details ref={menu} className="relative">
         <summary
           aria-label={s.nav.account}

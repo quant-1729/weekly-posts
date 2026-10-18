@@ -7,7 +7,7 @@ import { TOUCH_AFTER_MS, createSession, revokeSession, type HeaderReader } from 
 import { magicLinkEmail } from "@/lib/email/magic-link";
 import { normalizeEmail } from "./email";
 import { signMagicToken, verifyMagicToken } from "./magic-link";
-import { SESSION_COOKIE, sessionCookieOptions, signSession, verifySession } from "./session";
+import { DEMO_SESSION_MAX_AGE_SECONDS, SESSION_COOKIE, sessionCookieOptions, signSession, verifySession } from "./session";
 import { AuthError, type Auth, type AuthUser } from "./types";
 
 /**
@@ -158,11 +158,34 @@ export function createLinkAuth(users: AuthUsers): Auth {
         throw e;
       }
 
-      const result: AuthUser = { id: userId, email: payload.email, phone, sessionId };
+      const result: AuthUser = { id: userId, email: payload.email, phone, sessionId, demo: false };
       const store = await cookies();
       store.set(SESSION_COOKIE, await signSession({ id: result.id, email: payload.email, sid: sessionId }), sessionCookieOptions());
       void logEvent({ kind: "auth.sign_in", userId, sessionId });
       return result;
+    },
+
+    async startDemoSession(input) {
+      guard();
+      const email = normalizeEmail(input);
+      if (!email) return null;
+      // Only an account that already exists: the demo never creates one.
+      const [profile] = await getDb().withService((tx) =>
+        tx.query<{ id: string; email: string | null; phone: string | null }>(
+          "select id::text as id, email, phone from public.profiles where lower(email) = $1",
+          [email],
+        ),
+      );
+      if (!profile) return null;
+      const sessionId = await createSession(profile.id, await requestHeaders(), { demo: true });
+      const store = await cookies();
+      store.set(
+        SESSION_COOKIE,
+        await signSession({ id: profile.id, email: profile.email ?? email, sid: sessionId, demo: true }),
+        sessionCookieOptions({ demo: true }),
+      );
+      void logEvent({ kind: "auth.sign_in", userId: profile.id, sessionId, detail: { demo: true } });
+      return { id: profile.id, email: profile.email, phone: profile.phone, sessionId, demo: true };
     },
 
     async getCurrentUser() {
@@ -175,19 +198,26 @@ export function createLinkAuth(users: AuthUsers): Auth {
       // moves last_seen_at forward, but only when it is more than 5 minutes old.
       const now = Date.now();
       const rows = await getDb().withService((tx) =>
-        tx.query<{ id: string; email: string | null; phone: string | null }>(
+        tx.query<{ id: string; email: string | null; phone: string | null; demo: boolean }>(
           `with touched as (
              update public.user_sessions set last_seen_at = $3::timestamptz
               where id = $1::uuid and user_id = $2::uuid and revoked_at is null and last_seen_at < $4::timestamptz
               returning id
            )
-           select p.id::text as id, p.email, p.phone
+           select p.id::text as id, p.email, p.phone, s.demo
              from public.user_sessions s join public.profiles p on p.id = s.user_id
-            where s.id = $1::uuid and s.user_id = $2::uuid and s.revoked_at is null`,
-          [payload.sid, payload.sub, new Date(now).toISOString(), new Date(now - TOUCH_AFTER_MS).toISOString()],
+            where s.id = $1::uuid and s.user_id = $2::uuid and s.revoked_at is null
+              and (not s.demo or s.created_at > $5::timestamptz)`, // a demo session also ends 12 hours after it started, whatever the cookie says
+          [
+            payload.sid,
+            payload.sub,
+            new Date(now).toISOString(),
+            new Date(now - TOUCH_AFTER_MS).toISOString(),
+            new Date(now - DEMO_SESSION_MAX_AGE_SECONDS * 1000).toISOString(),
+          ],
         ),
       );
-      return rows[0] ? { id: rows[0].id, email: rows[0].email, phone: rows[0].phone, sessionId: payload.sid } : null;
+      return rows[0] ? { id: rows[0].id, email: rows[0].email, phone: rows[0].phone, sessionId: payload.sid, demo: rows[0].demo === true } : null;
     },
 
     async signOut() {

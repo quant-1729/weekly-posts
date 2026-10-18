@@ -25,6 +25,11 @@ substitutions:
   _IMAGEN_MODEL: ""                    # blank = the default Imagen model
   _FIREBASE_WEB_API_KEY: ""            # Firebase web app key (public by design); blank = live status off (docs/deploy.md)
   _FIREBASE_WEB_APP_ID: ""             # Firebase web app id; set together with the key
+  # Demo login for judges (docs/15-demo-login.md). Blank = no demo: /demo says "not available" and the login route answers 404.
+  _DEMO_LOGIN_EMAIL: ""                # the existing account the demo signs in to (it is never created)
+  _DEMO_WEEKLY_USD_CAP: ""             # optional: weekly AI cap in USD for that account's brands (default 0.50)
+  _DEMO_DAILY_CALL_CAP: ""             # optional: daily AI call cap for that account's brands
+  _DEMO_SECRET: ""                     # set to 1 once the Secret Manager secret DEMO_ACCESS_CODE exists (docs/deploy.md); blank = not mounted
   # Secret Manager secrets that are optional or depend on your choices, as ENV=SECRET:VERSION pairs separated by commas.
   # Default: the Google key file (C-33). Make it empty for keyless Cloud Run (docs/deploy.md section 4).
   # Add READER_API_KEY=READER_API_KEY:latest,INSTAGRAM_LOOKUP_TOKEN=INSTAGRAM_LOOKUP_TOKEN:latest when you have them,
@@ -74,6 +79,10 @@ steps:
         if [ -n "${_META_APP_ID}" ]; then ENVS="$$ENVS|META_APP_ID=${_META_APP_ID}"; fi
         if [ -n "${_INSTAGRAM_APP_ID}" ]; then ENVS="$$ENVS|INSTAGRAM_APP_ID=${_INSTAGRAM_APP_ID}"; fi
         if [ -n "${_IMAGEN_MODEL}" ]; then ENVS="$$ENVS|IMAGEN_MODEL=${_IMAGEN_MODEL}"; fi
+        # Demo login (docs/15-demo-login.md): added only when given.
+        if [ -n "${_DEMO_LOGIN_EMAIL}" ]; then ENVS="$$ENVS|DEMO_LOGIN_EMAIL=${_DEMO_LOGIN_EMAIL}"; fi
+        if [ -n "${_DEMO_WEEKLY_USD_CAP}" ]; then ENVS="$$ENVS|DEMO_WEEKLY_USD_CAP=${_DEMO_WEEKLY_USD_CAP}"; fi
+        if [ -n "${_DEMO_DAILY_CALL_CAP}" ]; then ENVS="$$ENVS|DEMO_DAILY_CALL_CAP=${_DEMO_DAILY_CALL_CAP}"; fi
         # Live status (Firebase, docs/deploy.md): the five settings are added only when both the web API key and app id are given.
         if [ -n "${_FIREBASE_WEB_API_KEY}" ] && [ -n "${_FIREBASE_WEB_APP_ID}" ]; then ENVS="$$ENVS|REALTIME_BACKEND=firestore|FIREBASE_PROJECT_ID=${PROJECT_ID}|FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY}|FIREBASE_WEB_APP_ID=${_FIREBASE_WEB_APP_ID}|FIREBASE_SERVICE_ACCOUNT_ID=${_RUNTIME_SA}@${PROJECT_ID}.iam.gserviceaccount.com"; fi
 
@@ -86,6 +95,8 @@ steps:
         SECRETS="$$SECRETS,RESEND_API_KEY=RESEND_API_KEY:latest"
         SECRETS="$$SECRETS,TOKEN_ENCRYPTION_KEY=TOKEN_ENCRYPTION_KEY:latest"   # connected-account tokens (C-25)
         if [ -n "${_EXTRA_SECRETS}" ]; then SECRETS="$$SECRETS,${_EXTRA_SECRETS}"; fi
+        # The demo access code is mounted only when the secret exists (_DEMO_SECRET=1), so a deploy without it does not fail.
+        if [ -n "${_DEMO_SECRET}" ]; then SECRETS="$$SECRETS,DEMO_ACCESS_CODE=DEMO_ACCESS_CODE:latest"; fi
 
         gcloud run deploy "${_SERVICE}" \
           --image="${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/${_SERVICE}:${BUILD_ID}" \

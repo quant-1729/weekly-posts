@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { isDemoUser } from "@/lib/demo";
 import { getCurrentBrand } from "@/lib/brand/current";
 import { appUrl } from "@/lib/connections/config";
 import { startConnect } from "@/lib/connections/oauth";
@@ -22,6 +23,7 @@ export async function GET(_req: NextRequest, ctx: { params: Promise<{ provider: 
 
   const user = await getCurrentUser();
   if (!user) return NextResponse.redirect(new URL("/login", appUrl()));
+  if (isDemoUser(user)) return back("demo");
   const brand = await getCurrentBrand(user.id);
   if (!brand) return NextResponse.redirect(new URL("/setup", appUrl()));
 

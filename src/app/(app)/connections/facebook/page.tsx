@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cardClass, pickCardClass, primaryButton, secondaryButton } from "@/components/ui";
 import { getCurrentUser } from "@/lib/auth";
+import { isDemoUser } from "@/lib/demo";
 import { FB_PENDING_COOKIE } from "@/lib/connections/facebook";
 import { listPendingPages } from "@/lib/connections/oauth";
 import { ConnectionError, type PagePick } from "@/lib/connections/types";
@@ -19,6 +20,7 @@ const t = s.connections;
 export default async function Page() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (isDemoUser(user)) redirect("/connections?connect_error=demo");
 
   let pages: PagePick[] = [];
   try {

@@ -8,6 +8,28 @@ const en = {
   appName: APP_NAME,
   signOut: "Sign out",
 
+  // The judges' demo sign-in (docs/15-demo-login.md).
+  demo: {
+    title: "Try the demo",
+    intro: "You will be signed in to a real demo business. You can create, plan and approve posts. Nothing is published without approval.",
+    codeLabel: "Access code",
+    button: "Try the demo",
+    sending: "Signing in...",
+    pill: "Demo",
+    pillLabel: "You are in the demo account",
+    notAvailableTitle: "The demo is not available",
+    notAvailableBody: "There is no demo to try right now.",
+    backToSignIn: "Go to sign in",
+    /** Shown when an action that is switched off in the demo is tried. */
+    refused: "Not available in the demo.",
+    nothingChanged: "Nothing was changed.",
+    errors: {
+      invalid: "That code does not work. Check it and try again.",
+      rate_limited: "Too many tries. Please wait 15 minutes and try again.",
+      not_available: "The demo is not available right now.",
+    },
+  },
+
   nav: {
     thisWeek: "This week",
     queue: "Queue",
@@ -760,6 +782,7 @@ const en = {
       page_not_found: "That Page is no longer available. Please connect again.",
       pending_expired: "That took too long. Please press Connect again.",
       no_token: "Please connect again.",
+      demo: "Not available in the demo.",
     },
     pick: {
       title: "Choose your Facebook Page",
@@ -2365,6 +2388,7 @@ const en = {
         no_email: "Your account has no email address, so we cannot send a confirmation link. Please contact us.",
         rate_limited: "Too many requests. Please wait a while and try again.",
         email_failed: "We could not send the email. Please try again in a minute.",
+        demo: "Not available in the demo.",
         generic: "Something went wrong. Please try again.",
       },
     },

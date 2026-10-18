@@ -32,7 +32,7 @@ export function isAdminEmail(email: string | null | undefined): boolean {
 export async function requireAdmin(): Promise<AdminUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
-  if (!isAdminEmail(user.email)) notFound();
+  if (user.demo || !isAdminEmail(user.email)) notFound(); // a demo session never opens the dashboard
   return { id: user.id, email: user.email!.trim().toLowerCase(), isAdmin: true };
 }
 

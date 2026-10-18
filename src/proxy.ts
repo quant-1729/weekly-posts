@@ -20,7 +20,7 @@ import { isDevToolsEnabled } from "@/lib/env";
  * signed-in users on /login are sent on by the login page itself (it checks the database: a signed-out or
  * revoked device still holds a validly signed cookie, and redirecting that from here would loop).
  *
- * Public: /login, /auth/callback and /auth/invalid (email sign-in), /dev/outbox (non-production only), /a/*, /s/*, /r/*, /e/* and /i/* (no-login links; /e/* pages act on POST only), /api/email/* (one-click unsubscribe), /api/files/* (it checks
+ * Public: /login, /auth/callback and /auth/invalid (email sign-in), /demo and /api/demo/login (the judges' demo sign-in, docs/15-demo-login.md), /dev/outbox (non-production only), /a/*, /s/*, /r/*, /e/* and /i/* (no-login links; /e/* pages act on POST only), /api/email/* (one-click unsubscribe), /api/files/* (it checks
  * membership itself), /api/whatsapp/* (webhook, checks its signature), Next
  * internals and static files (excluded by the matcher below).
  */
@@ -48,8 +48,8 @@ export async function proxy(request: NextRequest) {
   if (session && needsRefresh(session)) {
     response.cookies.set(
       SESSION_COOKIE,
-      await signSession({ id: session.sub, email: session.email, sid: session.sid }),
-      sessionCookieOptions(),
+      await signSession({ id: session.sub, email: session.email, sid: session.sid, demo: session.demo }),
+      sessionCookieOptions({ demo: session.demo }),
     );
   }
   return response;

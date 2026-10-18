@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth";
+import { isDemoUser } from "@/lib/demo";
 import { getCurrentBrand } from "@/lib/brand/current";
 import { FB_PENDING_COOKIE } from "@/lib/connections/facebook";
 import { choosePage } from "@/lib/connections/oauth";
@@ -15,6 +16,7 @@ import { PROVIDERS, type Provider } from "@/lib/queue/types";
 export async function disconnectAction(formData: FormData): Promise<void> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (isDemoUser(user)) redirect("/connections?connect_error=demo");
   const brand = await getCurrentBrand(user.id);
   if (!brand) redirect("/setup");
   const provider = String(formData.get("provider") ?? "");
@@ -33,6 +35,7 @@ export async function disconnectAction(formData: FormData): Promise<void> {
 export async function chooseFacebookPageAction(formData: FormData): Promise<void> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (isDemoUser(user)) redirect("/connections?connect_error=demo");
   const store = await cookies();
   const out = await choosePage({ userId: user.id, pending: store.get(FB_PENDING_COOKIE)?.value, pageId: String(formData.get("page") ?? "") });
   if (out.ok) {

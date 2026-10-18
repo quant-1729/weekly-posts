@@ -30,7 +30,8 @@ export type ConnectionErrorCode =
   | "no_pages"
   | "page_not_found"
   | "pending_expired"
-  | "no_token";
+  | "no_token"
+  | "demo"; // a demo session (docs/15-demo-login.md)
 
 export class ConnectionError extends Error {
   constructor(public readonly code: ConnectionErrorCode) {

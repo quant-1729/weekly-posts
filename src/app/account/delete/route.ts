@@ -16,6 +16,7 @@ import {
 import { deleteConfirmHtml, deleteFailedHtml, deleteInvalidHtml } from "@/lib/account/delete-page";
 import { confirmationNameFor, namesMatch } from "@/lib/account/request-delete";
 import { signOut } from "@/lib/auth";
+import { currentSessionIsDemo } from "@/lib/demo/guard";
 import { SESSION_COOKIE, verifySession } from "@/lib/auth/session";
 import { s } from "@/lib/i18n/strings";
 import { publicUrl } from "@/lib/links/public-url";
@@ -103,6 +104,10 @@ export async function POST(request: NextRequest) {
 
   const expected = await confirmationNameFor(payload.uid);
   const page = { token, nonce: deleteNonce(payload.jti, cookieSecret), name: expected ?? "" };
+  // A demo session never deletes an account, even with a valid link (docs/15-demo-login.md).
+  if (await currentSessionIsDemo()) {
+    return harden(new NextResponse(deleteConfirmHtml({ ...page, error: s.demo.refused }), { status: 403, headers: HTML }));
+  }
   if (expected === null || !namesMatch(typed, expected)) {
     return harden(
       new NextResponse(deleteConfirmHtml({ ...page, error: s.account.confirmPage.wrongName }), { status: 422, headers: HTML }),

@@ -5,6 +5,8 @@ export interface AuthUser {
   phone: string | null;
   /** The user_sessions row of this sign-in (the `sid` in the cookie). */
   sessionId: string;
+  /** True when this sign-in came from the demo page (user_sessions.demo): account-level and paid actions are refused. */
+  demo: boolean;
 }
 
 export type AuthErrorCode =
@@ -45,6 +47,11 @@ export interface Auth {
    * owner), and starts the session cookie. Throws AuthError("invalid_link").
    */
   consumeMagicLink(token: string): Promise<AuthUser>;
+  /**
+   * The judges' demo sign-in (docs/15-demo-login.md): starts a session marked demo for the existing account with
+   * this email and sets the cookie. Returns null when there is no such account (one is never created).
+   */
+  startDemoSession(email: string): Promise<AuthUser | null>;
   /** The signed-in user from the session cookie, or null. */
   getCurrentUser(): Promise<AuthUser | null>;
   signOut(): Promise<void>;

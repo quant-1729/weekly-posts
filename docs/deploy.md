@@ -213,6 +213,8 @@ Plain settings are set by `cloudbuild.yaml` from the substitutions in section 6.
 | `EMAIL_REPLY_TO` | plain, optional | Where replies go |
 | `ADMIN_EMAILS` | plain, optional | Comma-separated sign-in emails allowed to open the read-only `/admin` monitoring page (build substitution `_ADMIN_EMAILS`; commas inside the value are fine because of the `^`+`|`+`^` separator in section 6). Blank means nobody: `/admin` answers 404. Sign in with one of these emails, then open `/admin`. |
 | `INSTAGRAM_LOOKUP_USER_ID`, `META_GRAPH_VERSION` | plain, optional | See `.env.example` |
+| `DEMO_LOGIN_EMAIL`, `DEMO_WEEKLY_USD_CAP`, `DEMO_DAILY_CALL_CAP` | plain, optional (set by the deploy step only when given) | Build substitutions `_DEMO_LOGIN_EMAIL`, `_DEMO_WEEKLY_USD_CAP`, `_DEMO_DAILY_CALL_CAP`. See section 14 |
+| `DEMO_ACCESS_CODE` | **secret**, optional | Mounted only when the build substitution `_DEMO_SECRET` is set (section 14) |
 | `REALTIME_BACKEND` | plain (set by the deploy step, only when `_FIREBASE_WEB_API_KEY` is given) | `firestore`. Leave it unset or `off` to keep live status off |
 | `FIREBASE_PROJECT_ID` | plain (set by the deploy step, same condition) | `weekly-posts-471203` (the project id) |
 | `FIREBASE_WEB_API_KEY` | plain, build substitution `_FIREBASE_WEB_API_KEY` | From `apps:sdkconfig` (section 13). Public by design, so not a secret |
@@ -402,3 +404,29 @@ Then deploy (section 6) with the two values from step 2 given as substitutions, 
 - No `[live] write failed` in the Cloud Run logs (section 8).
 - Firestore usage (Firebase console, Firestore > Usage) stays within the free tier.
 - Switching off restores today's behaviour: `gcloud run services update weekly-posts --region=$REGION --update-env-vars=REALTIME_BACKEND=off`.
+
+## 14. Demo login for judges (optional)
+
+Judges reach the working prototype without email at `/demo`: one field, "Access code". Sign-in emails only reach the addresses the sending provider currently allows, so a judge's own email would never get a link. Spec: [15-demo-login.md](15-demo-login.md).
+
+What it does: the right code starts a 12-hour session for an account that already exists (`DEMO_LOGIN_EMAIL`), marked as a demo session (`user_sessions.demo`, migration `0026_demo_sessions.sql`). Wrong codes get one generic answer; each network may try 10 times in 15 minutes (counted in memory, so per Cloud Run instance). A demo session cannot delete or export the account, sign other devices out, connect or disconnect Instagram or Facebook, create, retire or confirm a payment QR, make a paid Brand Face step, or open `/admin`; each answers "Not available in the demo." Everything else works, including publishing an approved post.
+
+One-time setup:
+
+1. Apply migration `0026_demo_sessions.sql` before the new image starts serving (the app reads `user_sessions.demo` on every request).
+2. Make the demo account: sign in once with a real email you control (the magic link), finish setup for a demo business and add some sample facts. That email is `DEMO_LOGIN_EMAIL`. The demo never creates an account; with no such account the page says the demo is not available.
+3. Make the shared code a secret (a long random value; the judges get it in the submission):
+
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(18).toString('base64url'))" | make_secret DEMO_ACCESS_CODE
+   ```
+
+4. Deploy (section 6) with the extra substitutions. `_DEMO_SECRET=1` mounts the secret; leave it out and a deploy without the secret still works (the demo is then off):
+
+   ```
+   _DEMO_LOGIN_EMAIL=demo@example.com|_DEMO_SECRET=1|_DEMO_WEEKLY_USD_CAP=5|_DEMO_DAILY_CALL_CAP=200
+   ```
+
+`_DEMO_WEEKLY_USD_CAP` and `_DEMO_DAILY_CALL_CAP` are optional. They replace the weekly dollar cap ($0.50) and the brand's daily call cap for the brands owned by `DEMO_LOGIN_EMAIL`, for the scheduled jobs too (the share kept for the weekly batch stays 80%). Leave them blank for the normal limits.
+
+To switch the demo off, deploy again with `_DEMO_LOGIN_EMAIL=` and without `_DEMO_SECRET`, or run `gcloud run services update weekly-posts --region=$REGION --remove-env-vars=DEMO_LOGIN_EMAIL`. To end a demo session early, revoke its row in `user_sessions` (the `demo` column tells them apart).

@@ -7,7 +7,7 @@ import { isDevToolsEnabled } from "@/lib/env";
 
 // /account/delete is the emailed delete link (GET shows a form; the POST checks its signed token,
 // nonce and business name itself); /account/deleted is the page shown after the owner is signed out.
-const PUBLIC_EXACT = ["/login", "/terms", "/auth/callback", "/auth/invalid", "/account/delete", "/account/deleted"];
+const PUBLIC_EXACT = ["/login", "/terms", "/auth/callback", "/auth/invalid", "/account/delete", "/account/deleted", "/demo", "/api/demo/login"];
 const PUBLIC_PREFIXES = ["/a/", "/s/", "/r/", "/e/", "/i/", "/p/", "/f/", "/api/email/", "/api/files/", "/api/whatsapp/", "/api/cron/", "/api/meta/", "/meta/deletion/", "/_next/"];
 /** Developer-only pages. Public only when dev tools are enabled (never in production or on Vercel). */
 const DEV_EXACT = ["/dev/outbox"];

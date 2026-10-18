@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth";
 import { getCurrentBrand } from "@/lib/brand/current";
+import { refuseInDemo } from "@/lib/demo";
 import { characterPoses } from "@/lib/faces/character-preview";
 import { chooseMascotCharacter } from "@/lib/faces/character";
 import { loadFaceCard } from "@/lib/faces/card";
@@ -34,9 +35,12 @@ export type FaceActionResult<T = object> = ({ ok: true } & T) | ({ ok: false } &
 
 const signedOut: FaceFailure = { code: "generic", message: s.errors.signedOut };
 
-async function run<T extends object>(fn: (ctx: { userId: string; brandId: string }) => Promise<T>): Promise<FaceActionResult<T>> {
+/** `paid: true` marks the AI steps that cost money: a demo session (docs/15-demo-login.md) is refused before anything runs. */
+async function run<T extends object>(fn: (ctx: { userId: string; brandId: string }) => Promise<T>, opts: { paid?: boolean } = {}): Promise<FaceActionResult<T>> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, ...signedOut };
+  const refused = opts.paid ? refuseInDemo(user) : null;
+  if (refused) return { ok: false, code: "generic", message: refused };
   try {
     const brand = await getCurrentBrand(user.id);
     if (!brand) return { ok: false, ...signedOut };
@@ -159,7 +163,7 @@ export async function makeFaceOptionsAction(faceId: string, approvedEstimateUsd:
   return run(async ({ userId, brandId }) => {
     const r = await makeOptions({ userId, brandId, faceId: str(faceId), approvedEstimateUsd });
     return { made: r.options.length, failed: r.failed };
-  });
+  }, { paid: true });
 }
 
 /** The owner keeps option number `index` as the look. Free. */
@@ -175,7 +179,7 @@ export async function makeFaceSheetAction(faceId: string, approvedEstimateUsd: n
   return run(async ({ userId, brandId }) => {
     await makeSheet({ userId, brandId, faceId: str(faceId), approvedEstimateUsd });
     return {};
-  });
+  }, { paid: true });
 }
 
 /** The owner approves the made sheet. Free. */
@@ -199,7 +203,7 @@ export async function makeFacePosesAction(
     const wanted = Array.isArray(poses) ? poses.filter((p): p is FacePose => (FACE_POSES as readonly string[]).includes(p)) : [];
     const r = await makePoses({ userId, brandId, faceId: str(faceId), poses: wanted, approvedEstimateUsd });
     return { saved: r.saved.map((o) => ({ pose: o.pose, passed: o.passed })), failed: r.failed };
-  });
+  }, { paid: true });
 }
 
 /** "Use this face": approves the face (all poses approved first) and makes it the brand's face in posts. */

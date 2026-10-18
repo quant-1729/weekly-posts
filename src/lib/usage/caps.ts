@@ -8,6 +8,7 @@
 import { ESTIMATED_BACKGROUND_USD } from "@/lib/ai/imagen-price";
 import { s } from "@/lib/i18n/strings";
 import { addDaysIso, weekStartFor } from "@/lib/occasions/dates";
+import { demoCapsFor } from "./demo";
 import { brandTimezone, weekCost, weekCounts } from "./weekly";
 
 /** Most an account may spend on AI in one week, in USD (AC 23 target: under $0.50). */
@@ -110,10 +111,13 @@ export async function assertUnderWeeklyCap(brandId: string, kind: WeeklyCapKind,
   if (kind === "fact_check") return;
 
   const spent = micro(await weekCost(brandId, weekStart, timezone));
+  // The demo account's brands (DEMO_WEEKLY_USD_CAP) get a bigger cap; the part kept for the batch scales with it.
+  const cap = (await demoCapsFor(brandId))?.weeklyUsd ?? WEEKLY_USD_CAP;
+  const nonBatchCap = cap === WEEKLY_USD_CAP ? NON_BATCH_USD_CAP : cap * (NON_BATCH_USD_CAP / WEEKLY_USD_CAP);
   if (kind === "weekly_batch") {
-    if (spent >= micro(WEEKLY_USD_CAP)) throw new WeeklyCapError(kind, "usd", resetsOn);
+    if (spent >= micro(cap)) throw new WeeklyCapError(kind, "usd", resetsOn);
     return;
   }
-  if (spent + micro(ESTIMATED_CALL_USD[kind]) > micro(NON_BATCH_USD_CAP)) throw new WeeklyCapError(kind, "usd", resetsOn);
+  if (spent + micro(ESTIMATED_CALL_USD[kind]) > micro(nonBatchCap)) throw new WeeklyCapError(kind, "usd", resetsOn);
 }
 

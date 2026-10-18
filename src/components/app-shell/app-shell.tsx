@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { BottomNav } from "@/components/bottom-nav";
 import { s } from "@/lib/i18n/strings";
+import { DemoPill } from "./demo-pill";
 import { Mark } from "./nav-icon";
 import { isSetupPath } from "./nav-items";
 import { Sidebar } from "./sidebar";
@@ -21,11 +22,14 @@ const PHONE_QUERY = "(min-width: 768px)";
  */
 export function AppShell({
   businessName,
+  demo = false,
   signOutAction,
   overlay,
   children,
 }: {
   businessName: string | null;
+  /** A demo session (docs/15-demo-login.md): a "Demo" pill shows in the header. */
+  demo?: boolean;
   signOutAction: () => Promise<void>;
   overlay?: React.ReactNode;
   children?: React.ReactNode;
@@ -77,6 +81,7 @@ export function AppShell({
           <span className="flex items-center gap-2 text-[15px] font-medium leading-5 text-title">
             <Mark />
             {s.appName}
+            {demo && <DemoPill />}
           </span>
           <form action={signOutAction}>
             <button type="submit" className="inline-flex min-h-11 items-center text-ui text-sub underline underline-offset-4 hover:text-title">
@@ -98,7 +103,7 @@ export function AppShell({
       <Sidebar drawerOpen={drawer} collapsed={collapsed} hidden={sidebarHidden} onNavigate={closeDrawer} />
       {drawer && <button type="button" tabIndex={-1} aria-label={s.nav.closeMenu} onClick={closeDrawer} className="fixed inset-0 z-30 bg-title/30 md:hidden" />}
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
-        <TopBar businessName={businessName} signOutAction={signOutAction} expanded={wide ? !collapsed : drawer} onToggle={toggle} />
+        <TopBar businessName={businessName} demo={demo} signOutAction={signOutAction} expanded={wide ? !collapsed : drawer} onToggle={toggle} />
         <main data-app-main className={`mx-auto w-full max-w-[1600px] flex-1 px-4 pt-2 md:px-6 ${overlay ? "pb-40 md:pb-36" : "pb-24 md:pb-12"}`}>
           {children}
         </main>

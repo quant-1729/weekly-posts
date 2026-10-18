@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth";
+import { refuseInDemo } from "@/lib/demo";
 import { paymentCopy } from "@/lib/payments/copy";
 import { PaymentError, addPaymentId, retirePaymentId, type PaymentIdView } from "@/lib/payments";
 
@@ -28,6 +29,8 @@ function fail(e: unknown): PaymentResult<never> {
 export async function addPaymentIdAction(brandId: string, input: { scheme: string; address: string; payeeName: string }): Promise<PaymentResult<{ payment: PaymentIdView }>> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, message: errors.generic };
+  const refused = refuseInDemo(user);
+  if (refused) return { ok: false, message: refused };
   try {
     const payment = await addPaymentId({ userId: user.id, brandId: str(brandId), scheme: str(input?.scheme), address: str(input?.address), payeeName: str(input?.payeeName) });
     revalidatePath("/brand");
@@ -40,6 +43,8 @@ export async function addPaymentIdAction(brandId: string, input: { scheme: strin
 export async function retirePaymentIdAction(brandId: string, id: string): Promise<PaymentResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, message: errors.generic };
+  const refused = refuseInDemo(user);
+  if (refused) return { ok: false, message: refused };
   try {
     const done = await retirePaymentId({ userId: user.id, brandId: str(brandId), id: str(id) });
     if (!done) return { ok: false, message: errors.not_found };

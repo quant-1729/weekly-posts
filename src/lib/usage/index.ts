@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/db";
+import { demoCapsFor } from "./demo";
 
 /** Kinds that exist in the usage_kind enum (0001_init.sql, 0002_usage_setup.sql, 0005_v2.sql). */
 export type UsageKind =
@@ -104,13 +105,14 @@ export async function countUsageToday(brandId: string, now: Date = new Date()): 
 
 /**
  * Throws DailyCapError when today's events (the day in the brand's time zone) have reached
- * brands.daily_generation_cap. Call before every AI call.
+ * brands.daily_generation_cap (or DEMO_DAILY_CALL_CAP for the demo account's brands). Call before every AI call.
  */
 export async function assertUnderDailyCap(brandId: string, now: Date = new Date()): Promise<void> {
   const [brand] = await getDb().withService((tx) =>
     tx.query<{ cap: number }>("select daily_generation_cap as cap from public.brands where id = $1", [brandId]),
   );
   if (!brand) throw new Error("Brand not found");
+  const cap = (await demoCapsFor(brandId))?.dailyCalls ?? brand.cap;
   const used = await countUsageToday(brandId, now);
-  if (used >= brand.cap) throw new DailyCapError(brand.cap, used);
+  if (used >= cap) throw new DailyCapError(cap, used);
 }

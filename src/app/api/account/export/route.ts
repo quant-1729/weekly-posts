@@ -1,5 +1,6 @@
 import { buildExport, exportFileName } from "@/lib/account/export";
 import { getCurrentUser } from "@/lib/auth";
+import { isDemoUser } from "@/lib/demo";
 import { s } from "@/lib/i18n/strings";
 
 export const dynamic = "force-dynamic";
@@ -13,6 +14,9 @@ export async function GET() {
   const user = await getCurrentUser();
   if (!user) {
     return Response.json({ ok: false, code: "signed_out", message: s.errors.signedOut }, { status: 401 });
+  }
+  if (isDemoUser(user)) {
+    return Response.json({ ok: false, code: "demo", message: s.demo.refused }, { status: 403 });
   }
   const now = new Date();
   let stream: ReadableStream<Uint8Array>;

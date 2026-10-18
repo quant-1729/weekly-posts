@@ -24,6 +24,10 @@ const schema = z.object({
   CRON_SECRET: optional,
   EMAIL_LINK_SECRET: optional,
   ADMIN_EMAILS: optional,
+  DEMO_LOGIN_EMAIL: optional,
+  DEMO_ACCESS_CODE: optional,
+  DEMO_WEEKLY_USD_CAP: optional,
+  DEMO_DAILY_CALL_CAP: optional,
 });
 
 export type Env = {
@@ -50,7 +54,25 @@ export type Env = {
   emailLinkSecret: string | undefined;
   /** Emails allowed to open /admin (ADMIN_EMAILS, comma-separated): trimmed, lower-case, no blanks. Empty = nobody. */
   adminEmails: string[];
+  /** Demo login for judges (docs/15-demo-login.md). `email` and `accessCode` must both be set for the demo to exist. */
+  demo: {
+    /** The account the demo signs in to (DEMO_LOGIN_EMAIL), trimmed and lower-case. */
+    email: string | undefined;
+    /** The shared access code (DEMO_ACCESS_CODE). Never logged or sent to the browser. */
+    accessCode: string | undefined;
+    /** Weekly AI cap in USD for the demo user's brands (DEMO_WEEKLY_USD_CAP). Unset or not a positive number = the normal cap. */
+    weeklyUsdCap: number | undefined;
+    /** Daily AI call cap for the demo user's brands (DEMO_DAILY_CALL_CAP). Unset or below 1 = the brand's own cap. */
+    dailyCallCap: number | undefined;
+  };
 };
+
+/** A positive finite number from a setting, else undefined (a typo means "use the normal cap", never "no cap"). */
+function positiveNumber(v: string | undefined): number | undefined {
+  if (v === undefined) return undefined;
+  const n = Number(v.trim());
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
 
 /**
  * True when developer-only pages (such as /dev/outbox) may be served: never in
@@ -120,5 +142,14 @@ export function getEnv(): Env {
       .split(",")
       .map((e) => e.trim().toLowerCase())
       .filter((e) => e !== ""),
+    demo: {
+      email: raw.DEMO_LOGIN_EMAIL?.trim().toLowerCase() || undefined,
+      accessCode: raw.DEMO_ACCESS_CODE || undefined,
+      weeklyUsdCap: positiveNumber(raw.DEMO_WEEKLY_USD_CAP),
+      dailyCallCap: (() => {
+        const n = positiveNumber(raw.DEMO_DAILY_CALL_CAP);
+        return n !== undefined && n >= 1 ? Math.floor(n) : undefined;
+      })(),
+    },
   };
 }

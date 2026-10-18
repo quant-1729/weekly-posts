@@ -32,7 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const tween = isTweenEnabled();
 
   return (
-    <AppShell businessName={brand && !setupNeeded ? brand.name : null} signOutAction={signOutAction} overlay={tween ? <TweenLoader /> : undefined}>
+    <AppShell businessName={brand && !setupNeeded ? brand.name : null} demo={user.demo} signOutAction={signOutAction} overlay={tween ? <TweenLoader /> : undefined}>
       {children}
     </AppShell>
   );

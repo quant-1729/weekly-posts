@@ -7,17 +7,24 @@ import { getEnv } from "@/lib/env";
  * user_sessions row made at sign-in; a renewal keeps the same sid. A token without a valid sid (signed
  * before sessions existed) counts as signed out everywhere, the proxy included. This file uses
  * only jose and env so the proxy can import it.
+ *
+ * A demo session (docs/15-demo-login.md) carries `demo: true` and lasts 12 hours; it is never renewed. The claim is a
+ * hint for the proxy only: the truth is user_sessions.demo, which getCurrentUser() reads.
  */
 
 export const SESSION_COOKIE = "pm_session";
 export const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 export const SESSION_REFRESH_AFTER_SECONDS = 24 * 60 * 60;
+/** A demo session (the judges' sign-in) lasts 12 hours and is not renewed. */
+export const DEMO_SESSION_MAX_AGE_SECONDS = 12 * 60 * 60;
 
 export interface SessionPayload {
   sub: string;
   email: string;
   /** user_sessions.id of this sign-in. */
   sid: string;
+  /** True for a session started from /demo. */
+  demo: boolean;
   iat: number;
   exp: number;
 }
@@ -29,15 +36,15 @@ function key(): Uint8Array {
 }
 
 export async function signSession(
-  user: { id: string; email: string; sid: string },
+  user: { id: string; email: string; sid: string; demo?: boolean },
   nowMs: number = Date.now(),
 ): Promise<string> {
   const iat = Math.floor(nowMs / 1000);
-  return new SignJWT({ email: user.email, sid: user.sid })
+  return new SignJWT({ email: user.email, sid: user.sid, ...(user.demo ? { demo: true } : {}) })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt(iat)
-    .setExpirationTime(iat + SESSION_MAX_AGE_SECONDS)
+    .setExpirationTime(iat + (user.demo ? DEMO_SESSION_MAX_AGE_SECONDS : SESSION_MAX_AGE_SECONDS))
     .sign(key());
 }
 
@@ -62,22 +69,23 @@ export async function verifySession(
     ) {
       return null;
     }
-    return { sub: payload.sub, email: payload.email, sid: payload.sid, iat: payload.iat, exp: payload.exp };
+    return { sub: payload.sub, email: payload.email, sid: payload.sid, demo: payload.demo === true, iat: payload.iat, exp: payload.exp };
   } catch {
     return null;
   }
 }
 
 export function needsRefresh(payload: SessionPayload, nowMs: number = Date.now()): boolean {
+  if (payload.demo) return false; // a demo session ends 12 hours after sign-in
   return Math.floor(nowMs / 1000) - payload.iat > SESSION_REFRESH_AFTER_SECONDS;
 }
 
-export function sessionCookieOptions() {
+export function sessionCookieOptions(opts: { demo?: boolean } = {}) {
   return {
     httpOnly: true,
     sameSite: "lax" as const,
     secure: getEnv().isProduction,
     path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
+    maxAge: opts.demo ? DEMO_SESSION_MAX_AGE_SECONDS : SESSION_MAX_AGE_SECONDS,
   };
 }
