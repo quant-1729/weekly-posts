@@ -54,7 +54,7 @@ const face = (o: Partial<CardFace> = {}): CardFace => ({
   sheetUrl: null,
   ...o,
 });
-const data = (faces: CardFace[] = [], o: Partial<FaceCardData> = {}): FaceCardData => ({ regulated: "none", faces, activeFaceId: null, inPosts: false, cutoutConfigured: true, ...o });
+const data = (faces: CardFace[] = [], o: Partial<FaceCardData> = {}): FaceCardData => ({ regulated: "none", faces, activeFaceId: null, inPosts: false, cutoutConfigured: true, suggestions: { illustrated: [], photoreal: [] }, ...o });
 const render = (d: FaceCardData, m: MascotProps = mascot) => renderToString(createElement(FaceCard, { brandId: "b", initial: d, mascot: m }));
 
 const options = ["/o/0.png", "/o/1.png", "/o/2.png", "/o/3.png"];

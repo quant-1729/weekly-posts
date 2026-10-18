@@ -34,7 +34,8 @@ export function AppShell({
   const minimal = isSetupPath(pathname);
   // The first render matches the server (wide, sidebar open); the real width is read after mount.
   const [wide, setWide] = useState(true);
-  const [collapsed, setCollapsed] = useState(false);
+  // A manual toggle wins; otherwise the Design Studio folds the sidebar away (it needs the whole width) and other pages open it.
+  const [manual, setManual] = useState<{ studio: boolean; value: boolean } | null>(null);
   // The drawer is open for the page it was opened on, so going to another page closes it.
   const [drawerAt, setDrawerAt] = useState<string | null>(null);
   const drawer = drawerAt === pathname;
@@ -59,10 +60,14 @@ export function AppShell({
     return () => document.removeEventListener("keydown", onKey);
   }, [drawer]);
 
+  // The Design Studio needs the whole width: the sidebar folds away there (the top-bar toggle still opens it).
+  const studio = /^\/(create|plan)\/[^/]+\/design\/?$/.test(pathname ?? "");
+  const collapsed = manual && manual.studio === studio ? manual.value : studio;
+
   const toggle = useCallback(() => {
-    if (wide) setCollapsed((c) => !c);
+    if (wide) setManual({ studio, value: !collapsed });
     else setDrawerAt((at) => (at === pathname ? null : pathname));
-  }, [wide, pathname]);
+  }, [wide, pathname, studio, collapsed]);
   const closeDrawer = useCallback(() => setDrawerAt(null), []);
 
   if (minimal) {
@@ -99,7 +104,7 @@ export function AppShell({
         </main>
         <BottomNav />
       </div>
-      {overlay}
+      {studio ? null : overlay}
     </div>
   );
 }

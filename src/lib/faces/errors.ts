@@ -7,6 +7,8 @@ export type FaceErrorCode =
   | 'bad_character' // not one of the characters on offer (Laltain is not offered), or given to a face that is not a mascot
   | 'blocked_name' // the name is a religious, political, celebrity or known-mascot name
   | 'real_person' // the description asks the face to look like a real or famous person
+  | 'unsuitable_description' // sexual or attractiveness wording, or a young age: not a brand face
+  | 'copied_character' // the description copies a known cartoon, film or game character or franchise
   | 'bad_description'
   | 'bad_style'
   | 'bad_settings' // placement, never-say phrases or post types

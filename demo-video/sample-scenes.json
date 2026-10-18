@@ -1,0 +1,175 @@
+{
+  "meta": {
+    "title": "Weekly Posts demo (sample for pipeline testing)",
+    "voice": "en-US-Chirp3-HD-Aoede",
+    "languageCode": "en-US",
+    "speakingRate": 1,
+    "width": 1920,
+    "height": 1080,
+    "baseUrl": "http://localhost:3000"
+  },
+  "brand": {
+    "name": "Weekly Posts",
+    "accent": "#e4572e"
+  },
+  "scenes": [
+    {
+      "id": "s01",
+      "type": "card",
+      "narration": "Weekly Posts helps a small business show up online. You fill in a short brief, and the app draws the posts for you. Nothing goes out until you say yes.",
+      "card": {
+        "kicker": "Weekly Posts",
+        "title": "Details first, then design",
+        "subtitle": "On-brand posts for small businesses, drawn by code.",
+        "bullets": [
+          "Fill a short brief",
+          "Get designs in your colours",
+          "Approve before anything is published"
+        ],
+        "footnote": "Sample card for testing the pipeline"
+      }
+    },
+    {
+      "id": "s02",
+      "type": "live",
+      "narration": "This is the sign-in page. You enter your email and we send you a link, so there is no password to remember. The terms of use are written in plain language too.",
+      "start": "/",
+      "steps": [
+        {
+          "do": "pause",
+          "ms": 800
+        },
+        {
+          "do": "zoom",
+          "text": "Sign in with your email",
+          "scale": 1.5,
+          "ms": 800
+        },
+        {
+          "do": "type",
+          "label": "Email address",
+          "exact": false,
+          "clear": true,
+          "value": "wrong@example.com",
+          "delayMs": 40
+        },
+        {
+          "do": "type",
+          "placeholder": "you@example.com",
+          "clear": true,
+          "value": "owner@example.com",
+          "delayMs": 55
+        },
+        {
+          "do": "pause",
+          "ms": 500
+        }
+      ]
+    },
+    {
+      "id": "s02b",
+      "type": "live",
+      "narration": "Now the same page continues, with no new navigation. The terms of use are written in plain language too.",
+      "start": null,
+      "depends_on": null,
+      "steps": [
+        {
+          "do": "click",
+          "text": "Terms and privacy",
+          "exact": true
+        },
+        {
+          "do": "waitText",
+          "text": "Terms of use",
+          "exact": true,
+          "timeoutMs": 10000
+        },
+        {
+          "do": "click",
+          "role": "heading",
+          "name": "Facts in your posts"
+        },
+        {
+          "do": "scroll",
+          "y": 500
+        },
+        {
+          "do": "scroll",
+          "y": 0
+        }
+      ]
+    },
+    {
+      "id": "s02c",
+      "type": "clip",
+      "narration": "This clip has not been recorded yet, so a placeholder card is shown.",
+      "clip": {
+        "source": "manual",
+        "file": "out/sample/missing.mp4"
+      },
+      "depends_on": null,
+      "card": {
+        "kicker": "Firebase",
+        "title": "Live status, read-only",
+        "subtitle": "Fallback card for a pending clip",
+        "bullets": [
+          "Bullet one",
+          "Bullet two"
+        ],
+        "footnote": "Fallback card if the console clip is not recorded."
+      }
+    },
+    {
+      "id": "s02d",
+      "type": "clip",
+      "narration": "This one plays a pre-recorded video file.",
+      "clip": {
+        "source": "manual",
+        "file": "out/sample/test-clip.mp4"
+      },
+      "depends_on": null,
+      "card": {
+        "title": "unused"
+      }
+    },
+    {
+      "id": "s02e",
+      "type": "card",
+      "narration": "Skipped.",
+      "depends_on": "firebase",
+      "card": {
+        "title": "Dependent"
+      }
+    },
+    {
+      "id": "s03b",
+      "type": "card",
+      "narration": "A dense card with five long bullets must still fit on the screen and above the caption band without overlapping anything at all.",
+      "card": {
+        "kicker": "How it works",
+        "title": "Built on Google Cloud",
+        "subtitle": "One Next.js app on Cloud Run (australia-southeast1)",
+        "bullets": [
+          "Cloud Run serves the app; Cloud Scheduler runs the queue sweep and weekly jobs",
+          "Gemini on Vertex AI: brief from plain words, captions, fact check, grounded Ideas with Google Search",
+          "Firestore live status: Firebase Auth custom tokens, read-only brand-scoped rules",
+          "Supabase Postgres with row-level security: the system of record",
+          "Code draws every word, logo and QR (HarfBuzz + resvg); no text inside AI images"
+        ],
+        "footnote": "Firestore holds only short-lived status: never captions, emails or payment IDs."
+      }
+    },
+    {
+      "id": "s03",
+      "type": "card",
+      "narration": "That is the whole idea. Check the facts, approve each post, and it goes out on its own schedule.",
+      "card": {
+        "kicker": "Next",
+        "title": "You stay in control",
+        "subtitle": "Every price, date and claim comes from your brief.",
+        "bullets": [],
+        "footnote": ""
+      }
+    }
+  ]
+}

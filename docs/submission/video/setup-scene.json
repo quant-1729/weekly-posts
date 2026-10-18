@@ -1,0 +1,466 @@
+{
+ "meta": {
+  "title": "Weekly Posts: details first, then design",
+  "voice": "en-IN-Chirp3-HD-Aoede",
+  "languageCode": "en-IN",
+  "speakingRate": 1.0,
+  "width": 1920,
+  "height": 1080,
+  "baseUrl": "https://weekly-posts-526531409571.australia-southeast1.run.app"
+ },
+ "brand": {
+  "name": "Corner Cup Café",
+  "fictional": true,
+  "category": "Café",
+  "whatYouSell": "Coffee, cold coffee and fresh pastries",
+  "city": "Pune",
+  "region": "Maharashtra",
+  "country": "IN",
+  "timezone": "Asia/Kolkata",
+  "postLanguage": "en",
+  "tone": "Friendly",
+  "colors": {
+   "primary": "#6B3E26",
+   "secondary": "#F5E6D3",
+   "accent": "#E0812F"
+  },
+  "logo": null,
+  "face": {
+   "kind": "mascot",
+   "character": "tween",
+   "name": "Tween",
+   "aiFace": false
+  },
+  "paymentQr": null,
+  "offer": {
+   "text": "20% off cold coffee, weekdays 3-6 pm, until 31 Oct 2026",
+   "percentOff": 20,
+   "on": "cold coffee",
+   "days": "Mon-Fri",
+   "time": "15:00-18:00",
+   "validTo": "2026-10-31"
+  },
+  "sellingPoints": [
+   {
+    "kind": "discount",
+    "percentOff": 20,
+    "on": "cold coffee",
+    "validTo": "2026-10-31",
+    "title": "20% off cold coffee, weekdays 3-6 pm",
+    "confirmed": true
+   },
+   {
+    "kind": "quality",
+    "claim": "Pastries baked fresh every morning",
+    "title": "Pastries baked fresh every morning",
+    "confirmed": true
+   },
+   {
+    "kind": "custom",
+    "title": "Cosy corner seats and free Wi-Fi",
+    "confirmed": true
+   }
+  ],
+  "facts": [
+   {
+    "kind": "offer",
+    "label": "Cold coffee offer",
+    "value": "20% off cold coffee on weekdays, 3 to 6 pm, until 31 Oct 2026"
+   },
+   {
+    "kind": "product",
+    "label": "Cold coffee",
+    "value": "Cold coffee"
+   },
+   {
+    "kind": "product",
+    "label": "Pastries",
+    "value": "Pastries baked fresh every morning"
+   },
+   {
+    "kind": "hours",
+    "label": "Opening hours",
+    "value": "Open every day, 8 am to 10 pm"
+   },
+   {
+    "kind": "differentiator",
+    "label": "Seating",
+    "value": "Cosy corner seats and free Wi-Fi"
+   }
+  ],
+  "contacts": [
+   {
+    "kind": "phone",
+    "value": "+91 98000 12300",
+    "showOnNewPosts": true
+   },
+   {
+    "kind": "whatsapp",
+    "value": "+91 98000 12300",
+    "showOnNewPosts": false
+   },
+   {
+    "kind": "website",
+    "value": "cornercup.example.com",
+    "showOnNewPosts": true
+   },
+   {
+    "kind": "hours",
+    "value": "Monday to Sunday, 08:00 to 22:00",
+    "showOnNewPosts": false
+   }
+  ],
+  "hours": {
+   "mon": "08:00-22:00",
+   "tue": "08:00-22:00",
+   "wed": "08:00-22:00",
+   "thu": "08:00-22:00",
+   "fri": "08:00-22:00",
+   "sat": "08:00-22:00",
+   "sun": "08:00-22:00"
+  },
+  "connections": [],
+  "queueSettings": {
+   "days": [
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun"
+   ],
+   "instagramTime": "HH:30 IST of the hour you record s09-s10 (the queue sweep runs at HH:45 IST)",
+   "deliverEmail": true,
+   "autoApprove": false,
+   "paused": false
+  },
+  "demoTexts": {
+   "describe": "20% off cold coffee on weekdays, 3 to 6 pm, until 31 Oct. Drop in or call us.",
+   "captionWithClaim": "Cold coffee, 20% off on weekdays, 3 to 6 pm, until 31 Oct. Drop in or call us. Free home delivery across Pune.",
+   "captionFixed": "Cold coffee, 20% off on weekdays, 3 to 6 pm, until 31 Oct. Drop in or call us.",
+   "planSentence": "Mon to Thu 10% off, Fri 20%, Sat & Sun 15% off on all pastries"
+  }
+ },
+ "scenes": [
+  {
+   "id": "s02b",
+   "type": "live",
+   "start": "/setup",
+   "depends_on": null,
+   "speed": 4,
+   "narration": "Signing up takes about three minutes: the business name, what it sells, the city, contacts, hours and what customers like. No website needed. Then the owner picks a face, our mascot Tween, and a colour palette.",
+   "steps": [
+    {
+     "do": "goto",
+     "path": "/setup"
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    },
+    {
+     "do": "type",
+     "label": "Business name",
+     "value": "Corner Cup Café",
+     "delayMs": 30
+    },
+    {
+     "do": "type",
+     "label": "What do you sell?",
+     "value": "Coffee, cold coffee and fresh pastries",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Are you online already?"
+    },
+    {
+     "do": "click",
+     "text": "Not yet",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Where are you?"
+    },
+    {
+     "do": "type",
+     "label": "City or town",
+     "value": "Pune",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Who are your customers?"
+    },
+    {
+     "do": "type",
+     "label": "Your customers, in one line",
+     "value": "Students and office workers nearby",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "How do customers reach you?"
+    },
+    {
+     "do": "type",
+     "label": "Email address",
+     "value": "hello@cornercup.example.com",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "When are you open?"
+    },
+    {
+     "do": "click",
+     "text": "I will set my hours",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "text": "Saturday",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "text": "Sunday",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Use the first day's times for every open day"
+    },
+    {
+     "do": "pause",
+     "ms": 600
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Your logo"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Skip for now. We'll use your name"
+    },
+    {
+     "do": "waitText",
+     "text": "What do customers like about you?"
+    },
+    {
+     "do": "type",
+     "label": "Line 1",
+     "exact": true,
+     "value": "Pastries baked fresh every morning",
+     "delayMs": 30
+    },
+    {
+     "do": "type",
+     "label": "Line 2",
+     "exact": true,
+     "value": "Cosy corner seats and free Wi-Fi",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "What do you want from your posts?"
+    },
+    {
+     "do": "click",
+     "text": "More visits",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "How should your posts sound?"
+    },
+    {
+     "do": "click",
+     "text": "Friendly",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Roughly how many minutes does one post take you today?"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "30 min",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "When should we email your posts?"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Finish setup",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "You are all set",
+     "timeoutMs": 60000
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "click",
+     "text": "Go to your Brand page"
+    },
+    {
+     "do": "waitText",
+     "text": "Your brand memory",
+     "timeoutMs": 30000
+    },
+    {
+     "do": "click",
+     "text": "Face",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "text": "A mascot",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Choose your character"
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Use this character in my posts"
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "click",
+     "text": "Use the mascot in my posts",
+     "exact": true
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "click",
+     "text": "Logo and colours",
+     "exact": true
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    },
+    {
+     "do": "click",
+     "text": "Saffron",
+     "exact": true
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Save my look"
+    },
+    {
+     "do": "pause",
+     "ms": 2000
+    },
+    {
+     "do": "goto",
+     "path": "/home"
+    },
+    {
+     "do": "waitText",
+     "text": "Good"
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    }
+   ]
+  }
+ ]
+}

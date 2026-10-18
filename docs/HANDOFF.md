@@ -30,6 +30,12 @@ Read this first on a new machine or in a new Claude session. Setup: `docs/SETUP.
 - **Sign-in sessions:** device, browser and city are recorded, never the IP address. The admin dashboard can sign a device out. Activity and AI usage are logged with model and ok/failed.
 - **Redesign:** the Fish-style theme (Onest font, cream background, near-black pill buttons). The approved prototype is `docs/design/prototype-fish-theme.html`.
 
+## New on 2026-10-16 (evening): Design Studio and weekly plans
+
+See `docs/13-design-studio-and-weekly-plans.md`. Single posts now open in a live Design Studio (5 starting designs, drag/resize/rotate, inline text, add contacts/QR/stickers/shapes, photo blend and cut-out, colour sets, font pairs, layers, design check). "Plan a week" (`/plan`) turns one sentence of daily offers into a week of posts with one shared look, then approves and schedules them. Migration `0025_design_studio_and_plans.sql` must be applied before this deploys.
+
+**Firestore live status (`docs/14-firebase-plan.md`) is built** (off until configured). Deploy needs the one-time setup in `docs/deploy.md` section 13 (APIs, Firebase web app, Sydney Firestore database, TTL, `roles/datastore.user`, rules) and two substitution values from `apps:sdkconfig`: `_FIREBASE_WEB_API_KEY` and `_FIREBASE_WEB_APP_ID`. Give both or neither. Nothing is deployed or set up yet.
+
 ## Not deployed yet (local only)
 
 - Carousels (migrations `0023_content_format.sql`, `0024_character_column_fixup.sql`) and everything built after revision 00008. Deploy with `docs/SETUP.md` §8: migrations first, then the app.

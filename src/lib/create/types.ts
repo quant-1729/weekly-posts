@@ -111,6 +111,8 @@ export interface StoredDesign {
   aiFace?: true;
   /** The colour filter applied to the photo and background (UX-2). Absent on designs made before filters: read it with `filterOf`. */
   filter?: PostFilter;
+  /** Sizes drawn from the owner's Design Studio documents (the engine drew the others). */
+  studio?: { formats: DesignFormat[] };
 }
 
 export interface CreatePost {

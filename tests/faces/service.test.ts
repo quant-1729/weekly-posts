@@ -11,6 +11,7 @@ import {
   approveFace,
   approvePose,
   createDraftFace,
+  enforceFaceRules,
   getFace,
   getFaceState,
   listFaces,
@@ -21,7 +22,9 @@ import {
   setFaceInPosts,
   updateFaceSettings,
 } from "@/lib/faces/service";
+import { readActiveFace } from "@/lib/faces/active";
 import { FACE_POSES } from "@/lib/faces/types";
+import { resolveRegulated } from "@/lib/ai/regulated";
 import { setMascotInPosts } from "@/lib/mascot/service";
 import { setStorageForTests, type Storage } from "@/lib/storage";
 import { createMockStorage } from "@/lib/storage/mock";
@@ -251,6 +254,29 @@ describe("the face in posts and the older mascot switch", () => {
     await db.withAdmin((tx) => tx.query("update public.brand_memory set regulated = 'health' where brand_id = $1", [o.brandId]));
     expect((await loadCreateBrand(o.userId, o.brandId)).face).toBeNull();
     expect(await code(setActiveFace({ userId: o.userId, brandId: o.brandId, faceId: real.id }))).toBe("kind_not_allowed");
+  });
+
+  it("Automatic (regulated not set) still detects a healthcare brand from what it sells, so no realistic AI person", async () => {
+    const o = await makeOwner(db, { name: "Auto Health" });
+    const real = await makeApprovedFace(db, o, "photoreal", storage);
+    await setActiveFace({ userId: o.userId, brandId: o.brandId, faceId: real.id });
+    expect((await loadCreateBrand(o.userId, o.brandId)).face?.kind).toBe("photoreal");
+    await db.withAdmin((tx) => tx.query("update public.brand_memory set category = 'HEalthcare Products', regulated = null where brand_id = $1", [o.brandId]));
+    // The active-face read alone (no regulated passed in) turns it off.
+    expect(await db.withUser(o.userId, (tx) => readActiveFace(tx, o.brandId))).toBeNull();
+    expect((await loadCreateBrand(o.userId, o.brandId)).face).toBeNull();
+    expect(await code(setActiveFace({ userId: o.userId, brandId: o.brandId, faceId: real.id }))).toBe("kind_not_allowed");
+    // Enforcing the rules switches the saved setting off too.
+    await db.withUser(o.userId, (tx) => enforceFaceRules(tx, o.brandId, resolveRegulated(null, "HEalthcare Products"), true));
+    expect(await memory(o.brandId)).toMatchObject({ face_in_posts: false });
+  });
+
+  it("a non-regulated brand left on Automatic keeps its realistic AI person", async () => {
+    const o = await makeOwner(db, { name: "Auto Bakery" });
+    const real = await makeApprovedFace(db, o, "photoreal", storage);
+    await setActiveFace({ userId: o.userId, brandId: o.brandId, faceId: real.id });
+    await db.withAdmin((tx) => tx.query("update public.brand_memory set category = 'Wedding cakes', regulated = null where brand_id = $1", [o.brandId]));
+    expect((await loadCreateBrand(o.userId, o.brandId)).face?.kind).toBe("photoreal");
   });
 
   it("retiring the active face clears it and deletes its pose files", async () => {

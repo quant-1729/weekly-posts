@@ -36,9 +36,10 @@ describe("nav items", () => {
     expect(phoneNavItems.map((i) => i.href)).toEqual(["/create", "/week", "/brand", "/results"]);
     expect(phoneNavItems.map((i) => i.label)).toEqual(["Create", "Queue", "Brand", "Results"]);
   });
-  it("the sidebar has a top block (Create a post, Queue), the everyday pages, and a Brand group (Brand, Connections)", () => {
+  it("the sidebar has a top block (Create a post, Plan a week, Queue), the everyday pages, and a Brand group (Brand, Connections)", () => {
     expect(sidebarTop.map((i) => [i.href, i.label])).toEqual([
       ["/create", "Create a post"],
+      ["/plan", "Plan a week"],
       ["/week", "Queue"],
     ]);
     expect(sidebarMain.map((i) => [i.href, i.label])).toEqual([
@@ -51,7 +52,7 @@ describe("nav items", () => {
       ["/brand", "Brand"],
       ["/connections", "Connections"],
     ]);
-    expect(wideNavItems.map((i) => i.href)).toEqual(["/create", "/week", "/home", "/ideas", "/results", "/history", "/brand", "/connections"]);
+    expect(wideNavItems.map((i) => i.href)).toEqual(["/create", "/plan", "/week", "/home", "/ideas", "/results", "/history", "/brand", "/connections"]);
   });
   it("Ideas is in the sidebar (and so the phone drawer) after Home, not in the phone bottom nav", () => {
     expect(sidebarMain.map((i) => i.href).slice(0, 2)).toEqual(["/home", "/ideas"]);
@@ -76,6 +77,7 @@ describe("nav items", () => {
     expect(pageTitle("/home")).toBe("Home");
     expect(pageTitle("/create/abc/design")).toBe("Create a post");
     expect(pageTitle("/week")).toBe("Queue");
+    expect(pageTitle("/week/settings")).toBe("Queue settings");
     expect(pageTitle("/mascot")).toBe("Mascot");
   });
 });
@@ -85,6 +87,7 @@ describe("sidebar (768 px and up; a drawer on phones)", () => {
     const html = renderToString(createElement(Sidebar));
     expect(navLinks(html)).toEqual([
       ["/create", s.nav.createPost],
+      ["/plan", "Plan a week"],
       ["/week", s.nav.queue],
       ["/home", s.nav.home],
       ["/ideas", s.nav.ideas],

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   approveFaceSheetAction,
   approvePoseAction,
@@ -10,11 +10,14 @@ import {
   pickFaceOptionAction,
   adoptFaceAction,
 } from "@/app/(app)/brand/face-actions";
+import { LiveDot } from "@/components/live/live-dot";
+import { useLiveDoc } from "@/components/live/use-live";
 import { alertClass, errorClass, hintClass, primaryButton, secondaryButton, smallButton } from "@/components/ui";
 import type { CardFace } from "@/lib/faces/card-types";
-import { FACE_CAP_USD, stepEstimateUsd, wholeFaceEstimateUsd } from "@/lib/faces/generate/estimate";
+import { BUSY_RETRY_PAUSE_MS, FACE_CAP_USD, stepEstimateUsd, wholeFaceEstimateUsd } from "@/lib/faces/generate/estimate";
 import { FACE_OPTIONS, FACE_POSES, TRIES_PER_POSE, type FacePose } from "@/lib/faces/types";
 import { fill, s } from "@/lib/i18n/strings";
+import type { LiveRecordOf } from "@/lib/realtime/browser";
 import { PoseGrid } from "./face-poses";
 import { batches, money, POSE_BATCH } from "./face-ui";
 
@@ -27,17 +30,58 @@ const imageCount = FACE_OPTIONS + 1 + FACE_POSES.length * TRIES_PER_POSE;
 
 type Message = { ok: boolean; text: string } | null;
 
+/** What the live status says is happening now, in the card's plain words ("Wave: try 1 of 2, drawing"). */
+function liveText(f: LiveRecordOf<"face">): string {
+  const p = t.progress;
+  const parts: string[] = [];
+  if (f.step === "options") parts.push(fill(p.optionOf, { n: Math.min(f.done + 1, f.total), total: f.total }));
+  if (f.step === "poses" && f.pose) {
+    const pose = s.faces.poses[f.pose as FacePose] ?? f.pose;
+    if (f.phase === "saved") parts.push(fill(p.poseSaved, { pose }));
+    else if (f.tryNo && f.tries && (f.phase === "drawing" || f.phase === "checking" || f.phase === "cutting")) parts.push(fill(p.poseStep, { pose, n: f.tryNo, total: f.tries, phase: p.phases[f.phase] }));
+    else if (f.tryNo && f.tries) parts.push(fill(p.pose, { pose, n: f.tryNo, total: f.tries }));
+  }
+  if (f.phase === "waiting") parts.push(fill(p.waiting, { seconds: Math.round(BUSY_RETRY_PAUSE_MS / 1000) }));
+  return parts.join(". ");
+}
+
 /**
  * Steps 3 and 4 of the Face card for a drawn character or a realistic AI person: the price first, then the options, the
  * character sheet and the seven poses, each priced on its own button and only started when it is pressed. The poses are
  * made two at a time so no call runs long; the card shows the progress.
  */
-export function FaceMake({ face, onChange }: { face: CardFace; onChange: () => Promise<void> }) {
+export function FaceMake({ face, brandId, onChange }: { face: CardFace; brandId: string; onChange: () => Promise<void> }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [busyPose, setBusyPose] = useState<FacePose | null>(null);
   const [message, setMessage] = useState<Message>(null);
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [failed, setFailed] = useState<FacePose[]>([]);
+
+  // Live status (when it is on): the step, try and phase now running, and the pose that was just saved.
+  const { live, doc } = useLiveDoc(brandId, `face_${face.id}`);
+  const liveFace = doc && doc.kind === "face" ? doc : null;
+  const lastSeq = useRef<number | null>(null);
+  useEffect(() => {
+    if (!liveFace) return;
+    const first = lastSeq.current === null; // the first document seen only sets the baseline (it may be an old run)
+    const changed = lastSeq.current !== liveFace.seq;
+    lastSeq.current = liveFace.seq;
+    if (!first && changed && liveFace.step === "poses" && liveFace.phase === "saved") void onChange();
+  }, [liveFace, onChange]);
+  const liveLine = (step: "options" | "sheet" | "poses") => {
+    if (busy === null || !liveFace || liveFace.state !== "running" || liveFace.step !== step) return null;
+    const text = liveText(liveFace);
+    return text ? (
+      <p role="status" data-live-progress className={hintClass}>
+        {text}
+      </p>
+    ) : null;
+  };
+  const dot = live ? (
+    <div>
+      <LiveDot live={live} />
+    </div>
+  ) : null;
 
   const afford = (price: number) => micro(face.spentUsd) + micro(price) <= micro(FACE_CAP_USD);
   const fail = (text: string) => setMessage({ ok: false, text });
@@ -144,6 +188,8 @@ export function FaceMake({ face, onChange }: { face: CardFace; onChange: () => P
               {fill(t.price.makingOptions, { count: FACE_OPTIONS })}
             </p>
           )}
+          {liveLine("options")}
+          {busy === "options" && dot}
           {statusLine}
         </div>
       </div>
@@ -186,6 +232,8 @@ export function FaceMake({ face, onChange }: { face: CardFace; onChange: () => P
             {t.sheet.making}
           </p>
         )}
+        {liveLine("sheet")}
+        {busy === "sheet" && dot}
         {statusLine}
       </div>
     );
@@ -214,6 +262,8 @@ export function FaceMake({ face, onChange }: { face: CardFace; onChange: () => P
           {fill(t.poses.making, progress)}
         </p>
       )}
+      {liveLine("poses")}
+      {progress && dot}
       {failed.length > 0 && (
         <p role="alert" className={errorClass}>
           {fill(t.poses.failed, { poses: failed.map((p) => s.faces.poses[p]).join(", ") })}

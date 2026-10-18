@@ -53,6 +53,8 @@ export interface FaceCardData {
   inPosts: boolean;
   /** The background-removal service is set up (real photos can be cut out). */
   cutoutConfigured: boolean;
+  /** Ready-to-use descriptions for the Describe step, made from the brand's own details (no AI). */
+  suggestions: { illustrated: string[]; photoreal: string[] };
 }
 
 /** The unfinished face being made, if any: the newest draft that is not a mascot. */

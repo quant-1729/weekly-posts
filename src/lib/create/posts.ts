@@ -862,6 +862,8 @@ export async function redrawPosts(args: { userId: string; brandId: string; brief
     });
   }
   await drawAndStore({ userId, brandId, brief, brand, assets, posts: designed, contents, option: args.base?.option ?? stored.option, options: args.base?.options ?? stored.options, filter: args.filter ? parsePostFilter(args.filter) : filterOf(designed[0]), storage });
+  // Sizes the owner designed in the Design Studio are drawn from their own documents again.
+  if (designed.some((p) => p.design?.studio)) await (await import('@/lib/studio/service')).restampStudio(userId, brandId, briefId);
   return true;
 }
 
@@ -950,6 +952,31 @@ export async function confirmPostFlag(args: { userId: string; brandId: string; p
     await logAction(tx, { via: 'dashboard', userId: args.userId }, args.brandId, post.id, 'edit', { flag: flag.id, decision: 'confirm', kind: flag.kind, field: flag.field });
     return { ok: true };
   });
+}
+
+/**
+ * "These are all fine" (design step): confirms every open flag of the brief's posts, one by one through `confirmPostFlag`
+ * (the same path as "It's true" in Review). The owner's confirm counts as the extra tick for regulated claims. A word to avoid
+ * cannot be confirmed (the words must be edited), so those stay open; `remaining` lists the ids of the open flags left.
+ */
+export async function confirmAllPostFlags(args: { userId: string; brandId: string; briefId: string; now?: Date }): Promise<OpResult<{ confirmed: number; remaining: string[] }>> {
+  const { userId, brandId, briefId } = args;
+  await requireBrandMember(userId, brandId);
+  const before = (await listBriefPosts(userId, brandId, briefId)).filter((p) => p.status !== 'posted');
+  if (before.length === 0) return fail('not_found', eA.notFound);
+  let confirmed = 0;
+  for (const post of before) {
+    for (const flag of post.flags) {
+      if (flag.status !== 'open' || flag.kind === 'avoid' || flag.kind === 'regulated_reminder') continue;
+      const r = await confirmPostFlag({ userId, brandId, postId: post.id, flagId: flag.id, regulatedAck: true, now: args.now });
+      if (r.ok) confirmed++;
+      // not_open: a picture-word flag was already confirmed on this channel through another channel's post.
+      else if (r.code !== 'not_open') return r;
+    }
+  }
+  const after = await listBriefPosts(userId, brandId, briefId);
+  const remaining = [...new Set(after.filter((p) => p.status !== 'posted').flatMap((p) => p.flags.filter((f) => f.status === 'open' && f.kind !== 'regulated_reminder').map((f) => f.id)))];
+  return { ok: true, confirmed, remaining };
 }
 
 /**
@@ -1140,3 +1167,93 @@ export async function logCreateShare(args: { userId: string; brandId: string; po
   });
 }
 
+
+// ---------------------------------------------------------------------------------------------
+// Design Studio: the owner's own design, drawn by the studio renderer
+// ---------------------------------------------------------------------------------------------
+
+export interface StudioDrawFn {
+  (args: { post: CreatePost; format: DesignFormat; qrData: string | null }): Promise<{ png: Buffer; problems: string[]; aiFace?: boolean } | null>;
+}
+
+/**
+ * "Use this design" from the Design Studio. The words on the picture are checked by the guardrail like any edit (the
+ * flags go to Review), every size the channels need is drawn (the engine draws sizes the studio has no document for, such
+ * as YouTube thumbnails), then the studio's sizes are drawn from the owner's documents and replace the engine's pictures.
+ * A QR code that does not scan back exactly becomes a blocker.
+ */
+export async function applyStudioDesign(
+  args: { userId: string; brandId: string; briefId: string; words: { headline: string; subline: string; ctaText: string }; formats: DesignFormat[]; draw: StudioDrawFn },
+  deps: CreateDeps = {},
+): Promise<UseDesignResult> {
+  const { userId, brandId, briefId } = args;
+  const { brief, brand, posts } = await ensureDraftPosts({ userId, brandId, briefId }, deps);
+  const storage = deps.storage ?? getStorage();
+  const first = posts[0];
+  const words: DesignWords = {
+    headline: oneLine(args.words.headline).slice(0, 300) || first.imageText.headline,
+    subline: oneLine(args.words.subline).slice(0, 600),
+    ctaText: oneLine(args.words.ctaText).slice(0, 120),
+    bubble: first.imageText.bubble,
+  };
+  const changed = posts.some((p) => p.imageText.headline !== words.headline || p.imageText.subline !== words.subline || p.cta !== words.ctaText);
+  if (changed) {
+    const results = await checkPosts({ userId, brandId, brief, brand, words, posts: posts.map((p) => ({ channel: p.channel, caption: p.caption, hashtags: p.hashtags })), now: deps.now, aiFixture: deps.aiFixture });
+    const now = (deps.now ?? new Date()).toISOString();
+    await getDb().withService(async (tx) => {
+      for (let i = 0; i < posts.length; i++) {
+        const p = posts[i];
+        const flags = carryDecisions(results[i].flags, p.flags);
+        const text = { headline: words.headline, subline: words.subline, bubble: words.bubble, pose: p.imageText.pose, slides: p.imageText.slides };
+        await tx.query(
+          `update public.posts set cta = $3, image_text = $4::jsonb, fact_flags = $5::jsonb, edited_at = $6::timestamptz, status = 'draft', approved_at = null
+            where id = $1 and brand_id = $2`,
+          [p.id, brandId, words.ctaText, JSON.stringify(storedImageText(text)), JSON.stringify(flags), now],
+        );
+        await logAction(tx, { via: 'dashboard', userId }, brandId, p.id, 'edit', { fields: 'studio' });
+      }
+    });
+  }
+
+  // Every size first (the engine), with the brand's usual option.
+  const assets = await loadDesignAssets({ userId, brandId, brief, brand, storage });
+  const content0 = await contentFromBrief(brief, brand, words, { postCode: first.postCode, mascot: assets.faceOn }).catch((err) => {
+    if (err instanceof QrContentError) throw new CreateError('qr_blocked');
+    throw err;
+  });
+  const formats = designFormats(brief);
+  const def = assets.typeDefault && validOption({ themeId: assets.typeDefault.themeId, layoutId: assets.typeDefault.layoutId, scheme: assets.typeDefault.scheme }, formats, !!assets.photo) ? { themeId: assets.typeDefault.themeId, layoutId: assets.typeDefault.layoutId, scheme: assets.typeDefault.scheme } : null;
+  const option = def ?? optionsFor(assets, content0, designFormat(brief), 1, { postType: brief.postType, extras: brief.extraPostTypes })[0];
+  await chooseDesign({ userId, brandId, briefId, option }, deps);
+
+  // Then the studio's own sizes, per channel post (each has its own QR short link).
+  const fresh = await listBriefPosts(userId, brandId, briefId);
+  for (const p of fresh) {
+    const content = await contentFromBrief(brief, brand, wordsOf(p), { postCode: p.postCode, mascot: assets.faceOn });
+    const studioBlockers: DesignBlocker[] = [];
+    const drawnFormats: DesignFormat[] = [];
+    let studioAi = false;
+    for (const f of channelFormats(p.channel)) {
+      if (!args.formats.includes(f)) continue;
+      const r = await args.draw({ post: p, format: f, qrData: content.qr?.text ?? null });
+      if (!r) continue;
+      await storage.put('renders', `${brandId}/${p.id}/${f}.png`, r.png, 'image/png');
+      drawnFormats.push(f);
+      if (r.aiFace) studioAi = true;
+      for (const problem of r.problems) studioBlockers.push({ format: f, code: 'qr_mismatch', detail: problem });
+    }
+    if (drawnFormats.length === 0 || !p.design) continue;
+    // A realistic AI person on a studio picture (or on a size the engine drew) makes the caption carry the AI disclosure.
+    const { aiFace: engineAi, ...rest } = p.design;
+    const keepsEngine = engineAi === true && channelFormats(p.channel).some((f) => !drawnFormats.includes(f));
+    const design = {
+      ...rest,
+      ...(studioAi || keepsEngine ? { aiFace: true as const } : {}),
+      studio: { formats: drawnFormats },
+      blockers: [...p.design.blockers.filter((b) => !drawnFormats.includes(b.format)), ...studioBlockers],
+      dropped: Object.fromEntries(Object.entries(p.design.dropped).map(([k, v]) => [k, drawnFormats.includes(k as DesignFormat) ? [] : v])),
+    };
+    await getDb().withService((tx) => tx.query('update public.posts set design = $3::jsonb, layout_id = $4 where id = $1 and brand_id = $2', [p.id, brandId, JSON.stringify(design), 'studio']));
+  }
+  return summary(userId, brandId, briefId);
+}

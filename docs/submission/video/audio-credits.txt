@@ -1,0 +1,33 @@
+Weekly Posts demo v2 (docs/submission/Weekly-Posts-demo-v2.mp4): audio credits and licences
+Made 2026-10-18. The picture is the unchanged silent master (video stream copied; MD5 identical).
+
+VOICEOVER
+  Source:  Google Cloud Text-to-Speech, Chirp 3 HD voice "en-IN-Chirp3-HD-Sulafat" (Indian English, female;
+           listed by Google as a warm voice). 48 kHz, one file per scene, speaking rate 0.95-1.07.
+  Words:   exactly as in voice-timings.md (the burned-in captions). For pronunciation only, "cafe's" was sent to the
+           TTS in place of "café's"; the spoken word is the same.
+  Licence: synthesised by the project owner's own Google Cloud account under the Google Cloud Terms of Service.
+           Google does not claim ownership of the generated audio. No attribution is required.
+           https://cloud.google.com/terms  |  https://cloud.google.com/terms/service-terms
+
+BACKGROUND MUSIC
+  Source:  generated with Google Lyria 2 (model lyria-002) on Vertex AI, from the project owner's own Google Cloud
+           account. Original instrumental, no samples of existing recordings. One 32.8 s clip, seed 1729, looped
+           with 2 s crossfades to the full 3:12.
+  Prompt:  "Light, modern, upbeat but calm instrumental background music for a tech product demo video. Soft
+           electric piano and plucked synth arpeggios, warm pads, gentle muted guitar, light clean beat with soft
+           kick and shaker, steady 100 BPM, positive and optimistic, consistent energy ..." (no vocals).
+  Licence: generated output under the Google Cloud Terms of Service and the Service Specific Terms (Generative AI
+           Services). Google does not claim ownership of generated output. Lyria audio carries Google's inaudible
+           SynthID watermark, which marks it as AI-generated. No third-party music licence is involved.
+           https://cloud.google.com/terms/service-terms  |  https://cloud.google.com/vertex-ai/generative-ai/docs/music/generate-music
+
+MIX
+  The music sits 13 dB under the voice in pauses and is ducked a further 9 dB during each line (measured 20-24 dB
+  under the speech), with a 2 s fade in and a 4 s fade out.
+  Master: -16.0 LUFS integrated, -1.4 dBTP, LRA 9.2 LU. AAC-LC 192 kb/s, 48 kHz stereo. Length 3:12.07.
+
+COST (estimated at list price; the Cloud bill is the authority)
+  TTS ~6,200 characters (including test renders), about $0.19, likely inside Chirp 3 HD's 1M-character monthly free tier.
+  Lyria: 1 clip, $0.06. Speech-to-Text word checks: about 5 min of audio, about $0.08 or less (inside the free tier).
+  Total: under $0.35.

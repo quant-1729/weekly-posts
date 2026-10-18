@@ -31,15 +31,30 @@ let canShareCache: boolean | undefined;
 let iosCache: boolean | undefined;
 const detectCanShare = () => (canShareCache ??= makeKit()?.canShareFiles() ?? false);
 const detectIos = () => (iosCache ??= makeKit()?.isIos() ?? false);
+// Whether this browser can share a PDF file (checked with a tiny probe file, like the picture check in the share kit).
+let canSharePdfCache: boolean | undefined;
+const detectCanSharePdf = () =>
+  (canSharePdfCache ??= (() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const n = window.navigator;
+      if (typeof n.canShare !== "function" || typeof n.share !== "function") return false;
+      return n.canShare({ files: [new window.File([new Uint8Array([37, 80, 68, 70])], "probe.pdf", { type: "application/pdf" })] }) === true;
+    } catch {
+      return false;
+    }
+  })());
 
 const filename = (channel: string, format: DesignFormat) => `${channel.replace(/[^a-z0-9]+/gi, "") || "post"}-${format}.png`;
 
 /**
- * One small Share icon button; it opens a menu with Share on phone (where the browser can share a picture file),
- * Download for each size and Copy caption, for one approved post. The same share kit as the v2 week screen
+ * One small Share icon button; it opens a menu for one approved post: Share on phone and Download PDF (one PDF with every
+ * picture of the post, made on the server; needs `briefId`), then the pictures themselves (share, download) and Copy caption.
+ * Share on phone sends the PDF where the browser can share a PDF file, else it downloads it. The same share kit as the v2 week screen
  * (`createShareKit`); the sizes are the ones the post's channel needs. `defaultOpen` is for tests.
  */
 export function SharePanel({
+  briefId,
   postId,
   channel,
   images,
@@ -48,6 +63,8 @@ export function SharePanel({
   onLog,
   defaultOpen = false,
 }: {
+  /** The brief of the post: with it the menu offers the PDF. */
+  briefId?: string;
   postId: string;
   channel: string;
   images: { format: DesignFormat; url: string }[];
@@ -86,6 +103,9 @@ export function SharePanel({
   }
 
   const canShare = useSyncExternalStore(noopSubscribe, detectCanShare, () => false);
+  const canSharePdf = useSyncExternalStore(noopSubscribe, detectCanSharePdf, () => false);
+  const pdfUrl = briefId ? `/api/posts/${briefId}/pdf?post=${postId}` : null;
+  const pdfName = `${channel.replace(/[^a-z0-9]+/gi, "") || "post"}-post.pdf`;
   const ios = useSyncExternalStore(noopSubscribe, detectIos, () => false);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const [sharing, setSharing] = useState(false);
@@ -168,19 +188,60 @@ export function SharePanel({
     }
   }
 
-  /** Downloads the slides one after the other (each is its own file). */
-  function onDownloadAll() {
+  /** Downloads pictures one after the other (each is its own file). */
+  function downloadEach(list: { url: string; name: string }[]) {
     onLog?.("download", images[0]?.format ?? "portrait");
-    slides.forEach((url, i) => {
+    list.forEach(({ url, name }, i) => {
       setTimeout(() => {
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${channel.replace(/[^a-z0-9]+/gi, "") || "post"}-slide-${i + 1}.png`;
+        a.download = name;
         document.body.appendChild(a);
         a.click();
         a.remove();
       }, i * 250);
     });
+  }
+  const onDownloadAll = () => downloadEach(slides.map((url, i) => ({ url, name: `${channel.replace(/[^a-z0-9]+/gi, "") || "post"}-slide-${i + 1}.png` })));
+  const onDownloadImages = () => downloadEach(images.map((img) => ({ url: img.url, name: filename(channel, img.format) })));
+
+  /** Share on phone: the PDF as a file where the browser can share one, else the PDF is downloaded. */
+  async function onSharePdf() {
+    if (!pdfUrl) return;
+    const kit = makeKit();
+    if (!kit) return;
+    if (!canSharePdf) {
+      const a = document.createElement("a");
+      a.href = pdfUrl;
+      a.download = pdfName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      onLog?.("download", images[0]?.format ?? "portrait");
+      return;
+    }
+    setMessage({ kind: "ok", text: t.preparing });
+    setSharing(true);
+    // Not kit.prepare: that one labels anything that is not an image as a PNG.
+    const file = await fetch(pdfUrl, { credentials: "same-origin" })
+      .then(async (res) => (res.ok ? new File([await res.blob()], pdfName, { type: "application/pdf" }) : null))
+      .catch(() => null);
+    if (!file) {
+      setSharing(false);
+      setMessage({ kind: "error", text: share.pdfFailed });
+      return;
+    }
+    const out = await kit.share(file, shareText);
+    setSharing(false);
+    setMessage(null);
+    if (out.kind === "shared") {
+      if (out.copied) setMessage({ kind: "ok", text: t.pasteHint });
+      onLog?.("share", images[0]?.format ?? "portrait");
+    } else if (out.kind === "error") {
+      setMessage({ kind: "error", text: out.name === "NotAllowedError" ? t.tapAgain : t.shareFailed });
+    } else if (out.kind === "unsupported") {
+      setMessage({ kind: "error", text: t.shareFailed });
+    }
   }
 
   const carousel = slides.length > 1;
@@ -219,6 +280,36 @@ export function SharePanel({
           onKeyDown={onMenuKey}
           className={`${popoverClass} absolute left-0 top-full mt-1 w-60 max-w-[calc(100vw-2rem)]`}
         >
+          {pdfUrl && (canShare || canSharePdf) ? (
+            <button
+              type="button"
+              role="menuitem"
+              className={itemClass}
+              disabled={sharing}
+              data-share-pdf
+              onClick={() => {
+                close();
+                void onSharePdf();
+              }}
+            >
+              {share.onPhone}
+            </button>
+          ) : null}
+          {pdfUrl ? (
+            <a
+              role="menuitem"
+              href={pdfUrl}
+              download={pdfName}
+              className={itemClass}
+              data-download-pdf
+              onClick={() => {
+                onLog?.("download", images[0]?.format ?? "portrait");
+                setTimeout(close, 0);
+              }}
+            >
+              {share.downloadPdf}
+            </a>
+          ) : null}
           {carousel && canShare ? (
             <button
               type="button"
@@ -246,7 +337,7 @@ export function SharePanel({
                 setTimeout(close, 0);
               }}
             >
-              {share.downloadAll.replace("{n}", String(slides.length))}
+              {pdfUrl ? share.downloadImages : share.downloadAll.replace("{n}", String(slides.length))}
             </button>
           ) : null}
           {!carousel && canShare
@@ -263,11 +354,25 @@ export function SharePanel({
                     void onShare(img);
                   }}
                 >
-                  {images.length > 1 ? share.shareSize.replace("{size}", sizes[img.format]) : share.onPhone}
+                  {images.length > 1 || pdfUrl ? share.shareSize.replace("{size}", sizes[img.format]) : share.onPhone}
                 </button>
               ))
             : null}
-          {(carousel ? [] : images).map((img) => (
+          {!carousel && pdfUrl && images.length > 0 ? (
+            <button
+              type="button"
+              role="menuitem"
+              className={itemClass}
+              data-download-images
+              onClick={() => {
+                onDownloadImages();
+                setTimeout(close, 0);
+              }}
+            >
+              {share.downloadImages}
+            </button>
+          ) : null}
+          {(carousel || pdfUrl ? [] : images).map((img) => (
             <a
               key={`download-${img.format}`}
               role="menuitem"

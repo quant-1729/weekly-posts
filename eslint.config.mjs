@@ -12,10 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // harfbuzzjs served as-is to the browser (npm run vendor:harfbuzz).
+    "public/vendor/**",
     // Reference copy of the Tween mascot kit; the ported code lives in src/.
     "vendor/**",
     // The separate Vercel admin dashboard has its own package, lint config and build.
     "admin-dashboard/**",
+    // Standalone demo-video pipeline (own package.json; not part of the app).
+    "demo-video/**",
   ]),
 ]);
 

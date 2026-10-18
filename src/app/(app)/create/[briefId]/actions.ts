@@ -7,6 +7,7 @@ import { getBrief, updateBrief } from "@/lib/briefs/service";
 import {
   approveCreatePost,
   confirmPostFlag,
+  confirmAllPostFlags,
   describeCreateError,
   invalidateDesign,
   loadReviewData,
@@ -201,6 +202,23 @@ export async function confirmFlagAction(briefId: string, postId: string, flagId:
     const r = await confirmPostFlag({ ...me, postId: p, flagId, regulatedAck: regulatedAck === true });
     return r.ok ? { ok: true, message: s.approvals.flags.confirmedOk } : { ok: false, message: r.message };
   });
+}
+
+/**
+ * "These are all fine" on the Design step: confirms every open flag of the brief's posts through the same path as "It's true" in
+ * Review. The dialog's confirm counts as the extra tick for health, money and education claims. `remaining` lists the ids of flags that
+ * cannot be confirmed (a word to avoid), which stay open.
+ */
+export async function confirmAllFlagsAction(briefId: string): Promise<{ ok: true; confirmed: number; remaining: string[] } | { ok: false; message: string }> {
+  const me = await who();
+  const b = uuid(briefId);
+  if (!me || !b) return { ok: false, message: me ? e.notFound : s.errors.signedOut };
+  try {
+    const r = await confirmAllPostFlags({ ...me, briefId: b });
+    return r.ok ? { ok: true, confirmed: r.confirmed, remaining: r.remaining } : { ok: false, message: r.message };
+  } catch (err) {
+    return failure(err);
+  }
 }
 
 export async function removeFlagAction(briefId: string, postId: string, flagId: string): Promise<ReviewActionResult> {

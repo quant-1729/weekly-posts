@@ -10,6 +10,7 @@
 //   - Any other face is on when face_in_posts is on, it is approved and all 7 poses are there and approved.
 //   - A realistic AI person is never used by a health, finance, legal or alcohol brand, whatever is saved.
 
+import { resolveRegulated } from '@/lib/ai/regulated';
 import type { CharacterId } from '@/lib/characters/types';
 import type { CreateFace } from '@/lib/create/types';
 import type { Tx } from '@/lib/db';
@@ -21,6 +22,7 @@ interface ActiveRow {
   mascot_in_posts: boolean | null;
   face_in_posts: boolean | null;
   regulated: string | null;
+  category: string | null;
   face_id: string | null;
   kind: FaceKind | null;
   name: string | null;
@@ -36,7 +38,7 @@ export const TWEEN_FACE_NAME = 'Tween';
 /** The face to draw for a brand, or null. Reads as the transaction's role (row-level security applies to a user). */
 export async function readActiveFace(tx: Tx, brandId: string, regulated?: string): Promise<CreateFace | null> {
   const [m] = await tx.query<ActiveRow>(
-    `select m.mascot_in_posts, m.face_in_posts, m.regulated::text as regulated, f.id::text as face_id, f.kind, f.name, f.character, f.status,
+    `select m.mascot_in_posts, m.face_in_posts, m.regulated::text as regulated, m.category, f.id::text as face_id, f.kind, f.name, f.character, f.status,
             f.never_say, f.post_types::text[] as post_types, f.placement
        from public.brand_memory m
        left join public.brand_faces f on f.id = m.active_face_id and f.brand_id = m.brand_id
@@ -44,7 +46,8 @@ export async function readActiveFace(tx: Tx, brandId: string, regulated?: string
     [brandId],
   );
   if (!m) return null;
-  const reg = regulated ?? m.regulated ?? 'none';
+  // Automatic (null) means detect from what the brand sells, the same as the guardrail and settings.
+  const reg = regulated ?? resolveRegulated(m.regulated, m.category);
 
   const base = (kind: FaceKind, name: string, id: string | null, poses: CreateFace['poses']): CreateFace => ({
     id,

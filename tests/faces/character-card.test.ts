@@ -64,7 +64,7 @@ const mascotFace = (o: Partial<CardFace> = {}): CardFace => ({
   sheetUrl: null,
   ...o,
 });
-const data = (faces: CardFace[] = [], o: Partial<FaceCardData> = {}): FaceCardData => ({ regulated: "none", faces, activeFaceId: null, inPosts: false, cutoutConfigured: true, ...o });
+const data = (faces: CardFace[] = [], o: Partial<FaceCardData> = {}): FaceCardData => ({ regulated: "none", faces, activeFaceId: null, inPosts: false, cutoutConfigured: true, suggestions: { illustrated: [], photoreal: [] }, ...o });
 
 function props(selected: CharacterId = "tween", name = "", o: Partial<MascotProps> = {}): MascotProps {
   return {

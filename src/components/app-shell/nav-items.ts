@@ -6,6 +6,7 @@ const home: NavItem = { href: "/home", label: s.nav.home, icon: "M4 11l8-7 8 7v8
 const ideas: NavItem = { href: "/ideas", label: s.nav.ideas, icon: "M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z" };
 const create: NavItem = { href: "/create", label: s.nav.createPost, icon: "M12 5v14M5 12h14" };
 /** The phone bottom bar has room for a short label. */
+const planWeek: NavItem = { href: "/plan", label: "Plan a week", icon: "M4 6h16M4 6v13a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V6M4 6V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v1M8 3v3M16 3v3M8 11h2M14 11h2M8 15h2M14 15h2" };
 const createShort: NavItem = { ...create, label: s.nav.create };
 // "Queue" is the old "This week" page; phase 3 turns it into the real posting queue.
 const queue: NavItem = { href: "/week", label: s.nav.queue, icon: "M4 5.5a3.5 3.5 0 0 1 3.5-3.5h9A3.5 3.5 0 0 1 20 5.5V17a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3zM4 10h16M9 3v4M15 3v4" };
@@ -29,7 +30,7 @@ const connections: NavItem = {
 export const phoneNavItems: NavItem[] = [createShort, queue, brand, results];
 
 /** The sidebar's first block: the main action and the queue. */
-export const sidebarTop: NavItem[] = [create, queue];
+export const sidebarTop: NavItem[] = [create, planWeek, queue];
 /** Then the everyday pages. */
 export const sidebarMain: NavItem[] = [home, ideas, results, history];
 /** Under the "Brand" group label. The mascot is reached from the Brand page. */
@@ -45,7 +46,7 @@ export const isActive = (pathname: string, href: string): boolean => pathname ==
 /** The sidebar's active item: Create stays lit through all five steps, Brand while on the mascot screen. */
 export function isNavActive(pathname: string, href: string): boolean {
   if (href === "/brand") return isActive(pathname, "/brand") || isActive(pathname, "/mascot");
-  if (href === "/week") return isActive(pathname, "/week") || isActive(pathname, "/plan");
+  if (href === "/week") return isActive(pathname, "/week");
   return isActive(pathname, href);
 }
 
@@ -55,6 +56,7 @@ export function pageTitle(pathname: string): string {
     ["/home", s.nav.home],
     ["/ideas", s.nav.ideas],
     ["/create", s.nav.createPost],
+    ["/week/settings", s.queue.sections.settings],
     ["/week", s.nav.queue],
     ["/plan", s.nav.plan],
     ["/results", s.nav.results],

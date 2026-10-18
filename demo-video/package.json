@@ -1,0 +1,20 @@
+{
+  "name": "weekly-posts-demo-video",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "engines": { "node": ">=24" },
+  "description": "Scripted demo-video pipeline: Playwright recordings + HTML cards + Google TTS + ffmpeg.",
+  "scripts": {
+    "auth": "node src/auth.mjs",
+    "tts": "node src/tts.mjs",
+    "record": "node src/record.mjs",
+    "cards": "node src/cards.mjs",
+    "assemble": "node src/assemble.mjs",
+    "all": "node src/all.mjs"
+  },
+  "dependencies": {
+    "@google-cloud/text-to-speech": "^6.0.0",
+    "playwright": "^1.55.0"
+  }
+}

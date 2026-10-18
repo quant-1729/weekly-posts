@@ -9,7 +9,7 @@
 import type { V2CheckPost } from '@/lib/ai/prompts/v2-fact-check';
 import type { WeeklyFact } from '@/lib/ai/prompts/v2-weekly';
 import type { V2FactCheck } from '@/lib/ai/schemas-v2';
-import { regulatedGroup } from '@/lib/ai/regulated';
+import { resolveRegulated } from '@/lib/ai/regulated';
 import { getDb, type Tx } from '@/lib/db';
 import { regionsByCountry } from '@/lib/setup/regions';
 import { checkPostsAi, type AiStatement } from './ai';
@@ -74,7 +74,7 @@ async function loadContext(tx: Tx, brandId: string): Promise<GuardrailContext> {
        from public.brand_memory where brand_id = $1`,
     [brandId],
   );
-  const regulated = ((mem?.regulated as RegulatedKind | null | undefined) ?? regulatedGroup(mem?.category ?? '')) as RegulatedKind;
+  const regulated = resolveRegulated(mem?.regulated, mem?.category) as RegulatedKind;
   // A fact that promises an outcome is never used by a regulated brand's posts.
   const facts: WeeklyFact[] = rows.map((r, i) => ({ id: `f${i + 1}`, kind: r.kind, label: r.label ?? '', value: r.value, neverUse: regulated !== 'none' && r.outcome_promise }));
   // The business name and location from setup count as facts too (appended, so stored ids keep their numbers).
@@ -182,7 +182,10 @@ export async function runGuardrail(args: {
          from public.posts p
         where p.brand_id = $1 and p.batch_id is null and p.brief_id is not null
           and p.caption is not null and p.status <> 'skipped' and p.slide_index is null
-          and ($4::uuid is null or p.brief_id <> $4::uuid)
+          -- the brief itself, and the other days of the same weekly plan (they are meant to share their wording)
+          and ($4::uuid is null or (p.brief_id <> $4::uuid and p.brief_id not in (
+                select o.id from public.post_briefs o join public.post_briefs me on me.id = $4::uuid
+                 where me.plan_id is not null and o.plan_id = me.plan_id)))
           -- UTC days on both sides (ref is a UTC date), whatever the database session's time zone is
           and (p.created_at at time zone 'UTC')::date >= $2::date and (p.created_at at time zone 'UTC')::date <= $3::date`,
       [args.brandId, addDays(ref, -HISTORY_DAYS), ref, args.excludeBriefId ?? null],

@@ -23,6 +23,8 @@ substitutions:
   _META_APP_ID: ""                     # Meta app id (public); the secret goes in Secret Manager as META_APP_SECRET
   _INSTAGRAM_APP_ID: ""                # blank = use the Meta app id
   _IMAGEN_MODEL: ""                    # blank = the default Imagen model
+  _FIREBASE_WEB_API_KEY: ""            # Firebase web app key (public by design); blank = live status off (docs/deploy.md)
+  _FIREBASE_WEB_APP_ID: ""             # Firebase web app id; set together with the key
   # Secret Manager secrets that are optional or depend on your choices, as ENV=SECRET:VERSION pairs separated by commas.
   # Default: the Google key file (C-33). Make it empty for keyless Cloud Run (docs/deploy.md section 4).
   # Add READER_API_KEY=READER_API_KEY:latest,INSTAGRAM_LOOKUP_TOKEN=INSTAGRAM_LOOKUP_TOKEN:latest when you have them,
@@ -72,6 +74,8 @@ steps:
         if [ -n "${_META_APP_ID}" ]; then ENVS="$$ENVS|META_APP_ID=${_META_APP_ID}"; fi
         if [ -n "${_INSTAGRAM_APP_ID}" ]; then ENVS="$$ENVS|INSTAGRAM_APP_ID=${_INSTAGRAM_APP_ID}"; fi
         if [ -n "${_IMAGEN_MODEL}" ]; then ENVS="$$ENVS|IMAGEN_MODEL=${_IMAGEN_MODEL}"; fi
+        # Live status (Firebase, docs/deploy.md): the five settings are added only when both the web API key and app id are given.
+        if [ -n "${_FIREBASE_WEB_API_KEY}" ] && [ -n "${_FIREBASE_WEB_APP_ID}" ]; then ENVS="$$ENVS|REALTIME_BACKEND=firestore|FIREBASE_PROJECT_ID=${PROJECT_ID}|FIREBASE_WEB_API_KEY=${_FIREBASE_WEB_API_KEY}|FIREBASE_WEB_APP_ID=${_FIREBASE_WEB_APP_ID}|FIREBASE_SERVICE_ACCOUNT_ID=${_RUNTIME_SA}@${PROJECT_ID}.iam.gserviceaccount.com"; fi
 
         # Secrets, read from Secret Manager when an instance starts (never written into the image or the build log).
         SECRETS="SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest"

@@ -1,22 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   moveItemAction,
   postNowItemAction,
   postNowReadyAction,
-  saveQueueSettingsAction,
+  refreshQueueAction,
   scheduleReadyAction,
   skipItemAction,
   slotOptionsAction,
   unscheduleItemAction,
   type QueueActionResult,
 } from "@/app/(app)/week/queue-actions";
-import { alertClass, badge, cardClass, chipClass, errorClass, hintClass, inputClass, labelClass, linkButton, primaryButton, quietButton, secondaryButton, smallButton, strongButton, wellClass, type BadgeTone } from "@/components/ui";
+import { alertClass, badge, cardClass, errorClass, hintClass, iconButtonOutline, inputClass, labelClass, linkButton, quietButton, secondaryButton, smallButton, strongButton, wellClass, type BadgeTone } from "@/components/ui";
+import { LiveDot } from "@/components/live/live-dot";
+import { useLiveDoc, useLiveKind } from "@/components/live/use-live";
 import { fill, s } from "@/lib/i18n/strings";
-import { DEFAULT_TIME } from "@/lib/queue/types";
-import type { QueueSettings } from "@/lib/queue/types";
+import type { QueueStatus } from "@/lib/queue/types";
 import type { QueueCard, QueueView, ReadyCard } from "@/lib/queue/view";
 
 const t = s.queue;
@@ -32,6 +33,26 @@ const STATUS_TONE: Record<string, BadgeTone> = {
   expired: "neutral",
 };
 
+/** After a live signal, wait this long (so a burst of changes is one refresh) before asking the server for the page's data. */
+const LIVE_REFRESH_MS = 400;
+
+/** Shows a new status on one card straight away (the full refresh follows). Everything else stays as it is. */
+export function patchStatus(view: QueueView, itemId: string, status: QueueStatus): QueueView {
+  let changed = false;
+  const patch = (c: QueueCard): QueueCard => {
+    if (c.id !== itemId || c.status === status) return c;
+    changed = true;
+    return { ...c, status, statusLabel: t.statuses[status] };
+  };
+  const next = {
+    ...view,
+    attention: view.attention.map(patch),
+    upcoming: view.upcoming.map((d) => ({ ...d, items: d.items.map(patch) })),
+    recent: view.recent.map(patch),
+  };
+  return changed ? next : view;
+}
+
 type Message = { kind: "ok" | "error"; text: string };
 type Options = { key: string; list: { at: string; label: string }[]; picked: string };
 
@@ -43,12 +64,80 @@ interface Shared {
   openOptions: (key: string, postId: string) => Promise<void>;
 }
 
-/** The Queue (PRD v3 S-1 to S-6): what is coming, what needs the owner, what is ready to schedule, and the settings. */
-export function QueueScreen({ initial }: { initial: QueueView }) {
+/** The Queue (PRD v3 S-1 to S-6): what is coming, what needs the owner, and what is ready to schedule. The settings are on /week/settings. */
+export function QueueScreen({ initial, brandId }: { initial: QueueView; brandId?: string | null }) {
   const [view, setView] = useState(initial);
   const [busy, setBusy] = useState<string | null>(null);
   const [message, setMessage] = useState<Message | null>(null);
   const [options, setOptions] = useState<Options | null>(null);
+
+  // Live status (docs/14-firebase-plan.md): other devices and the hourly sweep ring a bell; this screen shows the new badge
+  // at once and then re-reads the page's data. When live is off nothing below does anything and the page works as before.
+  const { live, docs } = useLiveKind(brandId, "queue");
+  const { live: touchLive, doc: touch } = useLiveDoc(brandId, "queue_touch");
+  const busyRef = useRef<string | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const seenItems = useRef<Map<string, number> | null>(null);
+  const seenTouch = useRef<number | null>(null);
+
+  useEffect(() => {
+    busyRef.current = busy;
+  }, [busy]);
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    },
+    [],
+  );
+
+  function scheduleRefresh() {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      if (busyRef.current !== null) return; // an action of this screen is running; its answer carries the new view
+      void refreshQueueAction().then((r) => {
+        if (r.ok && r.view && busyRef.current === null) setView(r.view);
+      });
+    }, LIVE_REFRESH_MS);
+  }
+
+  useEffect(() => {
+    if (!live) {
+      seenItems.current = null;
+      return;
+    }
+    if (seenItems.current === null) {
+      // First answer: what is there already is not news, but one refresh closes the gap since the page was drawn.
+      seenItems.current = new Map(docs.map((d) => [d.id, d.seq]));
+      scheduleRefresh();
+      return;
+    }
+    const seen = seenItems.current;
+    let news = false;
+    for (const d of docs) {
+      if (d.seq <= (seen.get(d.id) ?? 0)) continue; // an older or repeated write is ignored
+      seen.set(d.id, d.seq);
+      news = true;
+      setView((v) => patchStatus(v, d.itemId, d.status));
+    }
+    if (news) scheduleRefresh();
+  }, [live, docs]);
+
+  useEffect(() => {
+    if (!touchLive) {
+      seenTouch.current = null;
+      return;
+    }
+    const seq = touch?.seq ?? 0;
+    if (seenTouch.current === null) {
+      seenTouch.current = seq;
+      return;
+    }
+    if (seq > seenTouch.current) {
+      seenTouch.current = seq;
+      scheduleRefresh();
+    }
+  }, [touchLive, touch]);
 
   async function run(name: string, fn: () => Promise<QueueActionResult>) {
     setBusy(name);
@@ -81,9 +170,12 @@ export function QueueScreen({ initial }: { initial: QueueView }) {
         </p>
       ) : null}
       {paused ? (
-        <p className={alertClass("warn")} data-queue-paused>
-          {t.upcoming.pausedNote}
-        </p>
+        <div className={`${alertClass("warn")} space-y-1`} data-queue-paused>
+          <p>{t.upcoming.pausedNote}</p>
+          <Link href="/week/settings" className={linkButton} data-queue-paused-link>
+            {t.upcoming.pausedLink}
+          </Link>
+        </div>
       ) : null}
 
       {view.attention.length > 0 ? (
@@ -101,7 +193,18 @@ export function QueueScreen({ initial }: { initial: QueueView }) {
       ) : null}
 
       <section className="space-y-3" aria-label={t.sections.upcoming} data-queue-upcoming>
-        <h2 className="text-section text-title">{t.sections.upcoming}</h2>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-section text-title">{t.sections.upcoming}</h2>
+            <LiveDot live={live} />
+          </div>
+          <Link href="/week/settings" className={iconButtonOutline} aria-label={t.settingsPage.open} title={t.settingsPage.open} data-queue-settings-link>
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+            </svg>
+          </Link>
+        </div>
         {view.upcoming.length === 0 ? (
           <div className={`space-y-3 ${cardClass}`}>
             <p className="text-[14px] leading-5 text-desc">{t.upcoming.empty}</p>
@@ -148,7 +251,6 @@ export function QueueScreen({ initial }: { initial: QueueView }) {
         </section>
       ) : null}
 
-      <SettingsCard view={view} busy={busy} run={run} />
     </div>
   );
 }
@@ -200,7 +302,7 @@ function ItemCard({ card, shared }: { card: QueueCard; shared: Shared }) {
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-ui text-title">{card.channelLabel}</h3>
-            <span className={badge(STATUS_TONE[card.status] ?? "info")} data-status-badge>
+            <span className={`${badge(STATUS_TONE[card.status] ?? "info")}${card.status === "publishing" ? " animate-pulse" : ""}`} data-status-badge>
               {card.statusLabel}
             </span>
           </div>
@@ -303,112 +405,5 @@ function ReadyItem({ card, first, shared }: { card: ReadyCard; first: boolean; s
       </div>
       <SlotPicker id={`ready:${card.postId}`} shared={shared} label={fill(t.actions.choose, { channel: card.channelLabel })} onPick={(at) => void run("schedule", () => scheduleReadyAction(card.postId, at))} />
     </li>
-  );
-}
-
-/** The settings as a string that does not depend on the order of keys, and treats a missing time as the default. */
-function settingsKey(v: QueueSettings): string {
-  const times = Object.entries(v.times).filter(([, t]) => t !== DEFAULT_TIME).sort(([a], [b]) => a.localeCompare(b));
-  const auto = Object.entries(v.autoApprove).filter(([, on]) => on).map(([c]) => c).sort();
-  return JSON.stringify([v.postsPerWeek, [...v.days].sort((a, b) => a - b), times, auto, v.deliverEmail, v.paused]);
-}
-
-function SettingsCard({ view, busy, run }: { view: QueueView; busy: string | null; run: Shared["run"] }) {
-  const [draft, setDraft] = useState<QueueSettings>(view.settings);
-  const st = t.settings;
-  const toggleDay = (d: number) => setDraft({ ...draft, days: draft.days.includes(d) ? draft.days.filter((x) => x !== d) : [...draft.days, d].sort((a, b) => a - b) });
-  const dirty = settingsKey(draft) !== settingsKey(view.settings);
-  return (
-    <section className={`space-y-5 ${cardClass} md:p-6`} aria-label={t.sections.settings} data-queue-settings>
-      <div>
-        <h2 className="text-card-title text-title">{t.sections.settings}</h2>
-        <p className={hintClass}>{fill(st.intro, { zone: view.timezone })}</p>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <label className={`block ${labelClass}`}>
-          {st.postsPerWeek}
-          <select className={`${inputClass} mt-1.5 font-normal`} value={draft.postsPerWeek} onChange={(e) => setDraft({ ...draft, postsPerWeek: Number(e.target.value) })} data-setting="postsPerWeek">
-            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-        </label>
-        <fieldset>
-          <legend className={labelClass}>{st.days}</legend>
-          <p className={hintClass}>{st.daysHint}</p>
-          <div className="flex flex-wrap gap-2">
-            {st.weekdays.map((name, i) => (
-              <button
-                key={name}
-                type="button"
-                aria-pressed={draft.days.includes(i + 1)}
-                onClick={() => toggleDay(i + 1)}
-                className={chipClass(draft.days.includes(i + 1))}
-              >
-                {name}
-              </button>
-            ))}
-          </div>
-        </fieldset>
-      </div>
-
-      <div className="space-y-2">
-        <h3 className={labelClass}>{st.times}</h3>
-        <ul className="grid gap-3 md:grid-cols-2">
-          {view.channels.map((c) => (
-            <li key={c.channel} className={`space-y-2 ${wellClass} !bg-white`} data-channel-setting={c.channel}>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-ui text-title">{c.label}</span>
-                <span className={badge(c.provider && c.connected ? "ok" : "neutral")}>{c.provider ? (c.connected ? st.connected : st.notConnected) : t.modes.deliver}</span>
-              </div>
-              <label className={labelClass}>
-                {fill(st.timeFor, { channel: c.label })}
-                <input
-                  type="time"
-                  className={`${inputClass} mt-1.5 font-normal`}
-                  value={draft.times[c.channel] ?? DEFAULT_TIME}
-                  onChange={(e) => setDraft({ ...draft, times: { ...draft.times, [c.channel]: e.target.value } })}
-                />
-              </label>
-              <label className="flex items-start gap-2.5 text-[14px] leading-5">
-                <input
-                  type="checkbox"
-                  checked={draft.autoApprove[c.channel] === true}
-                  onChange={(e) => setDraft({ ...draft, autoApprove: { ...draft.autoApprove, [c.channel]: e.target.checked } })}
-                  data-auto-approve={c.channel}
-                />
-                <span>{st.autoApprove}</span>
-              </label>
-            </li>
-          ))}
-        </ul>
-        <p className={alertClass("warn")}>{st.autoApproveWarning}</p>
-      </div>
-
-      <label className="flex items-start gap-3 text-[14px] leading-5">
-        <input type="checkbox" role="switch" className="switch mt-0.5" checked={draft.deliverEmail} onChange={(e) => setDraft({ ...draft, deliverEmail: e.target.checked })} />
-        <span>
-          <span className="block text-title">{st.deliverEmail}</span>
-          <span className="mt-0.5 block text-note text-desc">{st.deliverEmailHint}</span>
-        </span>
-      </label>
-      <label className="flex items-start gap-3 text-[14px] leading-5">
-        <input type="checkbox" role="switch" className="switch mt-0.5" checked={draft.paused} onChange={(e) => setDraft({ ...draft, paused: e.target.checked })} data-setting="paused" />
-        <span>
-          <span className="block text-title">{st.pause}</span>
-          <span className="mt-0.5 block text-note text-desc">{st.pauseHint}</span>
-        </span>
-      </label>
-      <div className="flex flex-wrap items-center gap-4">
-        <button type="button" className={primaryButton} disabled={busy !== null || !dirty || draft.days.length === 0} onClick={() => void run("settings", () => saveQueueSettingsAction(draft))}>
-          {busy === "settings" ? st.saving : st.save}
-        </button>
-        <Link href="/connections" className={linkButton}>
-          {st.manageConnections}
-        </Link>
-      </div>
-    </section>
   );
 }

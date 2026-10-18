@@ -6,6 +6,10 @@ import { GoogleGenAI, Modality } from '@google/genai';
 import { AiError, aiMode, serviceAccountCredentials } from '@/lib/ai/client';
 import { redactPaymentIds } from '@/lib/payments/redact';
 import { FACE_IMAGE_MODEL, FACE_IMAGE_USD } from '../types';
+import { FaceGenError } from './errors';
+
+/** Finish or block reasons that mean the model's safety check declined the request (retrying the same prompt is pointless). */
+const SAFETY_REASONS = new Set(['SAFETY', 'IMAGE_SAFETY', 'PROHIBITED_CONTENT', 'IMAGE_PROHIBITED_CONTENT', 'BLOCKLIST', 'SPII', 'OTHER_SAFETY']);
 
 export const MAX_FACE_REFERENCES = 3;
 
@@ -113,6 +117,8 @@ export const generateFaceImage: FaceImageFn = async (req) => {
   const part = res.candidates?.[0]?.content?.parts?.find((p) => p.inlineData?.data);
   if (!part?.inlineData?.data) {
     const why = res.candidates?.[0]?.finishReason;
+    const blocked = res.promptFeedback?.blockReason;
+    if ((why && SAFETY_REASONS.has(String(why))) || blocked) throw new FaceGenError('image_blocked', String(blocked ?? why));
     throw new AiError('call_failed', `${model} returned no image${why ? ` (finish reason: ${why})` : ''}`);
   }
   const bytes = Buffer.from(part.inlineData.data, 'base64');

@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Live status, written only by the server (Admin SDK bypasses rules).
+    // Mirrors our RLS: a signed-in owner reads only their current brand's docs.
+    match /brands/{brandId}/live/{docId} {
+      allow get, list: if request.auth != null
+        && request.auth.token.b == brandId
+        && request.auth.token.until is int
+        && request.time.toMillis() < request.auth.token.until;
+      allow create, update, delete: if false;
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

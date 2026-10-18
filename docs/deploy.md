@@ -44,10 +44,15 @@ gcloud services enable \
   cloudscheduler.googleapis.com \
   storage.googleapis.com \
   aiplatform.googleapis.com \
-  iamcredentials.googleapis.com
+  iamcredentials.googleapis.com \
+  firestore.googleapis.com \
+  firebase.googleapis.com \
+  firebaserules.googleapis.com \
+  identitytoolkit.googleapis.com \
+  securetoken.googleapis.com
 ```
 
-`iamcredentials` is needed for signed image links when the app runs without a key file (section 4).
+`iamcredentials` is needed for signed image links when the app runs without a key file (section 4). The last five are for live status (section 13); enabling them costs nothing and does nothing until section 13 is done.
 
 Phase 4 (voice, translation, analytics, YouTube) needs these too. Enabling an API costs nothing; turn them on now or when that phase starts:
 
@@ -80,12 +85,14 @@ BUILD_SA=weekly-posts-build@$PROJECT_ID.iam.gserviceaccount.com
 | `roles/aiplatform.user` | the project | Call Gemini (and later Imagen, Veo) on Vertex AI |
 | `roles/storage.objectAdmin` | each of the five buckets only (section 3) | Read, write, delete and list files. Not the whole project, and no permission to create or delete buckets |
 | `roles/secretmanager.secretAccessor` | each secret only (section 5) | Read its own settings |
-| `roles/iam.serviceAccountTokenCreator` | itself | Only for keyless signed links (section 4, option A) |
+| `roles/iam.serviceAccountTokenCreator` | itself | Keyless signed links (section 4, option A). Already granted, and also used to sign the Firebase custom tokens for live status (section 13) |
+| `roles/datastore.user` | the project | Write the live status documents to Firestore (section 13). Not needed while live status is off |
 | Phase 4 | the project | `roles/speech.client`, `roles/cloudtranslate.user`, `roles/bigquery.jobUser` plus `roles/bigquery.dataEditor` on the one dataset. Text-to-Speech needs no role beyond the API being enabled |
 
 ```bash
 gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:$RUN_SA --role=roles/aiplatform.user
 gcloud iam service-accounts add-iam-policy-binding $RUN_SA --member=serviceAccount:$RUN_SA --role=roles/iam.serviceAccountTokenCreator
+gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:$RUN_SA --role=roles/datastore.user   # live status (section 13)
 ```
 
 **Build account (`weekly-posts-build`)**, what Cloud Build can do:
@@ -206,6 +213,12 @@ Plain settings are set by `cloudbuild.yaml` from the substitutions in section 6.
 | `EMAIL_REPLY_TO` | plain, optional | Where replies go |
 | `ADMIN_EMAILS` | plain, optional | Comma-separated sign-in emails allowed to open the read-only `/admin` monitoring page (build substitution `_ADMIN_EMAILS`; commas inside the value are fine because of the `^`+`|`+`^` separator in section 6). Blank means nobody: `/admin` answers 404. Sign in with one of these emails, then open `/admin`. |
 | `INSTAGRAM_LOOKUP_USER_ID`, `META_GRAPH_VERSION` | plain, optional | See `.env.example` |
+| `REALTIME_BACKEND` | plain (set by the deploy step, only when `_FIREBASE_WEB_API_KEY` is given) | `firestore`. Leave it unset or `off` to keep live status off |
+| `FIREBASE_PROJECT_ID` | plain (set by the deploy step, same condition) | `weekly-posts-471203` (the project id) |
+| `FIREBASE_WEB_API_KEY` | plain, build substitution `_FIREBASE_WEB_API_KEY` | From `apps:sdkconfig` (section 13). Public by design, so not a secret |
+| `FIREBASE_WEB_APP_ID` | plain, build substitution `_FIREBASE_WEB_APP_ID` | From `apps:sdkconfig` (section 13) |
+| `FIREBASE_AUTH_DOMAIN` | plain, optional (not set by `cloudbuild.yaml`) | Default `{project id}.firebaseapp.com` |
+| `FIREBASE_SERVICE_ACCOUNT_ID` | plain (set by the deploy step, same condition) | `weekly-posts-run@{project id}.iam.gserviceaccount.com`. Read from `process.env` by `src/lib/realtime/firestore.ts`, not through `getEnv()` |
 | `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_DB_URL`, `AUTH_SECRET`, `EMAIL_LINK_SECRET`, `CRON_SECRET`, `RESEND_API_KEY` | **secret** | Section 5 table |
 | `GOOGLE_SERVICE_ACCOUNT_JSON` | **secret** | Option B only |
 | `READER_API_KEY`, `INSTAGRAM_LOOKUP_TOKEN` | **secret**, optional | Add to `_EXTRA_SECRETS` |
@@ -334,3 +347,58 @@ GCS_BUCKET_PREFIX=weeklyposts-prod GOOGLE_SERVICE_ACCOUNT_JSON="$(cat key.json)"
 ```
 
 It writes, reads, lists, signs and deletes a few small files under a throw-away brand id in all five buckets. It is not part of `npm test`.
+
+## 13. Firebase (live status, optional)
+
+Live status lets open pages update as work happens: the Queue moves from Scheduled to Publishing to Published without a reload, and a Brand Face shows its progress pose by pose. The server writes short-lived, non-sensitive, brand-scoped status documents to Firestore; Supabase stays the system of record (see [14-firebase-plan.md](14-firebase-plan.md) and the decision D11 in [architecture.md](architecture.md)). Nothing in Firestore holds captions, payment IDs, secrets or personal data, and a TTL policy deletes the documents within a day.
+
+It is **off until both `_FIREBASE_WEB_API_KEY` and `_FIREBASE_WEB_APP_ID` are given** to the build. `REALTIME_BACKEND=off` turns it off on the service at any time, and the app then behaves as it did before.
+
+### One-time setup (owner approval needed)
+
+Run these once, in Google Cloud Shell or Git Bash, from the repo root:
+
+```bash
+PROJECT_ID=weekly-posts-471203
+REGION=australia-southeast1
+RUN_SA=weekly-posts-run@$PROJECT_ID.iam.gserviceaccount.com
+
+# 1. APIs (iamcredentials is already on, section 1)
+gcloud services enable firestore.googleapis.com firebase.googleapis.com firebaserules.googleapis.com \
+  identitytoolkit.googleapis.com securetoken.googleapis.com --project=$PROJECT_ID
+
+# 2. Add Firebase to the existing project; register the web app
+npx -y firebase-tools@latest login
+npx -y firebase-tools@latest projects:addfirebase $PROJECT_ID
+npx -y firebase-tools@latest apps:create web weekly-posts-web --project=$PROJECT_ID
+npx -y firebase-tools@latest apps:sdkconfig web <APP_ID> --project=$PROJECT_ID   # note apiKey and appId
+
+# 3. Firestore (default) database in Sydney. LOCATION IS PERMANENT.
+gcloud firestore databases create --database='(default)' --location=$REGION --type=firestore-native --project=$PROJECT_ID
+
+# 4. TTL cleanup on expireAt
+gcloud firestore fields ttls update expireAt --collection-group=live --enable-ttl --project=$PROJECT_ID
+
+# 5. Console: Firebase > Build > Authentication > "Get started" (no provider needed for custom tokens)
+
+# 6. IAM (Token Creator on itself is already granted, section 2)
+gcloud projects add-iam-policy-binding $PROJECT_ID --member=serviceAccount:$RUN_SA --role=roles/datastore.user
+gcloud iam service-accounts get-iam-policy $RUN_SA   # confirm Token Creator on itself
+
+# 7. Security rules (repo root: firebase.json and firestore.rules)
+npx -y firebase-tools@latest deploy --only firestore:rules --project=$PROJECT_ID
+
+# 8. Console > APIs & Services > Credentials > "Browser key (auto created by Firebase)":
+#    HTTP referrers: https://weekly-posts-526531409571.australia-southeast1.run.app/*, http://localhost:3000/*
+#    APIs: Identity Toolkit, Token Service, Cloud Firestore
+```
+
+Then deploy (section 6) with the two values from step 2 given as substitutions, `_FIREBASE_WEB_API_KEY=...` and `_FIREBASE_WEB_APP_ID=...`, either added to `deploy/main.subs.txt` or passed on the command line (see [SETUP.md](SETUP.md) section 8.2). The deploy step then sets the five settings in the table in section 5. Do not give only the key: the app id is needed too.
+
+### Production checks
+
+- Two devices on `/week`, both signed in to the same brand: "Post now" on one updates the other without a reload.
+- Reading another brand's path in the browser gives `permission-denied`.
+- No `[live] write failed` in the Cloud Run logs (section 8).
+- Firestore usage (Firebase console, Firestore > Usage) stays within the free tier.
+- Switching off restores today's behaviour: `gcloud run services update weekly-posts --region=$REGION --update-env-vars=REALTIME_BACKEND=off`.

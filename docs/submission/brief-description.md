@@ -1,0 +1,11 @@
+# Brief description (submission form)
+
+## What we built (about 370 words)
+
+Weekly Posts helps small business owners make regular, truthful, good-looking posts without design skills. The owner fills a short brief first (offer, selling points, contacts, QR, dates), then picks and edits a design. Posts may state only facts from the brief; anything else is flagged "please check". Nothing is published until the owner approves, and posts then go out one at a time.
+
+**Cloud Run:** the Next.js app runs on Cloud Run (australia-southeast1, 2 vCPU, 2 GiB, scales to zero), with a second Cloud Run service for the admin dashboard. Cloud Scheduler calls its job routes (publishing queue, reminders, weekly run, insights, connection checks, research). Images are drawn on the server with HarfBuzz and resvg; files live in Cloud Storage.
+
+**Gemini (Vertex AI):** gemini-3.8-flash writes captions, fills a brief from typed or spoken text (it also transcribes voice notes), reads facts from the owner's website, fact-checks every post, and reads photos to suggest a layout. In Ideas, Gemini with Google Search grounding finds dated trends; sources come from the grounding metadata, not the model's text. Brand Face uses Gemini 3.1 Flash Image to make a character once, which a Gemini vision check reviews; Imagen 4 makes abstract backgrounds only. AI never writes text inside images and never sees payment IDs.
+
+**Firebase and Firestore:** Supabase Postgres with row-level security stays our system of record; Firebase gives owners a live view of work that happens out of sight. When the Cloud Scheduler sweep on Cloud Run publishes a post, or Gemini draws and checks a Brand Face pose by pose, the server writes a tiny brand-scoped status document to Firestore (scheduled → publishing → sent; "pose 3 of 7: checking it matches"). The browser signs in to Firebase Authentication with a short-lived custom token that Cloud Run mints without a key file, through IAM, for the owner's current brand, and listens with onSnapshot, so the Queue and Brand Face screens update instantly on every device without polling. Firestore security rules mirror our database rules: a browser can read only its own brand's documents, only while its claim is valid, and can never write. The documents hold no captions, payment IDs or personal data, and a TTL policy deletes them within a day.

@@ -361,6 +361,16 @@ const en = {
       flagsTitle: "Please check",
       flagsIntro: "We could not find these in your details. You can confirm or remove them in the next step.",
       flagsNone: "Nothing to check. Every figure and claim comes from your details.",
+      flagsAllFine: {
+        button: "These are all fine",
+        title: "Confirm these lines?",
+        body: "You confirm every line above is correct and can stay on your post.",
+        regulated: "Some lines are about health, money or education: you confirm you can show them.",
+        confirm: "Confirm",
+        working: "Confirming...",
+        cancel: "Cancel",
+        done: "Confirmed. Nothing left to check.",
+      },
       stale: "Your words changed, so the pictures were cleared. Use a design again to draw them.",
       designedNote: "Your pictures are drawn. Choosing a design again replaces them.",
       quick: {
@@ -492,6 +502,9 @@ const en = {
       share: {
         title: "Share this post",
         downloadSize: "Download {size}",
+        downloadPdf: "Download PDF",
+        downloadImages: "Download images",
+        pdfFailed: "We could not make the PDF. Try Download images instead.",
         shareSize: "Share {size}",
         copyCaption: "Copy caption",
         button: "Share",
@@ -1700,9 +1713,11 @@ const en = {
       settings: "Queue settings",
       weekly: "Weekly suggestions",
     },
+    settingsPage: { back: "← Queue", open: "Queue settings" },
     upcoming: {
       empty: "Nothing is scheduled yet. Approve a post, then schedule it, and it shows here.",
       pausedNote: "The queue is paused. Nothing is sent until you switch it back on in the settings.",
+      pausedLink: "Open queue settings",
       createFirst: "Create a post",
     },
     attention: {
@@ -2299,6 +2314,7 @@ const en = {
     textToPaste: "Text to paste",
     iosHint: "On iPhone, tap Share, then choose the app",
     imageFailed: "We could not get the image. Try Download instead.",
+    pdfNotApproved: "Approve the post first, then download it.",
     tapAgain: "The image is ready. Tap Share again.",
     shareFailed: "Sharing did not work. Try Download image, then add it in the app.",
     markPosted: "Mark as posted",
@@ -2464,6 +2480,8 @@ const en = {
         nameHint: "A short name, like Mia. Not a real or famous person.",
         descriptionLabel: "What does it look like?",
         descriptionHint: "Age, clothes in your brand colours, mood. Describe a character, not a real person.",
+        tip: "Tip: describe your own character. Works best: simple shapes, a friendly face, your colours. Not allowed: real or famous people, cartoon or film characters, words about looks or body, ages under 21, uniforms.",
+        tryOne: "Try one of these:",
         styleLabel: "Style",
         styles: { flat: "Flat drawing", "3d_cartoon": "3D cartoon", line_art: "Line art" },
         neverSayLabel: "Things it must never say (optional)",
@@ -2476,7 +2494,7 @@ const en = {
         steps: "Pictures first ({options}), then the character sheet ({sheet}), then the seven poses ({poses}). You approve each price when you press its button.",
         makeOptions: "Make options (about {price})",
         makeOptionsAgain: "Make new options (about {price})",
-        makingOptions: "Making {count} pictures. This takes about 20 seconds.",
+        makingOptions: "Making {count} pictures, one at a time. This can take up to a minute.",
       },
       options: {
         title: "Pick the look you like",
@@ -2513,6 +2531,15 @@ const en = {
         notes: "Check: {notes}",
         failed: "These poses could not be made: {poses}. You can try them again.",
         progress: "{approved} of {total} approved",
+      },
+      // Live progress under the "Making..." line while a step runs (T-FB5).
+      progress: {
+        optionOf: "Option {n} of {total}",
+        pose: "{pose}: try {n} of {total}",
+        poseStep: "{pose}: try {n} of {total}, {phase}",
+        poseSaved: "{pose}: saved",
+        phases: { drawing: "drawing", checking: "checking it matches", cutting: "cutting out" },
+        waiting: "Google's image limit, waiting about {seconds} s",
       },
       use: {
         button: "Use this face",
@@ -2597,6 +2624,8 @@ const en = {
         needs_sheet: "Approve the character sheet first.",
         no_option: "That picture is not there. Please make new pictures.",
         image_failed: "The picture could not be made. Please try again.",
+        busy: "Google is busy right now (too many pictures at once). Wait a minute and try again — nothing was charged.",
+        image_blocked: "Google's safety check declined this picture, so trying again will not help. Change the description (leave out words about looks, body or age) and try again. Nothing was charged for it.",
         cutout_not_configured: "Background removal isn't set up yet.",
         cutout_failed: "The background could not be removed cleanly. Please try again.",
       },
@@ -2608,6 +2637,8 @@ const en = {
       bad_character: "Please pick one of the characters shown.",
       blocked_name: "That name belongs to a well-known person, character or figure. Please choose another.",
       real_person: "Please describe a character, not a real or famous person. Your own face is added from your own photos.",
+      unsuitable_description: "Please describe the character without words about attractiveness, the body or a young age: it will be the face of your business. For example: \"a friendly woman in her twenties, smiling, in a teal kurta\".",
+      copied_character: "Please describe your own character instead of a cartoon, film or game character — image tools refuse to copy them. Try one of the suggestions below.",
       bad_description: "Describe the character in a few words (up to 600 characters).",
       bad_style: "Choose one of the styles shown.",
       bad_settings: "One of the settings is not valid.",
@@ -2730,6 +2761,12 @@ const en = {
       saved: "Saved.",
       error: "We could not save this. Please try again.",
     },
+  },
+
+  // Live status (docs/14-firebase-plan.md): the small "Live" dot shown while a screen updates as things happen.
+  live: {
+    label: "Live",
+    title: "Updates appear here as they happen",
   },
 
   terms: {

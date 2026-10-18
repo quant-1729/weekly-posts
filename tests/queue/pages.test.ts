@@ -47,8 +47,10 @@ vi.mock("@/app/(app)/create/[briefId]/actions", () => ({
 }));
 
 import QueuePage from "@/app/(app)/week/page";
+import QueueSettingsPage from "@/app/(app)/week/settings/page";
 import SchedulePage from "@/app/(app)/create/[briefId]/schedule/page";
 import { QueueScreen } from "@/components/queue/queue-screen";
+import { QueueSettingsScreen } from "@/components/queue/queue-settings";
 import type { MockDb } from "@/lib/db/mock";
 import { scheduleApproved, loadQueueView, saveQueueSettings } from "@/lib/queue";
 import { closeDb, openDb } from "../helpers/details";
@@ -86,7 +88,7 @@ describe("the Queue page (/week)", () => {
     await rows(db, "update public.brand_memory set setup_completed_at = now() where brand_id = $1", [other.brandId]);
   });
 
-  it("an empty queue says what to do and still shows the settings and the weekly suggestions", async () => {
+  it("an empty queue says what to do, has the settings icon but no settings form, and still shows the weekly suggestions", async () => {
     session.user = { id: other.userId };
     atNow();
     const out = html(await QueuePage());
@@ -95,12 +97,11 @@ describe("the Queue page (/week)", () => {
     expect(out).toContain("Coming up");
     expect(out).toContain("Nothing is scheduled yet");
     expect(out).toContain("Ready to schedule");
-    expect(out).toContain("Queue settings");
-    expect(out).toContain("Posts per week");
-    expect(out).toContain("Auto-approve posts with no flags");
-    expect(out).toContain("Posts with a &quot;Please check&quot; flag always wait for you"); // the plain warning
-    expect(out).toContain("Email me posts I share myself");
-    expect(out).toContain("Pause the queue");
+    // The settings are a child page: only the icon link is here.
+    expect(out).toMatch(/<a[^>]*href="\/week\/settings"[^>]*aria-label="Queue settings"|<a[^>]*aria-label="Queue settings"[^>]*href="\/week\/settings"/);
+    expect(out).toContain("data-queue-settings-link");
+    expect(out).not.toContain("data-queue-settings>");
+    for (const gone of ["Posts per week", "Auto-approve posts with no flags", "Email me posts I share myself", "Pause the queue", "Save settings"]) expect(out).not.toContain(gone);
     expect(out).toContain("This week"); // the v2 weekly suggestions section
     expect(out).toContain("Generate this week");
     expect(out).toContain("data-create-button");
@@ -150,7 +151,10 @@ describe("the Queue page (/week)", () => {
     const out = html(await QueuePage());
     expect(out).toContain("data-queue-paused");
     expect(out).toContain("The queue is paused");
-    expect(out).toContain('value="08:30"');
+    expect(out).toMatch(/data-queue-paused-link[^>]*>|href="\/week\/settings"[^>]*data-queue-paused-link/);
+    expect(out).not.toContain('value="08:30"');
+    const settings = html(await QueueSettingsPage());
+    expect(settings).toContain('value="08:30"');
     await saveQueueSettings(shop.userId, shop.brandId, { paused: false, postsPerWeek: 3, times: {} });
   });
 
@@ -159,6 +163,50 @@ describe("the Queue page (/week)", () => {
     const view = await loadQueueView(shop.userId, shop.brandId, NOW);
     const out = html(createElement(QueueScreen, { initial: view }));
     expect(out).toContain("data-queue");
+    expect(out).toContain("Instagram");
+  });
+
+  it("the screen has no settings form of its own", async () => {
+    atNow();
+    const view = await loadQueueView(shop.userId, shop.brandId, NOW);
+    const out = html(createElement(QueueScreen, { initial: view }));
+    expect(out).not.toContain("data-queue-settings>");
+    expect(out).toContain('href="/week/settings"');
+  });
+});
+
+describe("the Queue settings page (/week/settings)", () => {
+  it("sends a signed-out visitor to sign in, and an unfinished setup to /setup", async () => {
+    session.user = null;
+    await expect(QueueSettingsPage()).rejects.toThrow("REDIRECT /login");
+    await rows(db, "update public.brand_memory set setup_completed_at = null where brand_id = $1", [other.brandId]);
+    session.user = { id: other.userId };
+    await expect(QueueSettingsPage()).rejects.toThrow("REDIRECT /setup");
+    await rows(db, "update public.brand_memory set setup_completed_at = now() where brand_id = $1", [other.brandId]);
+  });
+
+  it("shows the settings form with a back link to the Queue, and no queue lists", async () => {
+    session.user = { id: other.userId };
+    atNow();
+    const out = html(await QueueSettingsPage());
+    expect(out).toMatch(/<h1[^>]*>Queue settings<\/h1>/);
+    expect(out).toContain('href="/week"');
+    expect(out).toContain("← Queue");
+    expect(out).toContain("data-queue-settings");
+    expect(out).toContain("Posts per week");
+    expect(out).toContain("Auto-approve posts with no flags");
+    expect(out).toContain("Posts with a &quot;Please check&quot; flag always wait for you");
+    expect(out).toContain("Email me posts I share myself");
+    expect(out).toContain("Pause the queue");
+    expect(out).toContain("Save settings");
+    expect(out).not.toContain("data-queue-upcoming");
+  });
+
+  it("renders from a view alone, with the connection hints", async () => {
+    atNow();
+    const view = await loadQueueView(shop.userId, shop.brandId, NOW);
+    const out = html(createElement(QueueSettingsScreen, { initial: view }));
+    expect(out).toContain("data-queue-settings-screen");
     expect(out).toContain("Instagram");
     expect(out).toContain("Connected: posts are published for you.");
     expect(out).toContain("Not connected: we email the post to you.");

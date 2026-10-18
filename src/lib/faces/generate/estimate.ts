@@ -9,6 +9,9 @@ export const FACE_CAP_USD = 2.0;
 /** Allowance for one Gemini vision check (src/lib/faces/types.ts); real cost is recorded after. */
 export { FACE_CHECK_USD };
 
+/** The pause before a rate-limited image call is tried once more (the dev Vertex project allows about 2 images a minute). */
+export const BUSY_RETRY_PAUSE_MS = 35_000;
+
 export type FaceStep = 'options' | 'sheet' | 'poses';
 
 const micro = (usd: number) => Math.round(usd * 1_000_000);

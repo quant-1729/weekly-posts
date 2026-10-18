@@ -20,6 +20,7 @@ import {
   type QueueSettings,
   type QueueView,
 } from "@/lib/queue";
+import { emitQueueTouch } from "@/lib/realtime";
 
 /**
  * Server actions of the Queue page. Each checks the signed-in user and takes the brand from their current
@@ -42,11 +43,14 @@ export type QueueActionResult = { ok: true; message: string; view: QueueView } |
 
 const uuid = (v: unknown): string | null => (typeof v === "string" && UUID_RE.test(v) ? v : null);
 
-async function done(me: Who, run: () => Promise<{ ok: true; message: string } | { ok: false; message: string }>): Promise<QueueActionResult> {
+async function done(me: Who, run: () => Promise<{ ok: true; message: string } | { ok: false; message: string }>, opts: { touch?: boolean } = {}): Promise<QueueActionResult> {
   try {
     const r = await run();
     const view = await loadQueueView(me.userId, me.brandId);
     revalidatePath("/week");
+    // Other open devices refresh. emitLive never throws and gives up after 1.5 s. A plain refresh changes nothing, so it
+    // rings no bell (otherwise two open screens would refresh each other forever).
+    if (r.ok && opts.touch !== false) await emitQueueTouch(me.brandId);
     return r.ok ? { ok: true, message: r.message, view } : { ok: false, message: r.message, view };
   } catch (err) {
     if (err instanceof QueueError) return { ok: false, message: queueMessage(err.code) };
@@ -61,7 +65,7 @@ const NO_ONE = { ok: false as const, message: t.errors.signedOut };
 export async function refreshQueueAction(): Promise<QueueActionResult> {
   const me = await who();
   if (!me) return NO_ONE;
-  return done(me, async () => ({ ok: true, message: "" }));
+  return done(me, async () => ({ ok: true, message: "" }), { touch: false });
 }
 
 export async function saveQueueSettingsAction(patch: Partial<QueueSettings>): Promise<QueueActionResult> {

@@ -54,6 +54,14 @@ export default async function Page() {
         <HomeComposer brandId={brand.id} />
       </div>
 
+      <Link href="/plan" data-home-plan className="mt-6 flex items-center justify-between gap-4 rounded-card border border-line-light bg-white px-5 py-4 transition hover:shadow-sm max-md:px-4">
+        <span className="min-w-0">
+          <span className="block text-[16px] font-medium leading-6 text-title">Running offers all week?</span>
+          <span className="block text-ui text-sub">Plan a week in one line (“Mon 10%, Tue 20% …”), design it once, and every day’s post goes out on its own.</span>
+        </span>
+        <span className={`${primaryButton} shrink-0`}>Plan a week</span>
+      </Link>
+
       {next && (
         <div data-next-post className="mt-8 flex items-center justify-between gap-4 overflow-hidden rounded-card bg-linear-to-r from-hero-from via-hero-via to-well px-5 py-4 max-md:px-4">
           <div className="min-w-0">

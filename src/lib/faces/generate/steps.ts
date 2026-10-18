@@ -13,11 +13,12 @@ import { buildOptionPrompt, buildPosePrompt, buildSheetPrompt, DEFAULT_FACE_STYL
 import { requireBrandMember } from '@/lib/brand/current';
 import { getDb } from '@/lib/db';
 import { loadGuardrailContext } from '@/lib/guardrail';
+import { emitFaceProgress, type FaceLive } from '@/lib/realtime';
 import { getStorage, type Storage } from '@/lib/storage';
 import { recordUsage } from '@/lib/usage';
 import { FaceError } from '../errors';
 import { FACE_BUCKET, relOfStored } from '../paths';
-import { namesRealPerson } from '../rules';
+import { copiesKnownCharacter, namesRealPerson, unsuitableDescription } from '../rules';
 import { getFace, savePoseImage } from '../service';
 import {
   AI_FACE_KINDS,
@@ -32,8 +33,8 @@ import {
 } from '../types';
 import { checkPasses, checkWithGemini, pickBestTry, type FaceCheckFn } from './check';
 import { cutout, type CutoutFn } from './cutout';
-import { assertStepAllowed, FACE_CHECK_USD, StepBudget, stepEstimateUsd } from './estimate';
-import { FaceGenError } from './errors';
+import { assertStepAllowed, BUSY_RETRY_PAUSE_MS, FACE_CHECK_USD, StepBudget, stepEstimateUsd } from './estimate';
+import { FaceGenError, isRateLimited } from './errors';
 import { generateFaceImage, type FaceImageFn, type FaceImageResult } from './image-client';
 import { faceMasterRel, faceOptionRel, faceSheetDraftRel, faceSheetRel, toStored } from './paths';
 import { provenanceEntry, type FaceProvenanceEntry } from './provenance';
@@ -53,9 +54,16 @@ export interface FaceGenDeps {
   /** Writes one 'face_create' usage event. */
   record: (brandId: string, userId: string, usd: number) => Promise<void>;
   now: () => Date;
+  /** Waits (used for the pause before retrying a rate-limited image call). */
+  sleep: (ms: number) => Promise<void>;
+  /** Tells the browser how far a step is (live status, docs/14-firebase-plan.md). Default: emitFaceProgress for this face. */
+  progress: (p: FaceProgress) => Promise<void>;
 }
 
-function defaultDeps(): FaceGenDeps {
+/** One live progress update for a face: everything in FaceLive except the face id, which the default `progress` adds. */
+export type FaceProgress = Omit<FaceLive, 'faceId'>;
+
+function defaultDeps(brandId: string, faceId: string): FaceGenDeps {
   return {
     image: generateFaceImage,
     check: checkWithGemini,
@@ -63,10 +71,26 @@ function defaultDeps(): FaceGenDeps {
     storage: getStorage(),
     record: (brandId, userId, usd) => recordUsage(brandId, userId, 'face_create', usd),
     now: () => new Date(),
+    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    progress: (p) => emitFaceProgress(brandId, { faceId, ...p }),
   };
 }
 
-const withDeps = (d?: Partial<FaceGenDeps>): FaceGenDeps => ({ ...defaultDeps(), ...d });
+/** The deps with this brand's and face's live progress as the default. A progress call that fails is ignored: it never changes a result. */
+function withDeps(brandId: string, faceId: string, d?: Partial<FaceGenDeps>): FaceGenDeps {
+  const all = { ...defaultDeps(brandId, faceId), ...d };
+  const send = all.progress;
+  return {
+    ...all,
+    progress: async (p) => {
+      try {
+        await send(p);
+      } catch {
+        // live status is a convenience; generation goes on
+      }
+    },
+  };
+}
 
 // ---------------------------------------------------------------------------------------------
 // Context: the face, the brand's rules, and what goes into the prompts
@@ -104,6 +128,10 @@ async function loadContext(userId: string, brandId: string, faceId: string): Pro
   if (!description) throw new FaceError('bad_description', 'a description is needed');
   const hit = namesRealPerson(description, [mem?.name ?? '']);
   if (hit) throw new FaceError('real_person', hit);
+  const copied = copiesKnownCharacter(description);
+  if (copied) throw new FaceError('copied_character', copied);
+  const bad = unsuitableDescription(description);
+  if (bad) throw new FaceError('unsuitable_description', bad);
 
   const colors = ['primary', 'secondary', 'accent']
     .map((k) => mem?.colors?.[k])
@@ -115,6 +143,51 @@ async function loadContext(userId: string, brandId: string, faceId: string): Pro
     face,
     prompt: { kind, style: face.style ?? DEFAULT_FACE_STYLE[kind], description, colors },
   };
+}
+
+// ---------------------------------------------------------------------------------------------
+// The image call: logging, rate limits
+// ---------------------------------------------------------------------------------------------
+
+/** The pause before a rate-limited image call is tried once more (Vertex image quota is low: about 2 a minute). */
+export { BUSY_RETRY_PAUSE_MS }; // defined in estimate.ts so the Face card can say how long the wait is
+
+type FaceStepName = 'options' | 'sheet' | 'poses';
+
+/** A short, safe reason for the log: the finish/block reason or the first part of the error message (never the prompt or image data). */
+function failureReason(e: unknown): string {
+  const raw = e instanceof FaceGenError ? e.message.replace(/^[a-z_]+:\s*/, '') : e instanceof Error ? e.message : String(e);
+  return raw.replace(/\s+/g, ' ').trim().slice(0, 160);
+}
+
+/** One line per failed image call, so the next failure shows its real cause (safety, 429, timeout...). */
+function logImageFailure(step: FaceStepName, e: unknown): void {
+  const code = e instanceof FaceGenError && e.code === 'image_blocked' ? 'image_blocked' : 'call_failed';
+  console.warn('[faces] image call failed', { step, code, reason: failureReason(e) });
+}
+
+/**
+ * One image call. A rate-limited call (429) is tried once more after a pause (a failed call is not billed). Throws
+ * FaceGenError('image_blocked') for a safety block, FaceGenError('busy') when still rate-limited, and the original
+ * error for anything else. Every failed call is logged. `onWait` runs just before the pause (live status "waiting").
+ */
+async function callImage(deps: FaceGenDeps, step: FaceStepName, req: Parameters<FaceImageFn>[0], onWait?: () => Promise<void>): Promise<FaceImageResult> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await deps.image(req);
+    } catch (e) {
+      logImageFailure(step, e);
+      if (isRateLimited(e)) {
+        if (attempt === 0) {
+          await onWait?.();
+          await deps.sleep(BUSY_RETRY_PAUSE_MS);
+          continue;
+        }
+        throw new FaceGenError('busy');
+      }
+      throw e;
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -228,25 +301,37 @@ export interface OptionsResult {
  * Throws FaceGenError (not_approved, over_cap, not_ai_face, image_failed when none could be made) or FaceError.
  */
 export async function makeOptions(args: StepArgs): Promise<OptionsResult> {
-  const deps = withDeps(args.deps);
+  const deps = withDeps(args.brandId, args.faceId, args.deps);
   const ctx = await loadContext(args.userId, args.brandId, args.faceId);
   const budget = gate(ctx, stepEstimateUsd('options'), args.approvedEstimateUsd);
   const spend = new Spend(ctx, deps);
   const entries: (FaceProvenanceEntry | null)[] = [];
   let made: { index: number; stored: string }[] = [];
+  let blocked = false;
+  let busy = false;
+  let finished = 0;
+  const tell = (p: Partial<FaceProgress> = {}) => deps.progress({ step: 'options', state: 'running', done: finished, total: FACE_OPTIONS, ...p });
   try {
-    const results = await pool(Array.from({ length: FACE_OPTIONS }, (_, i) => i), 2, async (index) => {
+    await tell();
+    // One at a time: Google's image quota is low, and four at once is refused.
+    const results = await pool(Array.from({ length: FACE_OPTIONS }, (_, i) => i), 1, async (index) => {
       try {
         budget.reserve(FACE_IMAGE_USD);
       } catch {
+        finished++;
+        await tell();
         return null;
       }
       const prompt = buildOptionPrompt(ctx.prompt, index);
       let img: FaceImageResult;
       try {
-        img = await deps.image({ prompt, aspectRatio: '3:4' });
-      } catch {
+        img = await callImage(deps, 'options', { prompt, aspectRatio: '3:4' }, () => tell({ phase: 'waiting' }));
+      } catch (e) {
+        if (e instanceof FaceGenError && e.code === 'image_blocked') blocked = true;
+        if (e instanceof FaceGenError && e.code === 'busy') busy = true;
         budget.settle(FACE_IMAGE_USD, 0);
+        finished++;
+        await tell();
         return null;
       }
       budget.settle(FACE_IMAGE_USD, img.usd);
@@ -254,9 +339,14 @@ export async function makeOptions(args: StepArgs): Promise<OptionsResult> {
       const bytes = await asPng(img);
       await deps.storage.put(FACE_BUCKET, faceOptionRel(ctx.brandId, ctx.face.id, index), bytes, 'image/png');
       entries[index] = provenanceEntry(img, prompt, deps.now());
+      finished++;
+      await tell();
       return { index, stored: toStored(faceOptionRel(ctx.brandId, ctx.face.id, index)) };
     });
     made = results.filter((r): r is { index: number; stored: string } => r !== null);
+  } catch (e) {
+    await tell({ state: 'failed' });
+    throw e;
   } finally {
     if (spend.total > 0 || entries.some(Boolean)) {
       await patchFace(ctx, {
@@ -265,13 +355,14 @@ export async function makeOptions(args: StepArgs): Promise<OptionsResult> {
       });
     }
   }
-  if (made.length === 0) throw new FaceGenError('image_failed');
+  await tell({ state: made.length === 0 ? 'failed' : 'done' });
+  if (made.length === 0) throw new FaceGenError(blocked ? 'image_blocked' : busy ? 'busy' : 'image_failed');
   return { options: made, failed: FACE_OPTIONS - made.length, costUsd: spend.total };
 }
 
 /** The owner keeps option `optionIndex`: it becomes the frozen master. Costs nothing. A new master clears the old sheet. */
 export async function setMaster(args: { userId: string; brandId: string; faceId: string; optionIndex: number; deps?: Partial<FaceGenDeps> }): Promise<BrandFace> {
-  const deps = withDeps(args.deps);
+  const deps = withDeps(args.brandId, args.faceId, args.deps);
   const ctx = await loadContext(args.userId, args.brandId, args.faceId);
   const idx = args.optionIndex;
   if (!Number.isInteger(idx) || idx < 0 || idx >= FACE_OPTIONS) throw new FaceGenError('no_option');
@@ -306,31 +397,41 @@ export interface SheetResult {
 
 /** Makes the character sheet from the master. Throws FaceGenError (needs_master, not_approved, over_cap, image_failed). */
 export async function makeSheet(args: StepArgs): Promise<SheetResult> {
-  const deps = withDeps(args.deps);
+  const deps = withDeps(args.brandId, args.faceId, args.deps);
   const ctx = await loadContext(args.userId, args.brandId, args.faceId);
   const master = await requireStored(deps.storage, ctx.face.masterPath, 'needs_master');
   const budget = gate(ctx, stepEstimateUsd('sheet'), args.approvedEstimateUsd);
   const spend = new Spend(ctx, deps);
   const prompt = buildSheetPrompt(ctx.prompt);
   budget.reserve(FACE_IMAGE_USD);
+  const tell = (p: Partial<FaceProgress> = {}) => deps.progress({ step: 'sheet', state: 'running', done: 0, total: 1, ...p });
+  await tell();
   let img: FaceImageResult;
   try {
-    img = await deps.image({ prompt, references: [master], aspectRatio: '4:3' });
-  } catch {
+    img = await callImage(deps, 'sheet', { prompt, references: [master], aspectRatio: '4:3' }, () => tell({ phase: 'waiting' }));
+  } catch (e) {
+    await tell({ state: 'failed' });
+    if (e instanceof FaceGenError && (e.code === 'image_blocked' || e.code === 'busy')) throw e;
     throw new FaceGenError('image_failed');
   }
-  await spend.record(img.usd);
-  const bytes = await asPng(img);
-  const rel = faceSheetDraftRel(ctx.brandId, ctx.face.id);
-  await deps.storage.put(FACE_BUCKET, rel, bytes, 'image/png');
-  const entry = provenanceEntry(img, prompt, deps.now());
-  await patchFace(ctx, { addCostUsd: spend.total, provenance: (prev) => ({ ...prev, sheetDraft: entry }) });
-  return { stored: toStored(rel), costUsd: spend.total };
+  try {
+    await spend.record(img.usd);
+    const bytes = await asPng(img);
+    const rel = faceSheetDraftRel(ctx.brandId, ctx.face.id);
+    await deps.storage.put(FACE_BUCKET, rel, bytes, 'image/png');
+    const entry = provenanceEntry(img, prompt, deps.now());
+    await patchFace(ctx, { addCostUsd: spend.total, provenance: (prev) => ({ ...prev, sheetDraft: entry }) });
+    await tell({ state: 'done', done: 1 });
+    return { stored: toStored(rel), costUsd: spend.total };
+  } catch (e) {
+    await tell({ state: 'failed' });
+    throw e;
+  }
 }
 
 /** The owner approves the made sheet: it becomes brand_faces.sheet_path. Costs nothing. */
 export async function approveSheet(args: { userId: string; brandId: string; faceId: string; deps?: Partial<FaceGenDeps> }): Promise<BrandFace> {
-  const deps = withDeps(args.deps);
+  const deps = withDeps(args.brandId, args.faceId, args.deps);
   const ctx = await loadContext(args.userId, args.brandId, args.faceId);
   const file = await deps.storage.get(FACE_BUCKET, faceSheetDraftRel(ctx.brandId, ctx.face.id));
   if (!file) throw new FaceGenError('needs_sheet');
@@ -359,7 +460,7 @@ export interface PoseOutcome {
 export interface PosesResult {
   /** Saved as unapproved poses (F-1); the owner approves each. */
   saved: PoseOutcome[];
-  failed: { pose: FacePose; reason: 'image_failed' | 'cutout_failed' | 'over_budget' }[];
+  failed: { pose: FacePose; reason: 'image_failed' | 'image_blocked' | 'busy' | 'cutout_failed' | 'over_budget' }[];
   costUsd: number;
 }
 
@@ -378,7 +479,7 @@ const EMPTY_CHECK: FaceCheck = { notes: 'The check could not be run.' };
  * A pose that could not be made is listed in `failed`; the rest are kept.
  */
 export async function makePoses(args: StepArgs & { poses?: readonly FacePose[] }): Promise<PosesResult> {
-  const deps = withDeps(args.deps);
+  const deps = withDeps(args.brandId, args.faceId, args.deps);
   const ctx = await loadContext(args.userId, args.brandId, args.faceId);
   const master = await requireStored(deps.storage, ctx.face.masterPath, 'needs_master');
   const sheet = await requireStored(deps.storage, ctx.face.sheetPath, 'needs_sheet');
@@ -387,10 +488,13 @@ export async function makePoses(args: StepArgs & { poses?: readonly FacePose[] }
   const budget = gate(ctx, stepEstimateUsd('poses', poses.length), args.approvedEstimateUsd);
   const spend = new Spend(ctx, deps);
   const perTry = FACE_IMAGE_USD + FACE_CHECK_USD;
+  let savedCount = 0;
+  const tell = (p: Partial<FaceProgress> = {}) => deps.progress({ step: 'poses', state: 'running', done: savedCount, total: poses.length, ...p });
 
   const outcomes = new Map<FacePose, { outcome: PoseOutcome; entry: FaceProvenanceEntry } | { reason: PosesResult['failed'][number]['reason'] }>();
   try {
-    await pool(poses, 2, async (pose) => {
+    await tell();
+    await pool(poses, 1, async (pose) => { // one at a time: the image quota is low (about 2 a minute)
       const prompt = buildPosePrompt(ctx.prompt, pose);
       const tries: PoseTry[] = [];
       let lastReason: PosesResult['failed'][number]['reason'] = 'image_failed';
@@ -403,16 +507,19 @@ export async function makePoses(args: StepArgs & { poses?: readonly FacePose[] }
         }
         let img: FaceImageResult;
         try {
-          img = await deps.image({ prompt, references: [master, sheet], aspectRatio: '3:4' });
-        } catch {
+          const at = { pose, tryNo: t + 1, tries: TRIES_PER_POSE };
+          await tell({ ...at, phase: 'drawing' });
+          img = await callImage(deps, 'poses', { prompt, references: [master, sheet], aspectRatio: '3:4' }, () => tell({ ...at, phase: 'waiting' }));
+        } catch (e) {
           budget.settle(perTry, 0);
-          lastReason = 'image_failed';
+          lastReason = e instanceof FaceGenError && (e.code === 'image_blocked' || e.code === 'busy') ? e.code : 'image_failed';
           continue;
         }
         let usd = img.usd;
         try {
           const raw = await asPng(img);
           let check: FaceCheck = EMPTY_CHECK;
+          await tell({ pose, tryNo: t + 1, tries: TRIES_PER_POSE, phase: 'checking' });
           try {
             const res = await deps.check({ master, candidate: raw, brandId: ctx.brandId });
             check = res.check;
@@ -421,6 +528,7 @@ export async function makePoses(args: StepArgs & { poses?: readonly FacePose[] }
             // an unanswered check counts as failed
           }
           let png: Buffer | null = null;
+          await tell({ pose, tryNo: t + 1, tries: TRIES_PER_POSE, phase: 'cutting' });
           try {
             png = await deps.cutout(raw, 'chroma');
           } catch {
@@ -441,8 +549,13 @@ export async function makePoses(args: StepArgs & { poses?: readonly FacePose[] }
       const notes = chosen.check.notes?.trim() ?? '';
       const checks: FaceCheck = { ...chosen.check, notes: best.passed ? notes : `No try passed every check. ${notes}`.trim() };
       await savePoseImage({ userId: ctx.userId, brandId: ctx.brandId, faceId: ctx.face.id, pose, png: chosen.png, checks, storage: deps.storage });
+      savedCount++;
+      await tell({ pose, phase: 'saved' });
       outcomes.set(pose, { outcome: { pose, passed: best.passed && checkPasses(chosen.check), check: checks }, entry: chosen.entry });
     });
+  } catch (e) {
+    await tell({ state: 'failed' });
+    throw e;
   } finally {
     const entries: Record<string, unknown> = {};
     for (const [pose, o] of outcomes) if ('entry' in o) entries[pose] = { ...o.entry, passed: o.outcome.passed };
@@ -459,5 +572,6 @@ export async function makePoses(args: StepArgs & { poses?: readonly FacePose[] }
     else if ('outcome' in o) saved.push(o.outcome);
     else failed.push({ pose, reason: o.reason });
   }
+  await tell({ state: saved.length === 0 ? 'failed' : 'done' });
   return { saved, failed, costUsd: spend.total };
 }

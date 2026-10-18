@@ -1,6 +1,6 @@
 # Weekly Posts (working name; was PostMitra)
 
-Design and posting assistant for small businesses worldwide: **details first, then design**. The owner (with or without a website, Instagram or YouTube) fills a short brief (USPs, contact blocks, QR, dates), gets on-brand post designs drawn by code, and the posts are scheduled and published one at a time after approval. Spec: `docs/6-prd-v3.md`. Approved change list: `docs/9-changes-v3.md`. Approved next features (Ideas, Brand Face): `docs/10-plan-research-and-brand-face.md`, `docs/12-research-repos-and-proposal.md`. Task list: `docs/8-build-plan-v3.md`. Earlier specs (`docs/6-prd-v2.md`, `docs/6-prd.md`) and plans are kept as history; v3 wins where they differ.
+Design and posting assistant for small businesses worldwide: **details first, then design**. The owner (with or without a website, Instagram or YouTube) fills a short brief (USPs, contact blocks, QR, dates), gets on-brand post designs drawn by code, and the posts are scheduled and published one at a time after approval. Spec: `docs/6-prd-v3.md`. Approved change list: `docs/9-changes-v3.md`. Approved next features (Ideas, Brand Face): `docs/10-plan-research-and-brand-face.md`, `docs/12-research-repos-and-proposal.md`. Task list: `docs/8-build-plan-v3.md`. Design Studio and weekly plans: `docs/13-design-studio-and-weekly-plans.md`. Earlier specs (`docs/6-prd-v2.md`, `docs/6-prd.md`) and plans are kept as history; v3 wins where they differ.
 
 ## Stack
 

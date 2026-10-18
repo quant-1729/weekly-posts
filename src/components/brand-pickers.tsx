@@ -123,7 +123,9 @@ export function PalettePicker({
   const options: { key: string; label: string; palette: Palette }[] = [];
   if (logoPalette) options.push({ key: "logo", label: s.brand.colorsFromLogo, palette: logoPalette });
   for (const p of PRESET_PALETTES) {
-    options.push({ key: p.id, label: s.brand.palettes[p.id as keyof typeof s.brand.palettes], palette: p });
+    // Only the three colours go out: the preset's `id` would be refused by the strict kit schema.
+    const palette: Palette = { primary: p.primary, secondary: p.secondary, accent: p.accent };
+    options.push({ key: p.id, label: s.brand.palettes[p.id as keyof typeof s.brand.palettes], palette });
   }
   const matchesOption = options.some((o) => samePalette(value, o.palette));
   const hasValue = Boolean(value.primary);

@@ -191,7 +191,7 @@ export function ScheduleScreen({ briefId, initial, posts }: { briefId: string; i
             {approvedPosts.map((p) => (
               <li key={p.id} className="space-y-3" data-post-id={p.id}>
                 <h3 className="text-ui text-title">{fill(s.create.review.postFor, { channel: p.label })}</h3>
-                <SharePanel postId={p.id} channel={p.channel} images={p.images} shareText={p.shareText} onLog={(kind, format) => void logShareAction(p.id, kind, format)} />
+                <SharePanel briefId={briefId} postId={p.id} channel={p.channel} images={p.images} shareText={p.shareText} onLog={(kind, format) => void logShareAction(p.id, kind, format)} />
               </li>
             ))}
           </ul>

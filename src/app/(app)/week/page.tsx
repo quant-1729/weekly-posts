@@ -47,7 +47,7 @@ export default async function Page() {
         <p className="text-[14px] leading-5 text-desc">{s.queue.intro}</p>
       </div>
       {checkin.hadPosts && checkin.answer === null && <CheckinCard weekStart={checkin.weekStart} initial={null} />}
-      <QueueScreen initial={queue} />
+      <QueueScreen initial={queue} brandId={brand.id} />
       <section className="space-y-4 border-t border-divider pt-8" aria-label={s.queue.sections.weekly} data-weekly-suggestions>
         <h2 className="text-section text-title">{s.brandV2.week.title}</h2>
         <IdeaSuggestions suggestions={ideas} />

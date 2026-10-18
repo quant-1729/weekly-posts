@@ -56,6 +56,72 @@ export function namesRealPerson(text: string, ignore: string[] = []): string | n
   return null;
 }
 
+// Words that make a brand face sexual or about attractiveness, and cues of a young age. A brand face is the face of a
+// business: refused before anything is saved or paid for (the image model's own safety check would decline it anyway).
+const SEXUAL_WORDS = [
+  'sexy', 'seductive', 'sensual', 'sultry', 'busty', 'curvy', 'voluptuous', 'lingerie', 'bikini', 'nude', 'naked',
+  'cleavage', 'erotic', 'provocative', 'revealing', 'skimpy', 'topless', 'hottie', 'hot girl', 'hot woman', 'hot lady',
+  'hot guy', 'hot boy', 'hot man', 'hot babe', 'babe', 'attractive girl', 'beautiful girl', 'pretty girl', 'cute girl',
+];
+const YOUNG_WORDS = ['child', 'children', 'kid', 'kids', 'teen', 'teens', 'teenage', 'teenager', 'schoolgirl', 'schoolboy', 'minor', 'underage', 'little girl', 'little boy'];
+
+/** The word that makes a person description unsuitable for a brand face (sexual wording or a young age), or null. */
+export function unsuitableDescription(text: string): string | null {
+  const low = norm(text);
+  for (const w of [...SEXUAL_WORDS, ...YOUNG_WORDS]) if (hasWord(low, w)) return w;
+  // An explicit age under 21 ("18 year old", "19-year-old", "aged 17", "age 16").
+  const m = /(?:^|[^\p{N}])(\d{1,2})\s*(?:-|\s)?\s*(?:years?|yrs?|y\/o|yo)\b|\bage(?:d)?\s*(\d{1,2})\b/u.exec(low);
+  if (m) {
+    const age = Number(m[1] ?? m[2]);
+    if (age < 21) return m[0].trim();
+  }
+  return null;
+}
+
+// Well-known cartoon, film and game characters, studios and franchises. Image tools refuse to copy them (and copying
+// would be the owner's legal problem), so a brand face must be an original character. Matched as whole words, lower case.
+const KNOWN_CHARACTERS = [
+  'dora', 'dora the explorer', 'disney', 'pixar', 'dreamworks', 'marvel', 'dc comics', 'warner bros', 'nintendo', 'sanrio', 'ghibli', 'totoro',
+  'pokemon', 'pokémon', 'pikachu', 'doraemon', 'nobita', 'shinchan', 'shin-chan', 'shin chan', 'crayon shin-chan', 'chhota bheem', 'chota bheem', 'bheem',
+  'motu patlu', 'oggy', 'kicko', 'mickey', 'mickey mouse', 'minnie', 'minnie mouse', 'donald duck', 'goofy', 'spider-man', 'spiderman', 'spider man',
+  'batman', 'superman', 'wonder woman', 'iron man', 'ironman', 'hulk', 'captain america', 'avengers', 'barbie', 'hello kitty', 'naruto', 'goku', 'dragon ball',
+  'peppa', 'peppa pig', 'tom and jerry', 'mr bean', 'mr. bean', 'minion', 'minions', 'shrek', 'queen elsa', 'elsa from frozen', 'harry potter', 'hogwarts',
+  'spongebob', 'sponge bob', 'sonic the hedgehog', 'mario', 'luigi', 'zelda', 'bugs bunny', 'daffy duck', 'looney tunes', 'tweety', 'simpsons', 'the simpsons',
+  'homer simpson', 'paw patrol', 'bluey', 'cocomelon', 'masha', 'masha and the bear', 'winnie the pooh', 'pooh', 'mowgli', 'jungle book', 'lion king', 'simba',
+  'toy story', 'buzz lightyear', 'scooby doo', 'scooby-doo', 'snoopy', 'garfield', 'pink panther', 'ben 10', 'teletubbies', 'my little pony', 'care bears',
+  'smurfs', 'ninja turtles', 'powerpuff girls', 'kung fu panda', 'angry birds', 'minecraft', 'fortnite', 'roblox', 'pac-man', 'tintin', 'asterix', 'moana', 'mulan',
+  'aladdin', 'cinderella', 'snow white',
+];
+
+// "in the style of X", "inspired by X", "based on X": the words that point at something to copy, then the name after it.
+const COPY_LEAD_RE =
+  /\b(?:(?:in\s+the\s+|the\s+)?(?:animation|animated|art|drawing|cartoon|anime)\s+style\s+of|in\s+the\s+style\s+of|style\s+of|inspired\s+(?:by|from)|copy\s+of|copied\s+from|(?:based|modell?ed)\s+(?:on|after)|looks?\s+like|same\s+as)\s+(?:(?:the|a|an|famous|popular)\s+)*(?:(?:animation|animated|art|drawing|cartoon|anime)\s+style\s+of\s+)?(?:(?:the|a|an)\s+)*/giu;
+const COPY_NAME_AFTER_RE = /^\p{Lu}[\p{L}\p{N}'’.-]*(?:\s+(?:the\s+|of\s+|and\s+)?\p{Lu}[\p{L}\p{N}'’.-]*)*/u;
+// A capitalised word after those leads that is a place, people or art tradition, not a character.
+const NOT_A_CHARACTER = new Set([
+  'indian', 'japanese', 'chinese', 'korean', 'asian', 'african', 'european', 'american', 'british', 'french', 'italian', 'spanish', 'mexican', 'nordic', 'western',
+  'eastern', 'modern', 'classic', 'vintage', 'retro', 'traditional', 'madhubani', 'warli', 'mughal', 'rajasthani', 'kerala', 'bengal', 'bauhaus', 'art', 'nature', 'india', 'asia', 'africa', 'europe',
+]);
+// "from the cartoon / movie / game": something that exists already.
+const FROM_WORK_RE = /\bfrom\s+(?:the\s+|a\s+|an\s+)?(?:cartoons?|movies?|films?|tv\s+shows?|tv\s+series|anime|comics?|video\s+games?)\b/iu;
+
+/**
+ * The known cartoon, film or game character, studio or franchise a description copies, or null. Catches a list of famous
+ * names, "from the movie ...", and "in the style of / inspired by <Capitalised Name>". Plain text ("an explorer with a
+ * bag", "inspired by Indian art") passes.
+ */
+export function copiesKnownCharacter(text: string): string | null {
+  const low = norm(text);
+  for (const name of KNOWN_CHARACTERS) if (hasWord(low, name)) return name;
+  const from = FROM_WORK_RE.exec(text);
+  if (from) return from[0].trim();
+  for (const lead of text.matchAll(COPY_LEAD_RE)) {
+    const m = COPY_NAME_AFTER_RE.exec(text.slice((lead.index ?? 0) + lead[0].length));
+    if (m && !NOT_A_CHARACTER.has(m[0].split(/\s+/)[0].toLowerCase())) return m[0];
+  }
+  return null;
+}
+
 export interface FaceInputRaw {
   kind: unknown;
   name?: unknown;
@@ -154,6 +220,12 @@ export function validateFaceInput(input: FaceInputRaw, ctx: { regulated: string;
   if (description) {
     const hit = namesRealPerson(description, [ctx.businessName]);
     if (hit) throw new FaceError('real_person', hit);
+    const copied = copiesKnownCharacter(description);
+    if (copied) throw new FaceError('copied_character', copied);
+    if (kind === 'illustrated' || kind === 'photoreal') {
+      const bad = unsuitableDescription(description);
+      if (bad) throw new FaceError('unsuitable_description', bad);
+    }
   }
   if ((kind === 'illustrated' || kind === 'photoreal') && !description) throw new FaceError('bad_description', 'a description is needed');
 

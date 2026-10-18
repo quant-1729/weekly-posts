@@ -12,6 +12,7 @@ import {
   setFilterAction,
 } from "@/app/(app)/create/[briefId]/actions";
 import { alertClass, cardClass, errorClass, hintClass, inputClass, labelClass, outlineButton, primaryButton, secondaryButton, smallButton, strongButton } from "@/components/ui";
+import { DesignFlags } from "./design-flags";
 import { FilterSection } from "./design-filter";
 import { chooseWithFilter, redrawWithFilter, type FilterActions } from "./design-filter-logic";
 import { DEFAULT_POST_FILTER, type PostFilter } from "@/lib/design/filter-presets";
@@ -147,30 +148,7 @@ export function DesignStudio({ data }: { data: DesignPageData }) {
 
       {data.designed ? <p className={alertClass("grey")}>{t.designedNote}</p> : null}
 
-      <section aria-label={t.flagsTitle} data-design-flags>
-        {data.flags.length > 0 ? (
-          <div className={`space-y-2 ${alertClass("warn")}`}>
-            <h2 className="text-ui text-warn-tx">{t.flagsTitle}</h2>
-            <p className="text-[13px] leading-[18px] text-desc">{t.flagsIntro}</p>
-            <ul className="space-y-1">
-              {data.flags.map(({ flag }) => (
-                <li key={flag.id} className="text-[13px] leading-[18px]">
-                  <span className="text-desc">{s.approvals.flags.kinds[flag.kind]} · {fill(s.approvals.flags.where, { field: flag.slide !== undefined ? `${fill(s.create.review.slideStrip.slideN, { n: flag.slide + 1 })}, ${s.approvals.fieldNames[flag.field]}` : s.approvals.fieldNames[flag.field] })}: </span>
-                  <mark>{flag.text}</mark>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <p className={`flex items-center gap-2 ${alertClass("ok")}`}>
-            <svg viewBox="0 0 24 24" className="h-5 w-5 shrink-0 text-ok-tx" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M8 12.5l3 3 5-6" />
-            </svg>
-            {t.flagsNone}
-          </p>
-        )}
-      </section>
+      <DesignFlags briefId={data.briefId} flags={data.flags} />
 
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_320px]" data-design-layout>
         <section className="min-w-0 space-y-3" aria-label="Design options" data-design-options>

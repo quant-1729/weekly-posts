@@ -43,3 +43,11 @@ Thumbs.db
 
 # Mock backend data (PGlite, local files)
 .data/
+
+# Demo video pipeline
+demo-video/node_modules
+demo-video/out
+demo-video/.auth
+
+# Demo video (upload it to YouTube or Drive for the submission link; too large for the repo)
+docs/submission/**/*.mp4

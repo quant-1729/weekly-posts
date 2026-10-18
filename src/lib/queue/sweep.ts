@@ -17,11 +17,12 @@
 import { getDb } from '@/lib/db';
 import { sendEmail as realSendEmail } from '@/lib/email';
 import { localDateIn } from '@/lib/occasions/dates';
+import { emitQueueItem } from '@/lib/realtime';
 import { activeProviders, ITEM_COLUMNS, postWithSlides, toItem, type ItemRow } from './data';
 import { failureReason, loadDeliveryPost, sendDeliveryEmail } from './deliver';
 import { getPublisher, defaultReportConnectionProblem, type ReportConnectionProblem } from './publisher';
 import { hasEnded } from './slots';
-import { MAX_PUBLISH_ATTEMPTS, MISSED_AFTER_MINUTES, PUBLISH_PROVIDER, type PublishQueueItem, type PublishResult, type QueueChannel, type QueueItem } from './types';
+import { MAX_PUBLISH_ATTEMPTS, MISSED_AFTER_MINUTES, PUBLISH_PROVIDER, type PublishQueueItem, type PublishResult, type QueueChannel, type QueueItem, type QueueMode, type QueueStatus } from './types';
 
 /** An item stuck in `publishing` this long means a run died half way. */
 export const STALE_PUBLISHING_MINUTES = 15;
@@ -139,16 +140,52 @@ function record(sum: SweepSummary, item: { id: string; brand_id: string; channel
   else if (outcome === 'skipped') sum.skipped += 1;
 }
 
+/**
+ * Live status (docs/14-firebase-plan.md): tells open Queue screens that an item changed. Only ever called after the database
+ * work is committed, never inside a transaction. emitLive never throws and gives up after 1.5 s; the catch is for building
+ * the payload, so a live problem can never change what the sweep does.
+ */
+async function emitRows(rows: ItemRow[]): Promise<void> {
+  await Promise.all(
+    rows.map(async (r) => {
+      try {
+        await emitQueueItem(r.brand_id, {
+          id: r.id,
+          postId: r.post_id,
+          channel: r.channel as QueueChannel,
+          status: r.status as QueueStatus,
+          mode: r.mode as QueueMode,
+          attempts: r.attempts,
+          slotAt: new Date(r.slot_at).toISOString(),
+        });
+      } catch {
+        // Nothing to do: the screen catches up on its next refresh.
+      }
+    }),
+  );
+}
+
+/** Reads the item again and tells open screens how it ended up. */
+async function emitCurrent(itemId: string): Promise<void> {
+  try {
+    const rows = await getDb().withService((tx) => tx.query<ItemRow>(`select ${ITEM_COLUMNS} from public.queue_items q where q.id = $1`, [itemId]));
+    await emitRows(rows);
+  } catch {
+    // Same: never let this change an outcome.
+  }
+}
+
 /** Sets a status on several items, only those still `scheduled` (so a claimed or moved item is never touched). Returns the rows changed. */
 async function closeScheduled(ids: string[], status: 'missed' | 'expired' | 'skipped', now: Date, note: string | null): Promise<string[]> {
   if (ids.length === 0) return [];
   const rows = await getDb().withService((tx) =>
-    tx.query<{ id: string }>(
-      `update public.queue_items set status = $2, done_at = case when $2 = 'missed' then null else $3::timestamptz end, last_error = coalesce($4, last_error), updated_at = now()
-        where id = any($1::uuid[]) and status = 'scheduled' returning id::text as id`,
+    tx.query<ItemRow>(
+      `update public.queue_items q set status = $2, done_at = case when $2 = 'missed' then null else $3::timestamptz end, last_error = coalesce($4, last_error), updated_at = now()
+        where q.id = any($1::uuid[]) and q.status = 'scheduled' returning ${ITEM_COLUMNS}`,
       [ids, status, now.toISOString(), note],
     ),
   );
+  await emitRows(rows);
   return rows.map((r) => r.id);
 }
 
@@ -290,6 +327,7 @@ async function upgradeMode(row: ItemRow, now: Date): Promise<ItemRow> {
 async function processItem(run: Run, row: ItemRow): Promise<ItemOutcome> {
   const first = await claim(row.id);
   if (!first) return 'lost';
+  await emitRows([first]); // "publishing" (the claim is committed)
   const claimed = await upgradeMode(first, run.now).catch(() => first);
   try {
     return claimed.mode === 'publish' ? await runPublish(run, claimed) : await runDeliver(run, claimed);
@@ -302,6 +340,8 @@ async function processItem(run: Run, row: ItemRow): Promise<ItemOutcome> {
       trimError(err instanceof Error ? err.message : String(err)),
     ]).catch(() => false);
     return 'retry';
+  } finally {
+    await emitCurrent(first.id); // how it ended: published, delivered, back to scheduled, failed
   }
 }
 
@@ -329,6 +369,7 @@ async function sweepBrand(ctx: BrandCtx, now: Date, deps: SweepDeps, sum: SweepS
       [ctx.brandId, now.toISOString(), STALE_PUBLISHING_MINUTES],
     ),
   );
+  await emitRows(stale);
   for (const item of stale) {
     await fallbackEmail(run, item, failureReason('interrupted'));
     record(sum, item, 'failed');

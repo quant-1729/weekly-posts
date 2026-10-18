@@ -10,14 +10,14 @@ const t = s.faces.card.describe;
 const DRAWN_STYLES: FaceStyle[] = ["flat", "3d_cartoon", "line_art"];
 
 type Field = "name" | "description" | "style" | "neverSay";
-const FIELD_OF: Record<string, Field> = { bad_name: "name", blocked_name: "name", real_person: "description", bad_description: "description", bad_style: "style", bad_settings: "neverSay" };
+const FIELD_OF: Record<string, Field> = { bad_name: "name", blocked_name: "name", real_person: "description", unsuitable_description: "description", copied_character: "description", bad_description: "description", bad_style: "style", bad_settings: "neverSay" };
 
 /**
  * Step 2 of the Face card: name, a short description and a style (a drawn character or a realistic AI person; your own
  * face needs only a name), and phrases it must never say. The service checks it on the server and the reasons for a
  * refusal (a real or famous person, a blocked name) are shown next to the field. Saving makes a draft face and costs nothing.
  */
-export function FaceDescribe({ kind, onDone }: { kind: Exclude<FaceKind, "mascot">; onDone: () => void | Promise<void> }) {
+export function FaceDescribe({ kind, suggestions = [], onDone }: { kind: Exclude<FaceKind, "mascot">; suggestions?: string[]; onDone: () => void | Promise<void> }) {
   const id = useId();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -86,6 +86,29 @@ export function FaceDescribe({ kind, onDone }: { kind: Exclude<FaceKind, "mascot
             aria-describedby={describedBy("description")}
           />
           {fieldError("description")}
+          <p className={`${hintClass} mt-2`} data-face-tip>
+            {t.tip}
+          </p>
+          {suggestions.length > 0 && (
+            <div className="mt-2" data-face-suggestions>
+              <p className="text-[13px] font-medium leading-[18px] text-title">{t.tryOne}</p>
+              <ul className="mt-1 grid gap-2 sm:grid-cols-3">
+                {suggestions.map((text) => (
+                  <li key={text} className="flex">
+                    <button
+                      type="button"
+                      data-face-suggestion
+                      aria-pressed={description === text}
+                      onClick={() => setDescription(text)}
+                      className={`w-full min-h-12 rounded-2xl border p-3 text-left text-[13px] leading-[18px] text-title focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral ${description === text ? "border-coral bg-coral-tint ring-1 ring-coral" : "border-line-input bg-white hover:border-line-input-hover"}`}
+                    >
+                      {text}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
       {kind === "illustrated" && (

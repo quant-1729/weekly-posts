@@ -208,7 +208,10 @@ export function KitEditor({
         <PalettePicker
           value={draft.colors}
           logoPalette={logoPalette}
-          onChange={(p) => set({ colors: { ...p, background: deriveBackground(p, draft.style.mode) } })}
+          // Only the three colours: a preset also carries its `id`, which the strict kit schema refuses.
+          onChange={(p) =>
+            set({ colors: { primary: p.primary, secondary: p.secondary, accent: p.accent, background: deriveBackground(p, draft.style.mode) } })
+          }
         />
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {COLOR_KEYS.map((name) => (

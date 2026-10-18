@@ -123,7 +123,7 @@ export function FaceCard({ brandId, initial, mascot }: { brandId: string; initia
                   {t.aiNote}
                 </p>
               )}
-              <FaceDescribe key={kind} kind={kind} onDone={reload} />
+              <FaceDescribe key={kind} kind={kind} suggestions={kind === "photoreal" ? data.suggestions.photoreal : kind === "illustrated" ? data.suggestions.illustrated : []} onDone={reload} />
             </>
           )}
           {changing && (
@@ -160,7 +160,7 @@ export function FaceCard({ brandId, initial, mascot }: { brandId: string; initia
           {draft.kind === "owner_photo" ? (
             <FaceOwner face={draft} cutoutConfigured={data.cutoutConfigured} onChange={reload} />
           ) : (
-            <FaceMake face={draft} onChange={reload} />
+            <FaceMake face={draft} brandId={brandId} onChange={reload} />
           )}
           <div>
             <button type="button" className={outlineButton} disabled={startingOver} onClick={() => void startOver()}>

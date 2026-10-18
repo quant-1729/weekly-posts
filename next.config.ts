@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   // Cloud Run (C-31): "next build" writes a self-contained server to .next/standalone (server.js plus
   // only the node_modules it needs); the Dockerfile copies that, .next/static, public and assets/fonts.
   output: "standalone",
+  // NEXT_DIST_DIR lets a check build (for example bundle sizes) run without touching the .next folder a dev server is using.
   poweredByHeader: false,
   // Security headers on every response. Framing is refused (no page is meant to be embedded); the microphone
   // stays allowed for this site only, for voice input on the brief.
@@ -28,7 +29,8 @@ const nextConfig: NextConfig = {
   // PGlite loads its own WASM and data files at runtime; do not bundle it.
   // resvg, harfbuzzjs and sharp ship native/WASM binaries and must stay external too.
   // @google-cloud/storage (C-32) is external too: it has many dynamic requires that bundling breaks.
-  serverExternalPackages: ["@electric-sql/pglite", "@resvg/resvg-js", "harfbuzzjs", "sharp", "@google-cloud/storage"],
+  // firebase-admin and @google-cloud/firestore (live status, docs/14-firebase-plan.md) are external too, and loaded only by dynamic import.
+  serverExternalPackages: ["@electric-sql/pglite", "@resvg/resvg-js", "harfbuzzjs", "sharp", "@google-cloud/storage", "firebase-admin", "@google-cloud/firestore"],
   // The renderer reads the Noto fonts from assets/fonts at runtime; ship them with the route that renders.
   outputFileTracingIncludes: {
     "/api/posts/generate": ["./assets/fonts/**"],
@@ -53,6 +55,10 @@ const nextConfig: NextConfig = {
     // The brand page draws the text logo (C-19) and its font samples are served by /api/fonts.
     "/brand": ["./assets/fonts/**"],
     "/api/fonts/[file]": ["./assets/fonts/**"],
+    // The Design Studio and weekly plans draw the stored pictures with the studio renderer (src/lib/studio/server.ts).
+    "/plan": ["./assets/fonts/**"],
+    "/plan/[planId]/design": ["./assets/fonts/**"],
+    "/plan/[planId]/schedule": ["./assets/fonts/**"],
   },
   // Never ship these in the standalone output: the Tween vendor kit (reference art only), local mock
   // data, tests and the build's own cache. PGlite (about 21 MB) is left out too: src/lib/db/mock.ts imports

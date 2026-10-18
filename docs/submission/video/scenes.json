@@ -1,0 +1,1022 @@
+{
+ "meta": {
+  "title": "Weekly Posts: details first, then design",
+  "voice": "en-IN-Chirp3-HD-Aoede",
+  "languageCode": "en-IN",
+  "speakingRate": 1,
+  "width": 1920,
+  "height": 1080,
+  "baseUrl": "https://weekly-posts-526531409571.australia-southeast1.run.app"
+ },
+ "brand": {
+  "name": "Corner Cup Café",
+  "fictional": true,
+  "whatYouSell": "Coffee, cold coffee and fresh pastries",
+  "city": "Pune",
+  "region": null,
+  "country": "IN",
+  "timezone": "Asia/Kolkata",
+  "customers": "Students and office workers nearby",
+  "goal": "More visits",
+  "tone": "Friendly",
+  "postLanguage": "English (India)",
+  "weeklyEmail": {
+   "day": "Monday",
+   "time": "08:00"
+  },
+  "colors": {
+   "palette": "saffron",
+   "primary": "#E4572E",
+   "secondary": "#FFF3E0",
+   "accent": "#1B998B",
+   "note": "Saffron palette (src/lib/brand/colors.ts), set after the deploy"
+  },
+  "logo": null,
+  "face": {
+   "kind": "mascot",
+   "character": "tween",
+   "name": "Tween",
+   "aiFace": false,
+   "inPosts": true
+  },
+  "paymentQr": null,
+  "likes": [
+   "Pastries baked fresh every morning",
+   "Cosy corner seats and free Wi-Fi"
+  ],
+  "contacts": [
+   {
+    "kind": "email",
+    "value": "hello@cornercup.example.com"
+   },
+   {
+    "kind": "hours",
+    "value": "Monday to Sunday, 09:00 to 17:00"
+   }
+  ],
+  "noPhone": true,
+  "noWhatsApp": true,
+  "hours": {
+   "mon": "09:00-17:00",
+   "tue": "09:00-17:00",
+   "wed": "09:00-17:00",
+   "thu": "09:00-17:00",
+   "fri": "09:00-17:00",
+   "sat": "09:00-17:00",
+   "sun": "09:00-17:00"
+  },
+  "connections": [],
+  "offer": {
+   "text": "20% off cold coffee, weekdays 2-5 pm, until 31 Oct",
+   "percentOff": 20,
+   "on": "cold coffee",
+   "days": "Mon-Fri",
+   "time": "14:00-17:00",
+   "validTo": "2026-10-31",
+   "savedOnBrandPage": false,
+   "typedIn": "s04"
+  },
+  "queueSettings": {
+   "deliverEmail": true,
+   "autoApprove": false,
+   "paused": false
+  },
+  "demoTexts": {
+   "describe": "20% off cold coffee on weekdays, 2 to 5 pm, until 31 Oct. Visit us in Pune.",
+   "captionWithClaim": "Cold coffee, 20% off on weekdays, 2 to 5 pm, until 31 Oct. Visit us in Pune. Free home delivery across Pune.",
+   "captionFixed": "Cold coffee, 20% off on weekdays, 2 to 5 pm, until 31 Oct. Visit us in Pune.",
+   "planSentence": "Mon to Thu 10% off, Fri 20%, Sat & Sun 15% off on all pastries",
+   "slotDay": "{{SLOT_DAY}}",
+   "slotTime": "{{SLOT_TIME}}"
+  }
+ },
+ "scenes": [
+  {
+   "id": "s01",
+   "type": "card",
+   "narration": "Small businesses need posts every week, but most owners have no designer and little time. Over half get an hour or less a day for marketing.",
+   "card": {
+    "kicker": "The problem",
+    "title": "Posts every week. No designer. No time.",
+    "subtitle": "Small shops and cafés need regular, truthful posts.",
+    "bullets": [
+     "Only 13% of Indian MSMEs use social media marketing",
+     "56% of small businesses have an hour or less a day for marketing",
+     "Generic AI tools can put a wrong price or a garbled word on a post"
+    ],
+    "footnote": "Sources: SIDBI report via Entrepreneur India (2025); Constant Contact survey of 1,300+ small businesses in the US, UK, Australia and Canada (2024)."
+   },
+   "depends_on": null
+  },
+  {
+   "id": "s02",
+   "type": "card",
+   "narration": "Meet Weekly Posts, from team zerochills: details first, then design. Every post is built only from what the owner says is true.",
+   "card": {
+    "kicker": "The idea",
+    "title": "Weekly Posts: details first, then design",
+    "subtitle": "On-brand posts for small businesses, approved by the owner before anything goes out.",
+    "bullets": [
+     "The owner says what is true",
+     "AI drafts the words; code draws every word, logo and QR",
+     "Nothing is published without approval"
+    ],
+    "footnote": "Team zerochills"
+   },
+   "depends_on": null
+  },
+  {
+   "id": "s02b",
+   "type": "live",
+   "start": "/setup",
+   "depends_on": null,
+   "speed": 4,
+   "narration": "Setup takes a few minutes, shown four times faster: the café's name, what it sells, its city, an email, opening hours and what customers like. No website needed. Then the owner picks a face: Tween, our mascot.",
+   "steps": [
+    {
+     "do": "goto",
+     "path": "/setup"
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    },
+    {
+     "do": "type",
+     "label": "Business name",
+     "value": "Corner Cup Café",
+     "delayMs": 30
+    },
+    {
+     "do": "type",
+     "label": "What do you sell?",
+     "value": "Coffee, cold coffee and fresh pastries",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Are you online already?"
+    },
+    {
+     "do": "click",
+     "text": "Not yet",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Where are you?"
+    },
+    {
+     "do": "type",
+     "label": "City or town",
+     "value": "Pune",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Who are your customers?"
+    },
+    {
+     "do": "type",
+     "label": "Your customers, in one line",
+     "value": "Students and office workers nearby",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "How do customers reach you?"
+    },
+    {
+     "do": "type",
+     "label": "Email address",
+     "value": "hello@cornercup.example.com",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "When are you open?"
+    },
+    {
+     "do": "click",
+     "text": "I will set my hours",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "text": "Saturday",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "text": "Sunday",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Use the first day's times for every open day"
+    },
+    {
+     "do": "pause",
+     "ms": 600
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Your logo"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Skip for now. We'll use your name"
+    },
+    {
+     "do": "waitText",
+     "text": "What do customers like about you?"
+    },
+    {
+     "do": "type",
+     "label": "Line 1",
+     "exact": true,
+     "value": "Pastries baked fresh every morning",
+     "delayMs": 30
+    },
+    {
+     "do": "type",
+     "label": "Line 2",
+     "exact": true,
+     "value": "Cosy corner seats and free Wi-Fi",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "What do you want from your posts?"
+    },
+    {
+     "do": "click",
+     "text": "More visits",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "How should your posts sound?"
+    },
+    {
+     "do": "click",
+     "text": "Friendly",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Roughly how many minutes does one post take you today?"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "30 min",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "When should we email your posts?"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Finish setup",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "You are all set",
+     "timeoutMs": 60000
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "click",
+     "text": "Go to your Brand page"
+    },
+    {
+     "do": "waitText",
+     "text": "Your brand memory",
+     "timeoutMs": 30000
+    },
+    {
+     "do": "click",
+     "text": "Face",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "text": "A mascot",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Choose your character"
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Use this character in my posts"
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "click",
+     "text": "Use the mascot in my posts",
+     "exact": true
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "click",
+     "text": "Logo and colours",
+     "exact": true
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    },
+    {
+     "do": "click",
+     "text": "Saffron",
+     "exact": true
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Save my look"
+    },
+    {
+     "do": "pause",
+     "ms": 2000
+    },
+    {
+     "do": "goto",
+     "path": "/home"
+    },
+    {
+     "do": "waitText",
+     "text": "Good"
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    }
+   ]
+  },
+  {
+   "id": "s04",
+   "type": "live",
+   "narration": "To make a post, the owner types the offer in plain words. Gemini on Vertex AI fills in the details, like the post type, and marks each field so the owner can check it.",
+   "start": "/home",
+   "steps": [
+    {
+     "do": "click",
+     "role": "link",
+     "name": "Create a post",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Describe what kind of post you want.",
+     "timeoutMs": 20000
+    },
+    {
+     "do": "type",
+     "label": "Describe your post",
+     "value": "20% off cold coffee on weekdays, 2 to 5 pm, until 31 Oct. Visit us in Pune.",
+     "delayMs": 35
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Fill in the details"
+    },
+    {
+     "do": "waitText",
+     "text": "We filled in what your words covered.",
+     "timeoutMs": 60000,
+     "speedup": 3
+    },
+    {
+     "do": "zoom",
+     "text": "Tick every kind that fits.",
+     "scale": 1.4,
+     "ms": 2800
+    },
+    {
+     "do": "scroll",
+     "y": 400
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next",
+     "exact": true
+    }
+   ],
+   "depends_on": null
+  },
+  {
+   "id": "s05",
+   "type": "live",
+   "narration": "Next, the owner picks the contact lines for the post: here the email stays and the opening hours come off. Each chip shows the exact words.",
+   "start": null,
+   "steps": [
+    {
+     "do": "waitText",
+     "text": "What to show on the post",
+     "timeoutMs": 20000
+    },
+    {
+     "do": "zoom",
+     "text": "Email",
+     "exact": true,
+     "scale": 1.6,
+     "ms": 2200
+    },
+    {
+     "do": "click",
+     "text": "Opening hours",
+     "exact": true
+    },
+    {
+     "do": "zoom",
+     "text": "Opening hours",
+     "exact": true,
+     "scale": 1.6,
+     "ms": 2200
+    },
+    {
+     "do": "pause",
+     "ms": 600
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Next: Design"
+    }
+   ],
+   "depends_on": null
+  },
+  {
+   "id": "s06",
+   "type": "live",
+   "narration": "Gemini writes the words once, and the Design Studio opens with five starting designs, every word, logo and contact drawn by code, not an image model.",
+   "start": null,
+   "steps": [
+    {
+     "do": "waitText",
+     "text": "5 designs for you",
+     "timeoutMs": 120000,
+     "speedup": 3
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "zoom",
+     "text": "5 designs for you",
+     "scale": 1.4,
+     "ms": 3000
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    }
+   ],
+   "depends_on": null
+  },
+  {
+   "id": "s07",
+   "type": "live",
+   "narration": "The owner picks one, tries another font pair, and can edit any word, redrawn live. Use this design draws every size and checks the words again.",
+   "start": null,
+   "steps": [
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Designs",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "text": "Big offer",
+     "exact": true
+    },
+    {
+     "do": "pause",
+     "ms": 1200
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Brand",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "text": "Sweet",
+     "exact": true
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Text",
+     "exact": true
+    },
+    {
+     "do": "zoom",
+     "text": "Words on the poster",
+     "scale": 1.4,
+     "ms": 2500
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Use this design"
+    },
+    {
+     "do": "waitText",
+     "text": "Approve this post",
+     "timeoutMs": 120000,
+     "speedup": 3
+    }
+   ],
+   "depends_on": null
+  },
+  {
+   "id": "s08",
+   "type": "live",
+   "narration": "In Review, the owner adds free home delivery across Pune to the caption. That is not in the brief, so the fact check, code plus Gemini, flags it. The owner removes it and approves.",
+   "start": null,
+   "steps": [
+    {
+     "do": "zoom",
+     "text": "Caption and hashtags",
+     "scale": 1.3,
+     "ms": 1500
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Edit caption"
+    },
+    {
+     "do": "type",
+     "label": "Caption",
+     "exact": true,
+     "clear": true,
+     "value": "Cold coffee, 20% off on weekdays, 2 to 5 pm, until 31 Oct. Visit us in Pune. Free home delivery across Pune.",
+     "delayMs": 20
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Save",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "Please check",
+     "timeoutMs": 60000,
+     "speedup": 3
+    },
+    {
+     "do": "zoom",
+     "text": "Please check",
+     "scale": 1.7,
+     "ms": 3000
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Edit caption"
+    },
+    {
+     "do": "type",
+     "label": "Caption",
+     "exact": true,
+     "clear": true,
+     "value": "Cold coffee, 20% off on weekdays, 2 to 5 pm, until 31 Oct. Visit us in Pune.",
+     "delayMs": 20
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Save",
+     "exact": true
+    },
+    {
+     "do": "pause",
+     "ms": 2500
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "It's true",
+     "exact": true,
+     "optional": true
+    },
+    {
+     "do": "pause",
+     "ms": 700,
+     "optional": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "It's true",
+     "exact": true,
+     "optional": true
+    },
+    {
+     "do": "pause",
+     "ms": 700,
+     "optional": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "It's true",
+     "exact": true,
+     "optional": true
+    },
+    {
+     "do": "pause",
+     "ms": 900
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Approve this post"
+    },
+    {
+     "do": "waitText",
+     "text": "Approved",
+     "exact": true,
+     "timeoutMs": 30000
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    }
+   ],
+   "depends_on": null
+  },
+  {
+   "id": "s09",
+   "type": "live",
+   "narration": "The owner picks a time on the calendar, here later today, or keeps the suggested slot. Nothing goes out until they confirm.",
+   "start": null,
+   "steps": [
+    {
+     "do": "click",
+     "role": "link",
+     "name": "Next: Schedule"
+    },
+    {
+     "do": "waitText",
+     "text": "Here is when each post goes out.",
+     "timeoutMs": 20000
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Pick another time"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Time for Instagram"
+    },
+    {
+     "do": "click",
+     "css": "button[data-today]"
+    },
+    {
+     "do": "click",
+     "css": "[data-times] [role=option][aria-disabled=false]"
+    },
+    {
+     "do": "zoom",
+     "text": "Times are in",
+     "scale": 1.3,
+     "ms": 2200
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Done",
+     "exact": true
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Confirm",
+     "exact": true
+    },
+    {
+     "do": "waitText",
+     "text": "See the Queue",
+     "timeoutMs": 30000
+    },
+    {
+     "do": "zoom",
+     "text": "Scheduled",
+     "exact": true,
+     "scale": 1.5,
+     "ms": 2000
+    }
+   ],
+   "depends_on": null
+  },
+  {
+   "id": "s10",
+   "type": "live",
+   "narration": "On the Queue, the card is live. When the time has passed, Cloud Scheduler calls our Cloud Run service, which emails the post to the owner, and Firestore pushes the new status here, no reload.",
+   "start": "/week",
+   "steps": [
+    {
+     "do": "goto",
+     "path": "/week"
+    },
+    {
+     "do": "waitText",
+     "text": "Coming up",
+     "exact": true,
+     "timeoutMs": 20000
+    },
+    {
+     "do": "pause",
+     "ms": 1500
+    },
+    {
+     "do": "zoom",
+     "text": "Live",
+     "exact": true,
+     "scale": 1.8,
+     "ms": 1500
+    },
+    {
+     "do": "shell",
+     "cmd": [
+      "gcloud.cmd",
+      "scheduler",
+      "jobs",
+      "run",
+      "weekly-posts-queue",
+      "--location=australia-southeast1",
+      "--project=weekly-posts-471203"
+     ]
+    },
+    {
+     "do": "waitText",
+     "text": "Sent to you",
+     "exact": true,
+     "timeoutMs": 120000,
+     "speedup": 4
+    },
+    {
+     "do": "zoom",
+     "text": "Sent to you",
+     "exact": true,
+     "scale": 1.6,
+     "ms": 3000
+    },
+    {
+     "do": "pause",
+     "ms": 1000
+    }
+   ],
+   "depends_on": "firebase"
+  },
+  {
+   "id": "s11",
+   "type": "card",
+   "narration": "Firestore rules mirror our database security: a one-hour custom token lets a browser read only its own brand's status, and never write.",
+   "card": {
+    "kicker": "Firestore rules",
+    "title": "Read your own brand. Never write.",
+    "subtitle": "Cloud Run mints a Firebase Auth custom token with claims { b: brandId, until }, valid 60 minutes, without a key file.",
+    "bullets": [
+     "match /brands/{brandId}/live/{docId} {",
+     "  allow get, list: if request.auth.token.b == brandId",
+     "    && request.time.toMillis() < request.auth.token.until;",
+     "  allow create, update, delete: if false;",
+     "}"
+    ],
+    "footnote": "firestore.rules (abridged). Status only: no captions, emails or payment IDs."
+   },
+   "depends_on": "firebase"
+  },
+  {
+   "id": "s12",
+   "type": "live",
+   "narration": "Plan a week turns one sentence into one offer per day, read by plain code so nothing is invented. One shared design becomes a week of posts.",
+   "start": "/plan",
+   "steps": [
+    {
+     "do": "goto",
+     "path": "/plan"
+    },
+    {
+     "do": "waitText",
+     "text": "Tell us your week in one line",
+     "timeoutMs": 20000
+    },
+    {
+     "do": "type",
+     "placeholder": "Monday 10% off",
+     "value": "Mon to Thu 10% off, Fri 20%, Sat & Sun 15% off on all pastries",
+     "delayMs": 30
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Fill my week"
+    },
+    {
+     "do": "waitText",
+     "text": "Got it:",
+     "timeoutMs": 5000
+    },
+    {
+     "do": "zoom",
+     "text": "Got it:",
+     "scale": 1.4,
+     "ms": 2200
+    },
+    {
+     "do": "select",
+     "label": "Button on the post",
+     "value": "Visit us"
+    },
+    {
+     "do": "click",
+     "role": "button",
+     "name": "Design my week"
+    },
+    {
+     "do": "waitText",
+     "text": "5 designs for you",
+     "timeoutMs": 120000,
+     "speedup": 3
+    },
+    {
+     "do": "zoom",
+     "text": "Changes apply to every day",
+     "scale": 1.4,
+     "ms": 2500
+    },
+    {
+     "do": "pause",
+     "ms": 800
+    }
+   ],
+   "depends_on": null
+  },
+  {
+   "id": "s13",
+   "type": "card",
+   "narration": "Under the hood: one Next.js app on Cloud Run. Gemini on Vertex AI drafts, fact-checks, and grounds Ideas in Google Search. Supabase Postgres with row-level security holds the data.",
+   "card": {
+    "kicker": "How it works",
+    "title": "Built on Google Cloud",
+    "subtitle": "One Next.js app on Cloud Run (australia-southeast1)",
+    "bullets": [
+     "Cloud Run serves the app; Cloud Scheduler runs the queue sweep and weekly jobs",
+     "Gemini on Vertex AI: brief from plain words, captions, fact check, grounded Ideas with Google Search",
+     "Firestore live status: Firebase Auth custom tokens, read-only brand-scoped rules",
+     "Supabase Postgres with row-level security: the system of record",
+     "Code draws every word, logo and QR (HarfBuzz + resvg); no text inside AI images"
+    ],
+    "footnote": "Firestore holds only short-lived status: never captions, emails or payment IDs."
+   },
+   "depends_on": null
+  },
+  {
+   "id": "s14",
+   "type": "card",
+   "narration": "Posts state only the owner's facts, and nothing goes out without approval. AI spend is capped at fifty cents a week, row-level security covers all 49 tables, and 4,646 automated tests pass.",
+   "card": {
+    "kicker": "Guardrails",
+    "title": "Truthful by design",
+    "subtitle": "Measured from the codebase, not promised",
+    "bullets": [
+     "Facts only from the owner's brief; anything else is flagged \"Please check\"",
+     "Nothing is published without the owner's approval",
+     "AI spend capped at $0.50 a week",
+     "Row-level security on 49 of 49 tables",
+     "4,646 automated tests passing"
+    ],
+    "footnote": "Codebase figures, October 2026. Time to first post is not yet measured."
+   },
+   "depends_on": null
+  },
+  {
+   "id": "s15",
+   "type": "card",
+   "narration": "Weekly Posts is live on Cloud Run today, at the link on screen. Team zerochills, thank you.",
+   "card": {
+    "kicker": "Try it live",
+    "title": "Weekly Posts",
+    "subtitle": "https://weekly-posts-526531409571.australia-southeast1.run.app",
+    "bullets": [
+     "Team zerochills"
+    ],
+    "footnote": "Google Cloud AI Builder Cup (JAPAC)"
+   },
+   "depends_on": null
+  }
+ ]
+}

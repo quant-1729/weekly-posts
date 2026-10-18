@@ -10,6 +10,8 @@ export type FaceGenErrorCode =
   | 'needs_sheet' // poses need an approved sheet
   | 'no_option' // the option number was not made
   | 'image_failed' // the image model returned nothing usable
+  | 'image_blocked' // the image model's safety check declined the picture (a new description is needed, not a retry)
+  | 'busy' // the image service refused for now (rate limit / quota, 429): wait a minute; nothing was charged
   | 'cutout_not_configured' // CUTOUT_URL is not set (real photos)
   | 'cutout_failed'; // the cut-out step could not make a clean transparent image
 
@@ -21,4 +23,11 @@ export class FaceGenError extends Error {
     super(detail ? `${code}: ${detail}` : code);
     this.name = 'FaceGenError';
   }
+}
+
+/** Whether an error from the image call means "too many requests right now" (HTTP 429 / RESOURCE_EXHAUSTED / quota). */
+export function isRateLimited(e: unknown): boolean {
+  if (e instanceof FaceGenError) return e.code === 'busy';
+  const msg = e instanceof Error ? e.message : String(e);
+  return /429|RESOURCE_EXHAUSTED|rate.?limit|quota|too many requests/i.test(msg);
 }

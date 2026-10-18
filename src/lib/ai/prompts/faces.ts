@@ -11,7 +11,7 @@ import { redactPaymentIds } from '@/lib/payments/redact';
 import type { FaceKind, FacePose, FaceStyle } from '@/lib/faces/types';
 
 /** Bump when any text below changes in a way that should be recorded in a face's provenance. */
-export const FACE_PROMPT_VERSION = 'faces-v1';
+export const FACE_PROMPT_VERSION = 'faces-v2';
 
 /** The keying colour: the background of every generated image. The cut-out removes exactly this. */
 export const FACE_KEY_HEX = '#00FF00';
@@ -35,7 +35,9 @@ export const DEFAULT_FACE_STYLE: Record<'illustrated' | 'photoreal', FaceStyle> 
 export const FACE_FRAMING_RULES =
   'Single character, full body, centred, plain flat pure green #00FF00 background, no text, no letters, no logos, no products, no buildings, no other people, ' +
   'no props implying a profession (no white coat, stethoscope, scrubs, gavel, suit-and-briefcase banker look). ' +
-  'The character wears plain casual clothing and nothing green, so the background can be removed cleanly. ' +
+  'Unless the description clearly asks for a grown-up person, the character is a non-human mascot: an object, food, plant or animal shape with a friendly face and simple arms and legs. ' +
+  'Never a child, baby or teenager; a human character is always clearly a grown adult. ' +
+  'If the character wears clothing it is plain and casual, and nothing on the character is green, so the background can be removed cleanly. ' +
   'The background is one even colour with no gradient, floor line, shadow or reflection.';
 
 /** Only for a realistic person. */

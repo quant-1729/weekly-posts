@@ -239,6 +239,7 @@ function PostCard({
         <section className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg bg-well p-3" aria-label={t.share.title} data-share>
           <h3 className="text-card-title text-title">{t.share.title}</h3>
           <SharePanel
+            briefId={briefId}
             postId={post.id}
             channel={post.channel}
             images={post.images}

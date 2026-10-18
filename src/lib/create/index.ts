@@ -43,6 +43,7 @@ export {
   approveCreatePost,
   checkCopyEdit,
   confirmPostFlag,
+  confirmAllPostFlags,
   ensureDraftPosts,
   getPost,
   invalidateDesign,
@@ -54,9 +55,11 @@ export {
   saveCopy,
   undoCreateApproval,
   chooseDesign,
+  applyStudioDesign,
   wordsOf,
   type CopyEdit,
   type CreateDeps,
+  type StudioDrawFn,
 } from './posts';
 export { getPostFilter, setPostFilter, type FilterImage, type SetFilterResult } from './filter';
 export { filterOf } from './posts';

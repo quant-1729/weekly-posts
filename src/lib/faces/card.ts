@@ -9,6 +9,7 @@ import { checkPasses } from './generate/check';
 import { FACE_OPTIONS, type FacePoseImage } from './types';
 import { mattingConfigured } from './generate/cutout';
 import { FACE_BUCKET, relOfStored } from './paths';
+import { suggestFaceDescriptions, type SuggestBrand } from './suggest';
 import { faceOptionRel, faceSheetDraftRel } from './generate/paths';
 import { getFaceState, listPoses } from './service';
 import type { BrandFace } from './types';
@@ -60,6 +61,34 @@ function toCardFace(face: BrandFace, poses: FacePoseImage[], consent: CardConsen
   };
 }
 
+/** What setup and the website reading stored about the brand, as the suggestions need it. */
+async function loadSuggestBrand(userId: string, brandId: string, regulated: string): Promise<SuggestBrand> {
+  const [mem] = await getDb().withUser(userId, (tx) =>
+    tx.query<{
+      business_name: string | null;
+      category: string | null;
+      city: string | null;
+      country: string | null;
+      products: unknown;
+      colors: Record<string, unknown> | null;
+      tone: string | null;
+      voice_description: string | null;
+    }>(`select business_name, category, city, country, products, colors, tone, voice_description from public.brand_memory where brand_id = $1`, [brandId]),
+  );
+  const products = Array.isArray(mem?.products) ? (mem.products as { name?: unknown }[]).map((p) => (typeof p?.name === 'string' ? p.name : '')).filter(Boolean) : [];
+  const c = mem?.colors ?? {};
+  return {
+    businessName: mem?.business_name,
+    category: mem?.category,
+    products,
+    city: mem?.city,
+    country: mem?.country,
+    colors: [c.primary, c.accent, c.secondary].map((x) => (typeof x === 'string' ? x : null)),
+    voice: `${mem?.voice_description ?? ''} ${mem?.tone ?? ''}`.trim(),
+    regulated,
+  };
+}
+
 export async function loadFaceCard(userId: string, brandId: string, now: Date = new Date()): Promise<FaceCardData> {
   const [state, ctx] = await Promise.all([getFaceState(userId, brandId), loadGuardrailContext(brandId, userId)]);
   const stamp = String(now.getTime());
@@ -72,6 +101,8 @@ export async function loadFaceCard(userId: string, brandId: string, now: Date = 
     const poses = f.kind === 'mascot' ? [] : await listPoses(userId, brandId, f.id);
     faces.push(toCardFace(f, poses, f.kind === 'owner_photo' ? (consentOf.get(f.id) ?? { asked: false, confirmed: false, expired: false }) : null, stamp));
   }
-  return { regulated: ctx.regulated, faces, activeFaceId: state.activeFaceId, inPosts: state.inPosts, cutoutConfigured: mattingConfigured() };
+  const brand = await loadSuggestBrand(userId, brandId, ctx.regulated);
+  const suggestions = { illustrated: suggestFaceDescriptions(brand, 'illustrated'), photoreal: suggestFaceDescriptions(brand, 'photoreal') };
+  return { regulated: ctx.regulated, faces, activeFaceId: state.activeFaceId, inPosts: state.inPosts, cutoutConfigured: mattingConfigured(), suggestions };
 }
 
